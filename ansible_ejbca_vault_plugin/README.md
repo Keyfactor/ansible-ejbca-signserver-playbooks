@@ -1,12 +1,10 @@
 # ansible_ejbca_vault_plugin
-=========
 
 Install and configures Docker, Hashicorp Vault container, EJBCA Vault plugin to issue certificates from EJBCA requested through Vault.
 
 
 
 # Example Playbook
-----------------
 
 This example is taken from `deployVaultEjbcaPlugin.yml` and is tested on CentOS 8 EJBCA and Docker virtual machines.
 ```yaml
@@ -54,7 +52,6 @@ ejbca01.solitude.skyrim ansible_host=172.16.170.129
 Also see a [full documentation of EJBCA](https://doc.primekey.com/doc) on how to further configure/manage EJBCA.
 
 # Role Variables
---------------
 
 There are numerous variables for this playbook, and are specified in the deployment_vars/deploy_vars.yml. Details of these variables are described below.
 ```yaml
@@ -253,7 +250,6 @@ vault_ejbca_instances:
 ```
 
 # Requirements
-------------
 
 * Internet Access
 * Access to a repository containing packages, likely on the internet or internally.
@@ -268,9 +264,7 @@ vault_ejbca_instances:
 * A webserver to host files, this can be physical, virtual, or container.  Otherwise update the playbook accordingly to obtain the compiled plugin for installation
 
 
-
 # Dependencies
-------------
 
 The following dependencies are required:
 * A host to install Docker on, physical or virtual
@@ -279,9 +273,7 @@ The following dependencies are required:
 * Host that provides files over the web like a file repository, used to host the EJBCA Vault plugin after it is compiled
 
 
-
 # Compatibility
--------------
 
 This role has been tested on these:
 
@@ -297,21 +289,12 @@ The minimum version of Ansible required is 2.9 but tests have been done to:
 - The development version.
 
 # Exceptions
-----------
 
 Some variarations of the build matrix do not work. These are the variations and reasons why the build won't work:
 
 | variation                 | reason                 |
 |---------------------------|------------------------|
 | TBD | TBD |
-
-
-
-
-# License
--------
-
-TBD
 
 
 # Author Information
