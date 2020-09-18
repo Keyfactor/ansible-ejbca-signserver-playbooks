@@ -1,0 +1,69 @@
+---
+# defaults file for ansible-ejbca-vault-container
+
+ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+vault_csr_dir_output: "{{ playbook_dir }}/vaultCSR"
+
+
+vault_local_addr: "http://127.0.0.1:8200"
+
+vault_packages:
+  - jq
+  - python3-pip
+
+vault_python_packages:
+  - docker
+  - docker-compose
+
+vault_plugin_download_urls:
+  - url: http://172.16.170.133:8080/ejbca/ejbca-vault-plugin-alpine.tar.gz
+    name: ejbca-vault-plugin
+    path: ejbca
+    checksum: 8b9ca8a726191496032fed0a43af316fc04cef2780687dfb4ff66114b6fcbf08
+
+vault_cli_url: https://releases.hashicorp.com/vault/1.5.3/vault_1.5.3_linux_amd64.zip
+
+vault_cli_dir: "{{ vault_cfg_dir }}/cli"
+
+vault_cfg_dir: "{{ ansible_env.HOME }}/vault"
+
+vault_plugin_dir: "{{ vault_cfg_dir }}/vault_plugins"
+
+vault_volume_dirs:
+  - "{{ vault_cfg_dir }}/config/tmp"
+  - "{{ vault_cfg_dir}}/logs"
+  - "{{ vault_plugin_dir }}"
+  - "{{ vault_cfg_dir }}/build/scripts/docker"
+  - "{{ vault_cfg_dir }}/build/certs"
+  - /var/tmp/id
+
+unseal_keys_dir_output: "{{ playbook_dir }}/unsealKey"
+root_token_dir_output: "{{ playbook_dir }}/rootKey"
+vault_csr_dir_output: "{{ playbook_dir }}/vaultCSR"
+
+vault_local_dir_output:
+  - "{{ unseal_keys_dir_output }}"
+  - "{{ root_token_dir_output }}"
+  - "{{ vault_csr_dir_output }}"
+
+vault_conf_files:
+  - src: vault.json.j2
+    dest: "{{ vault_cfg_dir }}/config/vault.json"
+    mode: 0640
+  - src: docker-compose.yaml.j2 
+    dest: "{{ vault_cfg_dir }}/docker-compose.yaml"
+    mode: 0640
+  - src: vault-dockerfile.j2
+    dest: "{{ vault_cfg_dir }}/build/dockerfile"
+    mode: 0640
+  - src: docker-entrypoint.sh.j2
+    dest: "{{ vault_cfg_dir }}/build/scripts/docker/docker-entrypoint.sh"
+    mode: a+x
+
+#vault_role_policies:
+#  - name: admin
+#    src: admin-policy.hcl.j2
+#    dest: "{{ vault_cli_dir }}/admin-policy.hcl"
+#  - name: provisioner
+#    src: provisioner-policy.hcl.j2
+#    dest: "{{ vault_cli_dir }}/provisioner-policy.hcl"

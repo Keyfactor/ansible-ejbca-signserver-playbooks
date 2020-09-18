@@ -1,0 +1,24 @@
+---
+
+vault_tlsServerAuth_end_entitys: 
+  - instance: tlsServerAuth
+    ejbca_vault_path: ejbcav3
+    dn_common_name: test-vault-09.solitude.skyrim
+    dn_ou: 
+      - Devices 
+    dn_org: Solitude
+    dn_country: US
+    san_DNSName: 
+      - test-vault-09.solitude.skyrim
+    eku: serverAuth
+
+  - instance: tlsServerAuth
+    ejbca_vault_path: ejbcav3
+    dn_common_name: test-vault-10.solitude.skyrim
+    dn_ou: 
+      - Devices  
+    dn_org: Solitude
+    dn_country: US
+    san_DNSName: 
+      - test-vault-10.solitude.skyrim
+    eku: serverAuth
