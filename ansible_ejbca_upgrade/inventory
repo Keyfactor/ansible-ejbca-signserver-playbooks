@@ -1,0 +1,19 @@
+[allLinux]
+ejbca01.solitude.skyrim ansible_host=172.16.170.129
+webrepo.solitude.skyrim ansible_host=72.16.170.132
+ejbcara01.solitude.skyrim ansible_host=172.16.170.142
+
+[ejbcaCaServers]
+ejbca01.solitude.skyrim ansible_host=172.16.170.129
+
+[ejbcaVaServers]
+ejbcava01.solitude.skyrim ansible_host=172.16.170.128
+
+[ejbcaRaServers]
+ejbcara01.solitude.skyrim ansible_host=172.16.170.142
+
+[ejbcaCaServersAWS]
+ca01.pkihosted-dev.c2company.com ansible_host=aws-ca
+
+[ejbcaRaServersAWS]
+ra01.pkihosted-dev.c2company.com ansible_host=aws-ra

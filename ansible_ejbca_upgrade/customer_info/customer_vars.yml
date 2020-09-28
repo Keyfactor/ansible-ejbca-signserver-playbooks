@@ -1,0 +1,7 @@
+---
+
+ejbca_version: 7.4.1
+ejbca_software_ee_url: http://172.16.170.133/ejbca/ejbca_ee_7_4_1.zip
+ejbca_software_ra_url: http://172.16.170.133/ejbca/ejbca_ee_7_4_1_RA.zip
+ejbca_software_va_url: http://172.16.170.133/ejbca/ejbca_ee_7_4_1_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_4_1

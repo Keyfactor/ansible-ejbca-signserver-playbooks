@@ -1,0 +1,7 @@
+---
+# defaults file for roles/ansible-ejbca-complete-upgrade
+
+ejbca_root_dir: /opt
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+wildfly_install_dir: /opt
+ejbca_src_link_dir: "{{  ejbca_root_dir }}/ejbca"

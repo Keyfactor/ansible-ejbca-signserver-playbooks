@@ -1,0 +1,18 @@
+---
+# defaults file for ansible-ejbca-upgrade
+
+ejbca_root_dir: /opt
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+ejbca_src_link_dir: "{{  ejbca_root_dir }}/ejbca"
+
+ejbca_force_build_ear: false
+
+# EJBCA statedump utility source package ZIP file
+ejbca_statedump_src: 
+
+# If the statedump utility should be built into EJBCA
+ejbca_build_statedump: false
+# If the configdump utility should be built into EJBCA
+ejbca_build_configdump: false
