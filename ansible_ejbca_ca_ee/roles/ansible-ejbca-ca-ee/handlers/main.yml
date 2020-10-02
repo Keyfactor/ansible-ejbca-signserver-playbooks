@@ -1,0 +1,17 @@
+---
+# handlers file for primekey
+
+- name: restart wildfly
+  service:
+    name: wildfly
+    state: restarted
+
+- name: stop wildfly
+  service:
+    name: wildfly
+    state: stopped
+
+- name: start wildfly
+  service:
+    name: wildfly
+    state: started

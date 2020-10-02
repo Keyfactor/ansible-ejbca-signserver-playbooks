@@ -1,0 +1,10 @@
+---
+
+- name: Ensure directories used to store CRLs on localhost exists
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: 0775
+  loop: "{{ management_scp_localhost_archive_dirs }}"

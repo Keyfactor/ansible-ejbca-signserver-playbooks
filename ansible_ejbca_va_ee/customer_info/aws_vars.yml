@@ -1,0 +1,144 @@
+---
+
+organizationName: "American Electric Power"
+organizationNameShort: AEP
+organizationDomainName: pkihosted-dev.c2company.com
+countryName: US
+superAdminCn: "AEP PKI Administrator"
+
+management_ca_id: 1116623359
+root_ca_1_id: 400534506
+sub_ca_1_id: -2018990018
+
+
+peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+
+mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('ejbca') }}"
+mariadb_binlog_formatt: ROW
+mariadb_databases:
+  - name: ejbca
+    collation: "utf8_general_ci"
+    encoding: "utf8"
+mariadb_users:
+  - name: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    priv: "ejbca.*:ALL"
+    host: "%"
+  - name: ejbca-usr
+    password: ejbca
+    priv: "ejbca.*:ALL"
+    host: "localhost"
+
+ejbca_version: 7.4.0
+ejbca_software_url: http://172.31.2.113:8080/ejbca_ee_7_4_0_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_4_0_VA
+ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.5.4/mariadb-java-client-2.5.4.jar
+
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    host: 127.0.0.1
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+
+ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+
+management_import_certification_authorities:
+  - caname: "ManagementCA"
+    cert_download_url: "https://{{ organizationNameShort|lower }}-ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ management_ca_id }}&format=pem"
+    cert_file_location: /var/tmp/managementca.crt
+    superadmincn: "{{ superAdminCn }}"
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    cert_download_url: "https://{{ organizationNameShort|lower }}-ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ root_ca_1_id }}&format=pem"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
+    superadmincn: ""
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    cert_download_url: "https://{{ organizationNameShort|lower }}-ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_1_id }}&format=pem&level=0"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA.crt"
+    superadmincn: ""
+
+identity_info:
+  - dn: "OU=Devices,O={{ organizationName }},C={{ countryName }}"
+    name: "{{ organizationNameShort|lower }}-ocsp01.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ organizationNameShort|lower }}-ocsp01.{{ organizationDomainName }}"
+    username: va_httpd_tls
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName={{ organizationNameShort|lower }}-ocsp01.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+
+ejbca_va_keybinding:
+  - name: ocspSubSigningKey
+    slot_label: OCSP_KeyBinding_SLOT
+    slot_identifier_type: "SLOT_LABEL"
+    type: PKCS11CryptoToken
+    crypto_token_name: ocspCryptoToken
+    key_size: "3072"
+    key_label: ocspSubSigningKey0001
+    signature_algorithm: SHA256WithRSA
+    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
+    caname: "{{ organizationNameShort }}-Sub-CA"
+  - name: ocspRootSigningKey
+    slot_label: OCSP_KeyBinding_SLOT
+    slot_identifier_type: "SLOT_LABEL"
+    type: PKCS11CryptoToken
+    crypto_token_name: ocspCryptoToken
+    key_size: "3072"
+    key_label: ocspRootSigningKey0001
+    signature_algorithm: SHA256WithRSA
+    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
+    caname: "{{ organizationNameShort }}-Root-CA"
+  - name: ocspMgmtSigningKey
+    slot_label: OCSP_KeyBinding_SLOT
+    slot_identifier_type: "SLOT_LABEL"
+    type: PKCS11CryptoToken
+    crypto_token_name: ocspCryptoToken
+    key_size: "3072"
+    key_label: ocspMgmtSigningKey0001
+    signature_algorithm: SHA256WithRSA
+    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
+    caname: "ManagementCA" 
+
+identity_csr_info:
+  - dn: "OU=OCSP Signers,O={{ organizationName }},C={{ countryName }}"
+    name: "{{ ejbca_va_keybinding[0].name }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Sub Signer"
+    username: "{{ ejbca_va_keybinding[0].name }}"
+    password: "{{ encrypted_ocspSubKeyBinding_identity_password | default('foo123') }}"
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+    caname: "{{ ejbca_va_keybinding[0].caname }}"
+    token: USERGENERATED
+  - dn: "OU=OCSP Signerss,O={{ organizationName }},C={{ countryName }}"
+    name: "{{ ejbca_va_keybinding[1].name }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Root Signer"
+    username: "{{ ejbca_va_keybinding[1].name }}"
+    password: "{{ encrypted_ocspRootKeyBinding_identity_password | default('foo123') }}"
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+    caname: "{{ ejbca_va_keybinding[1].caname }}"
+    token: USERGENERATED
+  - dn: "OU=OCSP Signers,O={{ organizationName }},C={{ countryName }}"
+    name: "{{ ejbca_va_keybinding[2].name }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Mgmt Signer"
+    username: "{{ ejbca_va_keybinding[2].name }}"
+    password: "{{ encrypted_ocspMgmtKeyBinding_identity_password | default('foo123') }}"
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+    caname: "{{ ejbca_va_keybinding[2].caname }}"
+    token: USERGENERATED
+
+# Add the management CA to HTTP trust chain file. 
+add_mgmt_ca: true
+
+httpd_identity_info:
+  id_name: "{{ identity_info[0].name }}"
+  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"

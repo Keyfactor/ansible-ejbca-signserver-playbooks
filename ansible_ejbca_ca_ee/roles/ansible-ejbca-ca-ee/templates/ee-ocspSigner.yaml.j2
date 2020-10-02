@@ -1,0 +1,40 @@
+Object Type: End Entity Profile
+Version: 1
+Name: ocspSigner
+Cleartext Password Enabled: true
+E-Mail Used: false
+Max Failed Logins Modifiable: false
+Description: ''
+Default CA: ManagementCA
+Available CAs:
+- Any CA
+Default Certificate Profile: ocspSigner
+Available Certificate Profiles:
+- ocspSigner
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+Issuance Revocation Reason Modifiable: false
+CA Browser Forum Organization Identifier Modifiable: false
+Subject DN:
+  CN:
+  - Required: true
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - OCSP Signers
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}
+Subject Alternative Name:
+  DNSNAME:
+  - Required: false
+  - Required: false

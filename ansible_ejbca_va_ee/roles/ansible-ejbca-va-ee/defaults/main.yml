@@ -1,0 +1,119 @@
+---
+# defaults file for primekey
+ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+ejbca_root_dir: /opt
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+ejbca_sh: "{{ ejbca_home }}/bin/ejbca.sh"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+wildfly_manage_service: true
+ejbca_va_group: ejbcava
+ejbca_va_user: ejbcava
+
+# Used to name the Root & Sub CA templates
+organizationName: Solitude
+organizationDomainName: solitude.skyrim
+organizationNameShort: "{{ organizationName }}"
+countryName: US
+superAdminCn: "27May2020 Skyrim Super Administrator"
+
+# location to copy p12 to locally
+superadmin_local_dir: ~/Desktop
+
+# apply_indexes: If default EJBCA database indexes should be applied. Will always report change if true
+# database_name: Name of EJBCA database
+management_database_indexes:
+  apply_indexes: true
+  database_name: ejbca
+
+ejbca_database_indexes:
+  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'source {{ ejbca_home }}/doc/sql-scripts/create-index-ejbca.sql'"
+  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE AuditRecordData row_format=compressed key_block_size=4;'"
+  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CertReqHistoryData row_format=compressed key_block_size=4;'"
+  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CRLData row_format=compressed key_block_size=16;'"
+  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CertificateData row_format=compressed key_block_size=8;'"
+  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE UserData row_format=compressed key_block_size=4;'"
+
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
+
+# List of HSM slots that should be tested that they are accessible
+ejbca_va_test_slots:
+  - slot_identifier: "{{ ejbca_va_keybinding[0].slot_identifier }}"
+    slot_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+
+
+# EJBCA audit log database protection configurations
+# slot_index: Index of HSM slot used for database integrity protection
+# key_label: Label of key used for database integrity protection
+# signature_algorithm: Algorithm used to sign database rows
+# token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
+ejbca_databaseprotection:
+  slot_label: DB_Protect_SLOT
+  slot_identifier_type: "SLOT_LABEL"
+  slot_index: 0
+  key_label: dbProtect00001
+  signature_algorithm: SHA256WithRSA
+  token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+  testkey_label: "testKey"
+
+# Database root user password. Should be encrypted with Ansible vault
+database_rootuser_password: "{{ encrypted_database_rootuser_password | default('root') }}"
+
+# Crypto Token & Key Binding for Peer Connections.  This will create 1 key to use for peering from the CA to VA or RA
+ejbca_va_keybinding:
+  - name: ocspSubKeyBinding
+    slot_label: OCSP_KeyBinding_SLOT
+    slot_identifier_type: "SLOT_LABEL"
+    type: PKCS11CryptoToken
+    crypto_token_name: ocspCryptoToken
+    key_size: "3072"
+    key_label: ocspSubKeyBinding00001
+    signature_algorithm: SHA256WithRSA
+    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    password: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
+  - name: ocspRootKeyBinding
+    slot_label: OCSP_KeyBinding_SLOT
+    slot_identifier_type: "SLOT_LABEL"
+    type: PKCS11CryptoToken
+    crypto_token_name: ocspCryptoToken
+    key_size: "3072"
+    key_label: ocspRootKeyBinding00001
+    signature_algorithm: SHA256WithRSA
+    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    password: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
+  - name: ocspMgmtKeyBinding
+    slot_label: OCSP_KeyBinding_SLOT
+    slot_identifier_type: "SLOT_LABEL"
+    type: PKCS11CryptoToken
+    crypto_token_name: ocspCryptoToken
+    key_size: "3072"
+    key_label: ocspMgmtKeyBinding00001
+    signature_algorithm: SHA256WithRSA
+    token_pin: "{{encrypted_ocsp_token_pin | default('foo123') }}"
+    password: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
+
+
+# List of certification authorities that should be imported using CLI
+# caname: CA name
+# cert_download_url: URL to download the CA certificate in PEM format from
+management_import_certification_authorities:
+  - caname: "ManagementCA"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=966011820&format=pem"
+    cert_file_location: /var/tmp/managementca.crt
+    superadmincn: "{{ superAdminCn }}"
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1905764898&format=pem"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
+    superadmincn: ""
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid=-127947408&format=pem&level=0"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA.crt"
+    superadmincn: ""

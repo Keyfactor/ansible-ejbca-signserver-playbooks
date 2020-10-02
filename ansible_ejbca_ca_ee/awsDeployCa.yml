@@ -1,0 +1,15 @@
+---
+
+- hosts: ejbcaCaServersAWSDemo
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: customer_info/aws_demo_vars.yml
+  roles:
+    - ansible-role-hostname
+    - ansible-role-mariadb
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-prep
+    - ansible-ejbca-ca-ee
+    - ansible-ejbca-httpd
+

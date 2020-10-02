@@ -1,0 +1,6 @@
+[submodule "roles/ansible-role-hostname"]
+	path = roles/ansible-role-hostname
+	url = git@github.com:robertdebock/ansible-role-hostname.git
+[submodule "roles/ansible-role-reboot"]
+	path = roles/robertdebock.reboot
+	url = git@github.com:robertdebock/ansible-role-reboot.git

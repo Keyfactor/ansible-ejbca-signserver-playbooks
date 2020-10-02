@@ -1,0 +1,5 @@
+---
+# vars file for roles/ansible-ejbca-ra-nginx
+
+nginx_packages:
+  - nginx

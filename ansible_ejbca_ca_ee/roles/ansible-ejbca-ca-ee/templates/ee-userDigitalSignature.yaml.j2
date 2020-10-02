@@ -1,0 +1,38 @@
+Object Type: End Entity Profile
+Version: 1
+Name: userDigitalSignature
+E-Mail Used: false
+Description: ''
+Default CA: {{ organizationNameShort }}-Sub-CA
+Available CAs:
+- {{ organizationNameShort }}-Sub-CA
+Default Certificate Profile: DigitalSignature-2048-3y
+Available Certificate Profiles:
+- DigitalSignature-2048-3y
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+- PKCS12 File
+- JKS File
+- PEM File
+Subject DN:
+  CN:
+  - Required: true
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - People
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}
+Subject Alternative Name:
+  RFC822NAME:
+  - Required: false

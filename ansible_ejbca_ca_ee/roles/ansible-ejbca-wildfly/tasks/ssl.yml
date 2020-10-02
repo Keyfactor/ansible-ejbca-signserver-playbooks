@@ -1,0 +1,50 @@
+---
+# task file for wildfly
+
+# See the README file on how to generate this file.
+- name: Copy keystore file to the configuration folder
+  copy:
+    src: '{{ wildfly_keystore_name }}'
+    dest: '{{ wildfly_keystore_path }}'
+    owner: '{{ wildfly_user }}'
+    group: '{{ wildfly_group }}'
+    mode: '0750'
+  notify:
+    - restart wildfly
+    - change standalone data mode
+
+- name: Add SSL identity to the management realm
+  lineinfile:
+    dest: '{{ wildfly_standalone_config_path }}'
+    insertafter: <security-realm name="ManagementRealm">
+    line: '{{ wildfly_application_ssl_identity }}'
+    owner: '{{ wildfly_user }}'
+    group: '{{ wildfly_group }}'
+    mode: '0750'
+  notify:
+    - restart wildfly
+    - change standalone data mode
+
+- name: Add https listener for applications
+  lineinfile:
+    dest: '{{ wildfly_standalone_config_path }}'
+    insertafter: <http-listener name=*
+    line: '{{ wildfly_https_listener }}'
+    owner: '{{ wildfly_user }}'
+    group: '{{ wildfly_group }}'
+    mode: '0750'
+  notify:
+    - restart wildfly
+    - change standalone data mode
+
+- name: Add https socket binding to management interfaces
+  lineinfile:
+    dest: '{{ wildfly_standalone_config_path }}'
+    insertafter: <http-interface security-realm="ManagementRealm"*
+    line: <socket-binding https="management-https"/>
+    owner: '{{ wildfly_user }}'
+    group: '{{ wildfly_group }}'
+    mode: '0750'
+  notify:
+    - restart wildfly
+    - change standalone data mode

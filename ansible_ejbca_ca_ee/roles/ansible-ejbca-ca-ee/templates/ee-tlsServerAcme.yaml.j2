@@ -1,0 +1,28 @@
+Object Type: End Entity Profile
+Version: 1
+Name: tlsServerAcme
+Username Auto-Generated: true
+Cleartext Password Enabled: true
+Max Failed Logins Modifiable: false
+Description: ''
+Default CA: {{ organizationNameShort }}-Sub-CA
+Available CAs:
+- Any CA
+Default Certificate Profile: tlsServerAuthAcme90d
+Available Certificate Profiles:
+- tlsServerAuthAcme90d
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+Issuance Revocation Reason Modifiable: false
+CA Browser Forum Organization Identifier Modifiable: false
+Subject DN:
+  CN:
+  - Required: true
+  E:
+  - Required: false
+Subject Alternative Name:
+  DNSNAME:
+  - Required: false
+  - Required: false
+  

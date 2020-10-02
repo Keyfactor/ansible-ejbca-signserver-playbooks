@@ -1,0 +1,12 @@
+---
+# tasks file for ansible-ejbca-ra-httpd
+
+- name: Install HTTPD
+  include_tasks: install.yml
+
+- name: Configure HTTPD web server
+  include_tasks: configure.yml
+
+- name: Add Management CA to HTTPD Trust CA certs 
+  include_tasks: add_mgmtcert_httpd.yml
+  when: add_mgmt_ca

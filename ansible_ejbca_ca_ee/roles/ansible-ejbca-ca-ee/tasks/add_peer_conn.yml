@@ -1,0 +1,97 @@
+---
+
+- name: Query Peer Connectors 
+  command: "{{ ejbca_home }}/bin/ejbca.sh peer list"
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: list_peer_connectors
+  failed_when: list_peer_connectors.rc >= 2
+  changed_when: list_peer_connectors.rc == 0
+
+- name: Create Peer Connectors
+  command: "{{ ejbca_home }}/bin/ejbca.sh peer create --name {{ item.name }} --state ENABLED --url {{ item.url }} --akb {{ item.keybinding }} "
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: create_peer_connectors
+  loop: "{{ ejbca_peerConnector }}"
+  when: ( item.name not in list_peer_connectors.stdout ) and ( item.enabled|bool )
+
+#- debug: 
+#    var: create_peer_connectors
+
+- name: Create a fact for peer_connection_info
+  set_fact: 
+    cacheable: yes
+    peer_connection_info: |
+      [
+      {% for line in create_peer_connectors.results %}
+      {{ '{' }}  'id':'{{ line.stdout.split(' ')[4] }}', 'name':'{{ line.item.name }}', 'type': '{{ line.item.type }}' {{ '}' }},
+      {% endfor %}
+      ]
+  when: create_peer_connectors is defined
+  ignore_errors: yes
+
+#- name: Create a fact for peer_connection_info
+#  set_fact: 
+#    cacheable: yes
+#    peer_connection_info: 
+#      - id: "{{ line.stdout.split(' ')[4] }}"
+#        name: "{{ line.item.name }}"
+#        type: "{{ line.item.type }}"
+#  when: create_peer_connectors is defined
+#  ignore_errors: yes
+
+- name: Write Peer Info to file for use with EJBCA playbooks 
+  become: no
+  copy:
+    dest: "{{ ejbca_csr_dir_output }}/ca_peer_info.yml"
+    content: "{{ peer_connection_info| to_nice_yaml }}"
+  delegate_to: localhost
+  register: write_peer_output
+  no_log: true
+
+- name: Query Peer Connection with SQL hack EJBCA <= 7.3.1.4
+  command: /usr/bin/mysql -u root --password="{{ mariadb_root_password }}" "{{ management_database_indexes.database_name }}" -s -e 'SELECT data FROM PeerData WHERE id = "{{ item.id }}";'
+  loop: "{{ peer_connection_info }}"
+  when: ( "ra" in item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )  
+  register: peer_sql_hack_check
+  no_log: true
+
+#- name: debug the output for getting the ID
+#  debug:
+#    msg: "{{ item.stdout.split('<int>')[1].split('</int>')[0]  }}"
+#  loop: "{{ peer_sql_hack_check.results }}"
+#  loop_control:
+#    label: "{{ item.item.id }}"
+#  when: item.stdout is defined
+
+- name: Enable Process incoming requests in Peer Connection with SQL hack EJBCA <= 7.3.1.4
+  command: /usr/bin/mysql -u root --password="{{ mariadb_root_password }}" "{{ management_database_indexes.database_name }}" -s -e 'update PeerData set data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<java version=\"1.8.0_252\" class=\"java.beans.XMLDecoder\">\n <object class=\"org.cesecore.util.Base64PutHashMap\">\n  <void method=\"put\">\n   <string>authenticationKeyBindingId</string>\n   <int>{{ item.stdout.split('<int>')[1].split('</int>')[0]  }}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsEnabled</string>\n   <string>true</string>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMin</string>\n   <int>{{ra_peer_min_parallel_reqs| int}}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMax</string>\n   <int>{{ra_peer_max_parallel_reqs| int}}</int>\n  </void>\n </object>\n</java>\n" where id = "{{ item.item.id }}";'
+  loop: "{{ peer_sql_hack_check.results }}"
+  loop_control:
+    label: "{{ item.item.id }}"
+  when: ( "ra" in item.item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') ) 
+  register: peer_sql_hack
+  no_log: true
+
+#- name: debug peer_connection_info
+#  debug:
+#    var: peer_connection_info
+
+- name: Enable Process incoming requests in Peer Connection EJBCA >= 7.4.0
+  command: "{{ ejbca_home }}/bin/ejbca.sh peer edit --id {{ item.id }} --process-incoming-requests true --max-parallel-requests {{ ra_peer_max_parallel_reqs }} --min-parallel-requests {{ ra_peer_min_parallel_reqs }}"
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  loop: "{{ peer_connection_info }}"
+  #when: ( '"ra" in item.type' ) and ( ejbca_version is version('7.4.0', '>=') ) 
+  when: ('ra' in item.type) and (ejbca_version is version('7.4.0', '>='))
+  register: peer_con_ra_res
+  #no_log: true
+  loop_control:
+    label: "{{ item.id }}"
+
+#- name: debug peer_con_ra_res
+#  debug:
+#    var: peer_con_ra_res

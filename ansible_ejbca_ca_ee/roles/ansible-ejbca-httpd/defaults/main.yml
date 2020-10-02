@@ -1,0 +1,52 @@
+---
+# defaults file for ansible-ejbca-httpd
+
+ejbca_root_dir: /opt
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+ejbca_sh: "{{ ejbca_home }}/bin/ejbca.sh"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+ejbca_group: ejbca
+ejbca_user: ejbca
+
+add_mgmt_ca: true
+
+use_external_va: true
+
+use_external_ra: true
+
+# Used to name the Root & Sub CA templates
+organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"
+countryName: US
+organizationDomainName: solitude.skyrim
+
+httpd_identity_info:
+  id_dn: 'ou=Devices,O={{ organizationName }},C={{ countryName }}'
+  id_name: "ca01.{{ organizationDomainName }}"
+  id_full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
+  id_username: ca_httpd_tls
+  id_password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+  id_altname: "dNSName=ca01.{{ organizationDomainName }}"
+  id_certprofile: tlsServerClientAuth
+  id_eeprofile: "tlsServer{{ organizationNameShort }}"
+  id_caname: "{{ organizationNameShort }}-Sub-CA"
+
+httpd_packages:
+  - httpd
+  - mod_ssl
+
+httpd_web_dirs:
+  - src: "/opt/web/CRLs"
+    dest: "/var/www/html/CRLs"
+  - src: "/opt/web/AIA"
+    dest: "/var/www/html/AIA"
+
+httpd_cert_files:
+  - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}.pem"
+    dest: "/etc/pki/tls/certs/{{ httpd_identity_info.id_name }}.crt"
+  - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-Key.pem"
+    dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
+  - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
+    dest: "/etc/pki/tls/certs/trusted-ca.crt"
+

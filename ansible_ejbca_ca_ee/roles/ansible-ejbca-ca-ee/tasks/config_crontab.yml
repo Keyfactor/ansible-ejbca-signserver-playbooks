@@ -1,0 +1,18 @@
+---
+# Create crontab for CRL's to get downloaded from CA and hosted by httpd
+
+- name: Configure the wget script
+  template:
+    src: getcrl.sh.j2
+    dest: "/home/{{ ejbca_user }}/getcrl.sh"
+    mode: 0750
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+
+- name: Create crontab
+  cron:
+    name: CRL-Retrieval
+    state: present
+    job: "/home/{{ ejbca_user }}/getcrl.sh"
+    minute: "*/5"
+    user: "{{ ejbca_user }}"

@@ -1,0 +1,14 @@
+---
+
+- name: Create EJBCA database indexes
+  command: "{{ item.index }}"
+  loop: "{{ ejbca_database_indexes }}" 
+  #no_log: true
+  register: applying_database_indexes
+
+- name: Log the Index errors 
+  debug:
+    #msg: "Some part of applying database indexes failed with message: {{ applying_database_indexes.stderr }}"
+    var: applying_database_indexes
+    verbosity: 4
+  #when: applying_database_indexes.stderr

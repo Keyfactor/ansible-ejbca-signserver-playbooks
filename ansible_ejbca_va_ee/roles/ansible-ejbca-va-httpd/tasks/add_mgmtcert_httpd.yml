@@ -1,0 +1,12 @@
+---
+
+- name: Export Managment CA cert to file
+  command: "{{ ejbca_sh }} ca getcacert --caname ManagementCA -f /var/tmp/managementca.crt"
+  args:
+    chdir: "{{ ejbca_home }}"
+    creates: /var/tmp/managementca.crt
+  become_user: "{{ ejbca_va_user }}"
+  become: yes
+
+- name: Add Managment CA cert to file to trusted-ca file
+  shell: cat /var/tmp/managementca.crt >> /etc/pki/tls/certs/trusted-ca.crt

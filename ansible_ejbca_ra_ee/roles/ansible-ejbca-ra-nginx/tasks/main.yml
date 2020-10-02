@@ -1,0 +1,12 @@
+---
+# tasks file for roles/ansible-ejbca-ra-nginx
+
+- name: Install Nginx
+  include_tasks: install.yml
+
+- name: Configure Nginx web server
+  include_tasks: configure.yml
+
+- name: Add Management CA to Nginx Trust CA certs 
+  include_tasks: add_mgmtcert_nginx.yml
+  when: add_mgmt_ca

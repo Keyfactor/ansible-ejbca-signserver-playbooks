@@ -1,0 +1,14 @@
+---
+# tasks file for ansible-ejbca-ra-ee
+
+- name: Check wildfly and start the service
+  include_tasks: check_wildfly_status.yml
+
+- name: Apply indexes
+  include_tasks: apply_indexes.yml
+  when: management_database_indexes.apply_indexes
+
+- name: Setup Management CA with CLI commands
+  include_tasks: import_mgmt_ca.yml
+  tags: import_cas
+  when: management_import_certification_authorities[0] is defined

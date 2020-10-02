@@ -1,0 +1,13 @@
+---
+
+- name: Add serial number to Peering Admin Role
+  command: "{{ ejbca_sh }} roles addrolemember --role 'RA-Peer-Connection' --caname '{{ item.caname }}' --with CertificateAuthenticationToken:WITH_SERIALNUMBER --value '{{ item.cert_serial_Number }}'"
+  args:
+    chdir: "{{ ejbca_home }}"
+  loop: "{{ ra_peer_cert_serial_numbers }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: add_sn_to_role_result
+  tags: ra_peer_sn_role
+
+

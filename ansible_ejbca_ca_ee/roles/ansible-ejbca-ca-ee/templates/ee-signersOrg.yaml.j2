@@ -1,0 +1,37 @@
+Object Type: End Entity Profile
+Version: 1
+Name: signers{{ organizationNameShort }}
+Description: ''
+Default CA: {{ organizationNameShort }}-Sub-CA
+Available CAs:
+- {{ organizationNameShort }}-Sub-CA
+Default Certificate Profile: signer-3y
+Available Certificate Profiles:
+- signer-3y
+- signerPdf-3y
+- signerCodeSigning-3y
+- signerTimeStampAuthority-8y
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+- PKCS12 File
+- JKS File
+- PEM File
+Subject DN:
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}
+  CN:
+  - Required: true
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - Signers

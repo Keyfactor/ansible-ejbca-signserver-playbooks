@@ -1,0 +1,53 @@
+---
+
+#- name: Ensure application user is in nfast group
+#  user:
+#    name: "{{ ejbca_user }}"
+#    groups: nfast
+#    append: yes
+#    system: yes
+#  when: ncipher_preload | bool
+
+- name: Test that HSM slots are available Management & Root CA's
+  command: >
+   {% if ncipher_preload %}"{{ preload_path }}"{% endif %} "{{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh"
+   PKCS11HSMKeyTool test
+   "{{ hsm_shared_library }}"
+   "{{ item.slot_identifier }}"
+   -password {{ item.slot_pin }}
+  args:
+    stdin: x
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  loop: "{{ management_test_slots }}"
+  no_log: true
+  register: tested_hsm_slots_results
+  changed_when: tested_hsm_slots_results.rc != 0
+  failed_when: false
+
+- debug:
+    msg: "Could not access all HSM slots specified in variable management_test_slots"
+  when: tested_hsm_slots_results.changed
+  failed_when: true
+
+- name: Test that HSM slots are available for Sub CA
+  command: >
+   {% if ncipher_preload %}"{{ preload_path }}"{% endif %} "{{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh"
+   PKCS11HSMKeyTool test
+   "{{ hsm_shared_library }}"
+   "{{ item.slot_identifier }}"
+   -password {{ item.slot_pin }}
+  args:
+    stdin: x
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  loop: "{{ sub_test_slots }}"
+  no_log: true
+  register: tested_sub_hsm_slots_results
+  changed_when: tested_sub_hsm_slots_results.rc != 0
+  failed_when: false
+
+- debug:
+    msg: "Could not access all HSM slots specified in variable sub_test_slots"
+  when: tested_sub_hsm_slots_results.changed
+  failed_when: true

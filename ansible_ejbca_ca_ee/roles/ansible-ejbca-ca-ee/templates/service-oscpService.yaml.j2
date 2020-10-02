@@ -1,0 +1,28 @@
+Object Type: Service
+Version: 1
+Name: validationAuthorityPubQueProSvc
+Worker Type: Publish Queue Process Service
+Worker Properties:
+  Time Before Expiring: 7
+  Time Unit: DAYS
+  Send to End Users: false
+  User E-mail Subject: ''
+  User E-mail Message: ''
+  Send to Admins: false
+  Admin E-mail Subject: ''
+  Admin E-mail Message: ''
+  Publishers to Check:
+  - validationAuthorityPeerPub
+Interval Type: Periodical Interval
+Interval Properties:
+  Periodical Value: 5
+  Periodical Unit: MINUTES
+Action Type: No Action
+Action Properties: {
+  }
+Description: ''
+Active: true
+Hidden: false
+Pin to Specific Nodes: [
+  ]
+Run on All Nodes: false

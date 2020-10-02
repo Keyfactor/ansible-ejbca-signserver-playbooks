@@ -1,0 +1,32 @@
+---
+# tasks file for primekey
+
+- name: Test that HSM slots are available
+  include_tasks: hsm_test.yml
+  tags: hsm_test
+  when: ejbca_va_keybinding[0] is defined
+
+- name: Generate HSM keys
+  include_tasks: clienttoolbox_key_generation.yml
+  tags: clienttoolbox_key_generation
+  when: ejbca_va_keybinding[0] is defined
+
+- name: Check deployment
+  include_tasks: check_deployment.yml
+  tags: check_deployment
+  when: management_database_indexes.apply_indexes is defined or management_import_certification_authorities[0] is defined
+
+- name: Apply indexes
+  include_tasks: apply_indexes.yml
+  when: management_database_indexes.apply_indexes
+
+- name: Setup Management CA with CLI commands
+  include_tasks: import_mgmt_ca.yml
+  tags: import_cas
+  when: management_import_certification_authorities[0] is defined
+
+- name: Create OCSP Crypto Token
+  include_tasks: add_cryptotoken.yml
+
+- name: Create OCSP Key Binding
+  include_tasks: add_keybinding.yml

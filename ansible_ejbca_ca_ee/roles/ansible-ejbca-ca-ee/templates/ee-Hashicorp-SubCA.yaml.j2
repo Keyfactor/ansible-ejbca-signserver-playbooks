@@ -1,0 +1,32 @@
+Object Type: End Entity Profile
+Version: 1
+Name: Hashicorp-SubCA
+E-Mail Used: false
+Description: ''
+Default CA: {{ organizationNameShort }}-Root-CA
+Available CAs:
+- {{ organizationNameShort }}-Root-CA
+Default Certificate Profile: HashiCorp-SubCA-G1
+Available Certificate Profiles:
+- HashiCorp-SubCA-G1
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+Subject DN:
+  CN:
+  - Required: true
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - Certification Authorities
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}

@@ -1,0 +1,10 @@
+{{ ansible_managed | comment }}
+sharedLibrary {{ hsm_shared_library }}
+slotLabelType={{ item.pkcs11_token.slot_identifier_type }}
+slotLabelValue={{ item.pkcs11_token.slot_identifier_value }}
+
+# CA key configuration
+defaultKey {{ item.pkcs11_token.defaultkey_label }}
+certSignKey {{ item.pkcs11_token.signkey_label }}
+crlSignKey {{ item.pkcs11_token.signkey_label }}
+testKey {{ item.pkcs11_token.testkey_label }}

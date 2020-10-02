@@ -1,0 +1,93 @@
+---
+
+- name: Check if {{ item.username }} end entity exists
+  command: "{{ ejbca_sh }} ra findendentity {{ item.username }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_method: sudo
+  become_user: "{{ ejbca_user }}"
+  changed_when: False
+  failed_when: "'FAILED' in endentity_exists.stderr"
+  register: endentity_exists
+  tags: certreq-cli-batch
+
+#- debug:
+#    var: endentity_exists
+
+- block:
+  - name: Add {{ item.username }} entity to CA
+    command: "{{ ejbca_sh }} ra addendentity --username '{{ item.username }}' --password '{{  item.password }}' --dn '{{ item.full_dn }}' --altname '{{ item.altname }}' --caname '{{ item.caname }}' --type 1 --token {{ item.token }} --certprofile '{{ item.certprofile }}' --eeprofile '{{ item.eeprofile }}'"
+    args:
+      chdir: "{{ ejbca_home }}"
+    become_user: "{{ ejbca_user }}"
+    become: yes
+    register: ra_addIdent_result
+    tags: certreq-cli-batch
+
+  - name: Set password for {{ item.username }}
+    command: "{{ ejbca_sh }} ra setclearpwd --username '{{ item.username }}' '{{ item.password }}'"
+    args:
+      chdir: "{{ ejbca_home }}"
+    become_user: "{{ ejbca_user }}"
+    become: yes
+    register: ra_setpwd_result
+    tags: certreq-cli-batch
+
+  - name: Create certificates for {{ item.username }}
+    command: "{{ ejbca_sh }} batch --username {{ item.username }} -dir {{ identity_batch_output_dir }}"
+    args:
+      chdir: "{{ ejbca_home }}"
+    become_user: "{{ ejbca_user }}"
+    become: yes
+    register: ra_batch_result
+    tags: certreq-cli-batch
+
+  - name: Determine {{ item.username }} certificate serial number
+    command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
+    no_log: true
+    register: cert_serialNumber
+    tags: certreq-cli-batch
+
+  - name: Create fact for {{ item.username }} certificate serial number
+    set_fact: 
+      cacheable: yes
+      va_peer_cert_serial_numbers: |
+        [
+        {{ '{' }}  'cert_serial_Number':'{{ cert_serialNumber.stdout.split('=')[1] }}', 'caname':'{{ item.caname }}' {{ '}' }},
+        ]
+    tags: certreq-cli-batch
+    
+  - name: Copy {{ item.username }} certificate file to localhost
+    become: no
+    fetch:
+      src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
+      dest: "{{ ejbca_csr_dir_output }}/{{ item.name }}.crt"
+      flat: yes
+    tags: certreq-cli-batch
+
+  - name: Copy {{ item.username }} key file to localhost
+    become: no
+    fetch:
+      src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}-Key.pem"
+      dest: "{{ ejbca_csr_dir_output }}/{{ item.name }}.key"
+      flat: yes
+    tags: certreq-cli-batch
+
+  - name: Copy {{ item.username }} CA chain file to localhost
+    become: no
+    fetch:
+      src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}-CA.pem"
+      dest: "{{ ejbca_csr_dir_output }}/{{ item.caname }}.crt"
+      flat: yes
+    tags: certreq-cli-batch
+
+  - name: Cleanup the cert files in /var/tmp
+    file:
+      path: "{{ identity_batch_output_dir }}/pem/"
+      state: absent
+    tags: certreq-cli-batch
+
+  #when: "'does not exist' in endentity_exists.stdout"
+  when: endentity_exists.rc == 1
+  tags: certreq-cli-batch
+

@@ -1,0 +1,21 @@
+Object Type: Role
+Version: 1
+Name: raIncomingCaPeer
+Role Members:
+{% for item in peer_ca_cert_serial_numbers %}
+{% if item.type == "ra" %}
+- Token Type: CertificateAuthenticationToken
+  Issuer: {{ item.ca }}
+  Match With: WITH_SERIALNUMBER
+  Match Value: {{ item.serial }}
+  Description: CA Peer Connection to RA with peer credential
+{% endif %}  
+{% endfor %}
+Namespace: ''
+RA Style Id: 0
+Access Rules:
+{% for item in management_import_certification_authorities %}
+  /ca/{{ item.caname }}/: Allow
+{% endfor %}
+  /peerincoming/: Allow
+  /ra_slave/manage/: Allow

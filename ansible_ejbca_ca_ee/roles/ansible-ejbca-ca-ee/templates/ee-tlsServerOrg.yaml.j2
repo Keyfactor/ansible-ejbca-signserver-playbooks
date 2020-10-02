@@ -1,0 +1,46 @@
+Object Type: End Entity Profile
+Version: 1
+Name: tlsServer{{ organizationNameShort }}
+Cleartext Password Enabled: true
+Max Failed Logins Modifiable: false
+Description: ''
+Default CA: {{ organizationNameShort }}-Sub-CA
+Available CAs:
+- {{ organizationNameShort }}-Sub-CA
+Default Certificate Profile: tlsServerClientAuth
+Available Certificate Profiles:
+- tlsServerClientAuth
+- tlsServerAuth
+- tlsClientAuth
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+- PKCS12 File
+- JKS File
+- PEM File
+Issuance Revocation Reason Modifiable: false
+CA Browser Forum Organization Identifier Modifiable: false
+Subject DN:
+  CN:
+  - Required: true
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - Devices
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}
+Subject Alternative Name:
+  DNSNAME:
+  - Required: false
+  - Required: false
+  - Required: false
+  - Required: false

@@ -1,0 +1,8 @@
+Object Type: SCEP Configuration
+Version: 2
+Name: firewall
+Operational Mode: RA
+RA End Entity Profile: vpnFirewall
+RA Certificate Profile: vpnFirewall
+RA CA Name: {{ organizationNameShort }}-Sub-CA
+RA Authentication Password: {{ encrypted_scep_firewall_alias_enrollment_passwd | default('foo123') }}

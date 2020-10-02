@@ -1,0 +1,7 @@
+---
+# handlers file for ansible-ejbca-httpd
+
+- name: restart httpd
+  service:
+    name: httpd
+    state: restarted

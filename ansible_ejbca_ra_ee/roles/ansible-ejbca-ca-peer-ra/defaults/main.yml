@@ -1,0 +1,14 @@
+---
+# defaults file for roles/ansible-ejbca-ca-peer-ra
+ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+ejbca_root_dir: /opt
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+ejbca_sh: "{{ ejbca_home }}/bin/ejbca.sh"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+ejbca_group: ejbca
+ejbca_user: ejbca
+
+identity_batch_output_dir: /var/tmp
+organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"

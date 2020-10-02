@@ -1,0 +1,14 @@
+# ------------ Web GUI configuration ---------------------
+{{ ansible_managed | comment }}
+#java.trustpassword={{ web_java_trustpassword| default('changeit') }}
+superadmin.batch=true
+httpserver.external.privhttps={{ web_httpserver_external_privhttps| default('443') }}
+httpserver.pubhttp={{ web_httpserver_external_privhttp| default('80') }}
+# httpsserver.bindaddress.pubhttp={{ web_httpsserver_bindaddress_pubhttp| default('0.0.0.0') }}
+# httpsserver.bindaddress.pubhttps={{ web_httpsserver_bindaddress_pubhttps| default('0.0.0.0') }}
+# httpsserver.bindaddress.privhttps={{ web_httpsserver_bindaddress_privhttps| default('0.0.0.0') }}
+web.availablelanguages=en
+web.docbaseuri={{ web_docbaseuri| default('internal') }}
+web.selfreg.enabled={{ web_selfreg_enabled| default('false') }}
+web.reqcertindb={{ web_reqcertindb| default('true') }}
+keyvault.cryptotoken.enabled=true

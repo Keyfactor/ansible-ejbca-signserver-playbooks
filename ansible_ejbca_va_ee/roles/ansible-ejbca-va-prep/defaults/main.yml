@@ -1,0 +1,101 @@
+---
+# defaults file for ansible-ejbca-va-prep
+
+ejbca_root_dir: /opt
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+wildfly_manage_service: true
+
+ejbca_src_link_dir: "{{  ejbca_root_dir }}/ejbca"
+
+organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"
+organizationDomainName: solitude.skyrim
+countryName: US
+
+wildfly_standalone_file: standalone-19.xml.datasource.j2
+wildfly_disable_infinispan: true
+
+ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.5.4/mariadb-java-client-2.5.4.jar
+ejbca_jdbc_gen_name: mariadb-java-client.jar
+
+ejbca_va_manage_user: true
+ejbca_va_group: ejbcava
+ejbca_va_user: ejbcava
+ejbca_va_user_profile: "/home/{{ ejbca_va_user }}"
+
+ejbca_va_softhsm:
+  - dir: /opt/softhsm
+    src: /usr/lib64/libsofthsm2.so
+    dest: /opt/softhsm/hsm_pkcs11.so
+
+ejbca_va_gen_hsm_slots:
+  - slot_name: OCSP_KeyBinding_SLOT
+    slot_so_pin: "{{ encrypted_ocsp_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+
+# PrimeKey property files
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+  - src: ocsp.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ocsp.properties"
+  #- src: databaseprotection.properties.j2
+  #  dest: "{{ ejbca_home }}/../ejbca-custom/conf/databaseprotection.properties"
+  #- src: install.properties.j2
+  #  dest: "{{ ejbca_home }}/../ejbca-custom/conf/install.properties"
+
+ejbca_force_build_ear: false
+
+# EJBCA statedump utility source package ZIP file
+ejbca_statedump_src: 
+
+# If the statedump utility should be built into EJBCA
+ejbca_build_statedump: false
+# If the configdump utility should be built into EJBCA
+ejbca_build_configdump: false
+
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    host: 127.0.0.1
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+
+#ejbca.properties
+ejbca_appserver_home: "{{ wildfly_home }}"
+ejbca_productionmode: false
+ejbca_allow_external_dynamic_configuration: false
+# Password used to protect CMS keystores in the database (CAs CMS signer/enc certificate).
+ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+ejbca_cli_defaultusername: ejbca
+ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+
+#cesecore.properties
+core_allow_external_dynamic_configuration: false
+core_ca_serialnumberoctetsize: 20
+core_db_keepjbossserialization: false
+core_db_keepinternalcakeystores: false
+core_ca_keepocspextendedservice: false
+
+#database.properties
+ejbca_db_database_name: mysql
+ejbca_db_database_useSeparateCertificateTable: true
+
+#mail.properties
+mail_from: "ejbca-donotreply@{{ organizationDomainName }}" 
+
+#web.properties
+web_httpserver_external_privhttps: 443
+web_reqcertindb: false

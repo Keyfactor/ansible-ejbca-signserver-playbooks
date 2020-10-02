@@ -1,0 +1,42 @@
+---
+
+- hosts: ejbcaRaServersAWS
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  pre_tasks:
+    - include_vars: customer_info/aws_vars.yml
+  roles:
+    #- ansible-role-hostname
+    #- ansible-role-mariadb
+    #- ansible-ejbca-wildfly
+    #- ansible-ejbca-ra-prep
+    - ansible-ejbca-ra-ee
+
+- hosts: ejbcaCaServersAWS
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  pre_tasks:
+    - include_vars: customer_info/aws_vars.yml
+  roles:
+    - ansible-ejbca-certreq-cli
+
+- hosts: ejbcaRaServersAWS
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  pre_tasks:
+    - include_vars: customer_info/aws_vars.yml      
+  roles:
+    - ansible-ejbca-ra-httpd
+    - ansible-ejbca-ra-peer
+
+- hosts: ejbcaCaServersAWS
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  pre_tasks:
+    - include_vars: customer_info/aws_vars.yml
+  roles:
+    - ansible-ejbca-ca-peer-ra

@@ -1,0 +1,22 @@
+---
+
+- name: Create SQL dump directory
+  file:
+    path: "{{ ejbca_home }}/dump/sql"
+    state: directory
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0750
+
+- name: Stage the Approval Profiles file
+  template:
+    src: tlsCertApproval.sql.j2
+    dest: "{{ ejbca_home }}/dump/sql/tlsCertApproval.sql"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0664
+
+- name: Import the Approval Profiles
+  command: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'source {{ ejbca_home }}/dump/sql/tlsCertApproval.sql'"
+  no_log: true
+  register: import_approve_profiles

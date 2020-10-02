@@ -1,0 +1,42 @@
+Object Type: End Entity Profile
+Version: 1
+Name: userEncryption
+E-Mail Used: false
+Description: ''
+Default CA: {{ organizationNameShort }}-Sub-CA
+Available CAs:
+- {{ organizationNameShort }}-Sub-CA
+Default Certificate Profile: Encryption-2048-3y
+Available Certificate Profiles:
+- Encryption-2048-3y
+Default Token Type: PKCS12 File
+Available Token Types:
+- User Generated
+- PKCS12 File
+- JKS File
+- PEM File
+Key Recovery Used: true
+Key Recovery Default: true
+Key Recovery Required: true
+Subject DN:
+  CN:
+  - Required: true
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - People
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}
+Subject Alternative Name:
+  RFC822NAME:
+  - Required: false
+  - Required: false

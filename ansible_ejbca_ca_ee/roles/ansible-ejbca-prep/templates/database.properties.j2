@@ -1,0 +1,12 @@
+# ------------- Database configuration ------------------------
+{{ ansible_managed | comment }}
+
+database.name={{ ejbca_db_database_name }}
+database.useSeparateCertificateTable={{ ejbca_db_database_useSeparateCertificateTable }}
+{% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}
+database.url=jdbc:mariadb://{{ item.host }}:{{ item.port }}/{{ item.database }}
+database.driver=org.mariadb.jdbc.Driver
+database.username={{ item.user }}
+database.password={{ item.password }}
+{% endfor %}{% endif %}
+

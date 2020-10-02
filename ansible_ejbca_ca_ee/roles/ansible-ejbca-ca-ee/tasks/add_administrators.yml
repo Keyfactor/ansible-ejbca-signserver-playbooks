@@ -1,0 +1,24 @@
+---
+
+- name: Ensure administrator role member has been added
+  command: >
+    "{{ ejbca_home }}/bin/ejbca.sh" roles addrolemember
+    --role "{{ item.role }}"
+    --caname "{{ item.caname }}"
+    --with "{{ item.match_with }}"
+    --value "{{ item.match_value }}"
+  loop: "{{ management_add_administrators }}"
+  loop_control:
+    label: "{{ item.match_value }}"
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: adding_administrator
+  failed_when: (adding_administrator.rc >= 2) or ("No such CA '" + item.caname + "'." in adding_administrator.stdout)
+  changed_when: adding_administrator.rc == 0
+
+- debug:
+    msg: "Adding administrator role member failed with message: {{ item.stdout }}"
+  when: item.rc == 1
+  loop: "{{ adding_administrator.results }}"
+  loop_control:
+    label: "{{ item.item }}"

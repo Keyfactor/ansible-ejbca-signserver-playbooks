@@ -1,0 +1,61 @@
+# Private Service Port
+# - Redirects / to EJBCA Public Web Pages
+# - Exposes full EJBCA (including AdminGUI and WebServices)
+Listen 443
+ServerTokens ProductOnly
+#MaxSpareServers 10
+SSLPassPhraseDialog exec:/usr/libexec/httpd-ssl-pass-dialog
+SSLSessionCache         shmcb:/run/httpd/scache(512000)
+SSLSessionCacheTimeout  300
+SSLCryptoDevice builtin
+
+
+<VirtualHost *:443>
+  KeepAlive on
+  TraceEnable off
+  LimitRequestBody 20971520
+  LimitRequestFields 20
+  LimitRequestBody 8190
+  LimitRequestLine 8190
+
+    DocumentRoot /var/www/html/
+    # Disallow any HTTP method that is not HEAD, GET or POST
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} !^(HEAD|GET|POST|PUT)$ [NC]
+    RewriteRule .* - [F,L]
+    SSLEngine on
+    SSLCipherSuite PROFILE=SYSTEM
+    SSLHonorCipherOrder on
+    #SSLProtocol all -SSLv2 -SSLv3 -TLSv1
+    SSLOptions +ExportCertData +StdEnvVars
+    SSLCertificateFile /etc/pki/tls/certs/enrollprimekey.solitude.skyrim.crt
+    SSLCertificateKeyFile /etc/pki/tls/private/enrollprimekey.solitude.skyrim.key
+    SSLCertificateChainFile /etc/pki/tls/certs/trusted-ca.crt
+    SSLCACertificateFile /etc/pki/tls/certs/trusted-ca.crt
+    SSLVerifyClient optional
+    SSLVerifyDepth 3
+    # Configure (basic) security headers for applications that don't provide their own
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always append X-Frame-Options SAMEORIGIN "expr=%{REQUEST_STATUS} = 302"
+    # initialize the special headers to a blank value to avoid http header forgeries
+    RequestHeader set SSL_CLIENT_S_DN    ""
+    RequestHeader set SSL_CLIENT_I_DN    ""
+    RequestHeader set SSL_SERVER_S_DN_OU ""
+    RequestHeader set SSL_CLIENT_VERIFY  ""
+    RequestHeader set SSL_CLIENT_CERT    ""
+    RequestHeader set SSL_CLIENT_CERT "%{SSL_CLIENT_CERT}s"
+
+    <Location /ejbca/ejbcaws>
+        SSLVerifyClient require
+    </Location>
+    <Location /ejbca/adminweb>
+        SSLVerifyClient require
+    </Location>
+    # Allow encoded slashes for OCSP GET
+    AllowEncodedSlashes On
+    ProxyPass /ejbca/        ajp://localhost:8009/ejbca/ keepalive=On ping=500ms retry=1 timeout=300
+    # Redirect /, /ejbca, /signserver and non-proxied URLs to /ejbca/
+    RewriteCond %{THE_REQUEST} !(/signserver/.*|/ejbca/.*)
+    RewriteRule (.*) https://%{HTTP_HOST}/ejbca/ [R]
+</VirtualHost>

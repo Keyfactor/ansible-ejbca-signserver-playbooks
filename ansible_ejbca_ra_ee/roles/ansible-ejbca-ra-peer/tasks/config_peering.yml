@@ -1,0 +1,7 @@
+---
+
+- name: Configure peer config
+  command: "{{ ejbca_home }}/bin/ejbca.sh peer config --enable-in TRUE --enable-out FALSE"
+  #no_log: true
+  become: yes
+  become_user: "{{ ejbca_ra_user }}"

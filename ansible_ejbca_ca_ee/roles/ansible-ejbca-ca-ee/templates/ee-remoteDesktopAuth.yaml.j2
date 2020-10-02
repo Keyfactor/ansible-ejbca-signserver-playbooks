@@ -1,0 +1,43 @@
+Object Type: End Entity Profile
+Version: 1
+Name: remoteDesktopAuth
+Cleartext Password Enabled: true
+Max Failed Logins Modifiable: false
+Description: ''
+Default CA: {{ organizationNameShort }}-Sub-CA
+Available CAs:
+- {{ organizationNameShort }}-Sub-CA
+Default Certificate Profile: remoteDesktopAuth
+Available Certificate Profiles:
+- remoteDesktopAuth
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+- PKCS12 File
+- JKS File
+- PEM File
+Issuance Revocation Reason Modifiable: false
+CA Browser Forum Organization Identifier Modifiable: false
+Subject DN:
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}
+  CN:
+  - Required: true
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - Remote Desktop Servers
+Subject Alternative Name:
+  DNSNAME:
+  - Required: false
+  - Required: false
+  - Required: false

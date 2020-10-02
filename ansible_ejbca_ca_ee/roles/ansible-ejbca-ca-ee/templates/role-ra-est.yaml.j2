@@ -1,0 +1,19 @@
+Object Type: Role
+Version: 1
+Name: RA-EST
+Role Members: [
+  ]
+Namespace: ''
+RA Style Id: 0
+Access Rules:
+  /administrator/: Allow
+  /ca/{{ organizationNameShort }}-Sub-CA/: Allow
+  /ca_functionality/create_certificate/: Allow
+  /ca_functionality/view_certificate/: Allow
+  /endentityprofilesrules/vpnFirewall/: Allow
+  /endentityprofilesrules/estDevice/: Allow
+  /ra_functionality/create_end_entity/: Allow
+  /ra_functionality/delete_end_entity/: Allow
+  /ra_functionality/view_approvals/: Allow
+  /ra_functionality/view_end_entity/: Allow
+  /ra_functionality/view_end_entity_history/: Allow

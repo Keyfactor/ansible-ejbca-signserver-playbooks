@@ -1,0 +1,42 @@
+---
+
+- name: Check if Configdump already exists
+  stat:
+    path: "{{ ejbca_home }}/dist/configdump/configdump.jar"
+  register: cfgdump_exists
+
+- name: Build Configdump
+  command: "/usr/bin/ant -q configdump"
+  args:
+    chdir: "{{ ejbca_home }}"
+    creates: "{{ ejbca_home }}/dist/configdump/configdump.jar"
+  become_user: "{{ ejbca_user }}"
+  become_method: sudo
+  when: not cfgdump_exists.stat.exists
+
+- name: Create Dump file structure for external RA
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0750
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  loop: "{{ configdump_dir_structure_ra }}"
+
+- name: Stage Dump template files for external RA
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0664
+  loop: "{{ configdump_files_dump_ra }}"
+  loop_control:
+    label: "{{ item.dest }}"
+
+- name: Import Dump files for external RA
+  command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/ra"
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"

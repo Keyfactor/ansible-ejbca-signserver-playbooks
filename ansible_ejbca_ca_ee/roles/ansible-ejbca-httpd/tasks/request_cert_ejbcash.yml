@@ -1,0 +1,46 @@
+---
+
+- name: Check if TLS Certificate file already exists
+  stat:
+    path: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}.pem"
+  register: tls_cert_exists
+
+- block:
+  - name: Add External Webserver Entity to CA
+    command: "{{ ejbca_sh }} ra addendentity --username '{{ httpd_identity_info.id_username }}' --password '{{ httpd_identity_info.id_password }}' --dn '{{ httpd_identity_info.id_full_dn }}' --altname '{{ httpd_identity_info.id_altname }}' --caname '{{ httpd_identity_info.id_caname }}' --type 1 --token PEM --certprofile '{{ httpd_identity_info.id_certprofile }}' --eeprofile '{{ httpd_identity_info.id_eeprofile }}'"
+    args:
+      chdir: "{{ ejbca_home }}"
+    become_user: "{{ ejbca_user }}"
+    become: yes
+    register: ra_addIdent_result
+
+  - name: Set password
+    command: "{{ ejbca_sh }} ra setclearpwd --username '{{ httpd_identity_info.id_username }}' '{{ httpd_identity_info.id_password }}'"
+    args:
+      chdir: "{{ ejbca_home }}"
+    become_user: "{{ ejbca_user }}"
+    become: yes
+    register: ra_setpwd_result
+
+  - name: Batch time
+    command: "{{ ejbca_sh }} batch --username {{ httpd_identity_info.id_username }}"
+    args:
+      chdir: "{{ ejbca_home }}"
+    become_user: "{{ ejbca_user }}"
+    become: yes
+    register: ra_batch_result
+    tags: reverse-proxy
+
+  - name: Copy certificate files to location for httpd to use
+    copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: root 
+      group: root
+      mode: 0640
+      remote_src: yes
+    loop: "{{ httpd_cert_files }}"
+    loop_control:
+      label: "{{ item.src }}"
+    tags: reverse-proxy
+  when: not tls_cert_exists.stat.exists

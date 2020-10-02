@@ -1,0 +1,10 @@
+#!/bin/sh
+
+webroot=/opt/web/CRLs
+
+{% if certification_authorities_crl_files[0] is defined %}{% for item in certification_authorities_crl_files %}
+wget -q -O $webroot/{{ item.crlfilename }} "http://localhost/ejbca/publicweb/webdist/certdist?cmd=crl&issuer={{ item.cadn }}"
+
+{% endfor %}{% endif %} 
+
+            

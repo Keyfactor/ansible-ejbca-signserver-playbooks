@@ -1,0 +1,14 @@
+---
+# tasks file for ansible-ejbca-certreq-cli
+
+- name: Create End Entities batch style 
+  include_tasks: batch_cert_request.yml
+  loop: "{{ identity_info }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: identity_info[0] is defined
+
+- name: Sign CSR End Entities
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ identity_csr_info }}"
+  when: identity_csr_info[0] is defined

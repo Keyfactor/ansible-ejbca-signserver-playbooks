@@ -1,0 +1,11 @@
+---
+# tasks file for primekeyprep
+
+- name: Install software required for EJBCA
+  include_tasks: install.yml
+
+- name: Setup the server to deploy EJBCA
+  include_tasks: configure.yml
+
+- name: Build clientToolBox
+  include_tasks: buildclienttoolbox.yml

@@ -1,0 +1,9 @@
+---
+
+- name: Install HTTPD packages 
+  package:
+    name: "{{ item }}"
+    state: installed
+  with_items: "{{ httpd_packages }}"
+  tags: reverse-proxy
+

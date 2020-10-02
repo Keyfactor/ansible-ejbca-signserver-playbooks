@@ -1,0 +1,36 @@
+---
+
+- name: Restart application server if HSM keys were generated
+  block:
+  - name: Ensure application server is restarted
+    service:
+      state: restarted
+      name: wildfly
+    when: wildfly_manage_service
+
+  - name: Wait for EJBCA EAR file to start redeploying
+    wait_for:
+      path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.isdeploying"
+      state: present
+      delay: 10
+      timeout: 480
+    when: wildfly_manage_service
+
+  - debug:
+      msg: "Automatic restart is disabled. Application server must be restarted for generated HSM keys to be available."
+    when: not wildfly_manage_service
+    failed_when: true
+  when: checking_existing_keys is defined and checking_existing_keys.changed
+
+- name: Ensure application server is started
+  service:
+    name: wildfly
+    state: started
+  when: wildfly_manage_service
+
+- name: Ensure EJBCA EAR file is deployed
+  wait_for:
+    delay: 100
+    timeout: 480
+    path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
+    state: present

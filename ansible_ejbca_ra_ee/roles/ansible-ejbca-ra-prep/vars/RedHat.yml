@@ -1,0 +1,19 @@
+---
+
+ejbca_ra_packages_8:
+  - unzip
+  - java-1.8.0-openjdk-devel.x86_64
+  - ant.noarch
+  - nss-tools
+  - http://repo.okay.com.mx/centos/8/x86_64/release/softhsm-2.4.0-2.el8.x86_64.rpm
+  - wget
+  - jq
+
+ejbca_ra_packages_7:
+  - unzip
+  - java-1.8.0-openjdk-devel.x86_64
+  - ant.noarch
+  - nss-tools
+  - softhsm
+  - wget
+  - jq

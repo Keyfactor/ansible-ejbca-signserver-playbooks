@@ -1,0 +1,7 @@
+---
+# tasks file for roles/ansible-ejbca-ca-peer-ra
+
+- name: Add Serial Number to Peering Admin Role
+  include: add_sn_to_admin_role.yml
+
+ 
