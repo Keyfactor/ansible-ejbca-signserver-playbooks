@@ -11,7 +11,7 @@ Requirements
 - A recent version of [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 - A web respository that has the enterprise version of EJBCA to download
 - A host from where to run the Ansible playbook
-- A host where to install EJBCA on, reachable form the Ansible host using SSH with configured SSH keys for SSH agent based login
+- A host where to install EJBCA on, reachable from the Ansible host using SSH with configured SSH keys for SSH agent based login, and the user with ability to become root using sudo.
 - the target host need the configured hostname in DNS or hostsfile for Apache to startup properly, i.e.
 >/etc/hosts: 192.168.122.92 ca01.solitude.skyrim
 
