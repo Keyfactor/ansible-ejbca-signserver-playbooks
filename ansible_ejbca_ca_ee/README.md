@@ -8,7 +8,7 @@ Requirements
 
 - Internet Access
 - Access to a repository containing packages, likely on the internet.
-- A recent version of [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html). (Tests run on the current, previous and next release of Ansible.)
+- A recent version of [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 - A web respository that has the enterprise version of EJBCA to download
 - A host from where to run the Ansible playbook
 - A host where to install EJBCA on, reachable form the Ansible host using SSH with configured SSH keys for SSH agent based login
@@ -23,7 +23,7 @@ This is a self contained playbook.  All the roles in this playbook are needed to
 Security
 ------------
 
-Some software is downloaded when running this playbook. It is your responsibility to ensure that the files downloaded are the correct ones, and that integrity is protected. It is recmmende to use an internal repository, with approved files, in your organization if security is of a concern.
+Some software is downloaded when running this playbook. It is your responsibility to ensure that the files downloaded are the correct ones, and that integrity is protected. It is recommended to use an internal repository, with approved files, in your organization if security is of a concern.
 
 Quick Start
 -----------
