@@ -128,7 +128,8 @@ vault_int_ca_ejbca_rootca_sign: Solitude-Root-CA
 vault_int_ca_ejbca_certprofile: HashiCorp-SubCA-G1
 vault_int_ca_ejbca_endentityprofile: Hashicorp-SubCA 
 ejbcawsracli_url: https://enrollprimekey.solitude.skyrim/ejbca/ejbcaws/ejbcaws
-ejbcawsracli_keystore_path: /opt/ejbca/p12/SkryimSuperAdministrator.p12
+ejbcawsracli_keystore_path: /opt/ejbca/p12/SkyrimSuperAdministrator.p12
 ejbcawsracli_keystore_password: "{{ encrypted_ejbcawsracli_keystore_password | default('foo123') }}"
 ejbcawsracli_truststore_path: "{{ ejbca_toolbox }}/truststore"
 ejbcawsracli_truststore_url: https://enroll.solitude.skyrim/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=1595111880&format=jks
+

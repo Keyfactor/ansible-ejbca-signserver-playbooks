@@ -370,7 +370,7 @@ sub_generate_hsm_keys:
 # token: Token type
 # password: Enrollment code/keystore password
 management_add_end_entities:
-  - username: "SkryimSuperAdministrator"
+  - username: "SkyrimSuperAdministrator"
     dn: "C={{ countryName }},O={{ organizationName }},OU=Administrators,CN={{ superAdminCn }}"
     caname: "ManagementCA"
     token: "P12"
@@ -620,3 +620,4 @@ crl_service_time_unit: MINUTES
 # Configure the 
 ra_peer_max_parallel_reqs: 50
 ra_peer_min_parallel_reqs: 2
+

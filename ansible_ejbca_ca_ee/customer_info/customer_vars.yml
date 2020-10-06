@@ -56,7 +56,7 @@ ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }
 ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
 
 management_add_end_entities:
-  - username: "SkryimSuperAdministrator"
+  - username: "SkyrimSuperAdministrator"
     dn: "C={{ countryName }},O={{ organizationName }},OU=Administrators,CN={{ superAdminCn }}"
     caname: "ManagementCA"
     token: "P12"
@@ -297,3 +297,4 @@ enable_ejbca_protocols:
   - name: 'REST Crypto Token Management'
   - name: Webdist
   - name: 'Web Service'
+
