@@ -13,7 +13,7 @@ Requirements
 - A host from where to run the Ansible playbook
 - A host where to install EJBCA on, reachable from the Ansible host using SSH with configured SSH keys for SSH agent based login, and the user with ability to become root using sudo.
 - the target host need the configured hostname in DNS or hostsfile for Apache to startup properly, i.e.
->/etc/hosts: 192.168.122.92 ca01.solitude.skyrim
+>/etc/hosts: 192.168.122.92 ejbca01.solitude.skyrim
 
 Dependencies
 ------------
