@@ -1,9 +1,33 @@
 ansible_ejbca_ca_ee
 =========
 
-Installs and configures EJBCA with a management, root, & issuing CA.  The stack includes Java 8, Apache HTTPD, Maraia DB, SoftHSM, & Wildfly.
+Installs and configures EJBCA with a management, root, & issuing CA.  The stack includes Java 8, Apache HTTPD, Maraia DB, SoftHSM, & Wildfly. The playbook have abilities to set up other HSMs and create [Peer Connections](https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/peer-systems) to [RA](https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ra-concept-guide), [VA](https://doc.primekey.com/ejbca/ejbca-introduction/ejbca-architecture/external-ocsp-responders) and [SignServer](https://doc.primekey.com/signserver/signserver-reference/peer-systems).
 
+Requirements
+------------
 
+- Internet Access
+- Access to a repository containing packages, likely on the internet.
+- A recent version of [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html). (Tests run on the current, previous and next release of Ansible.)
+- A web respository that has the enterprise version of EJBCA to download
+- A host from where to run the Ansible playbook
+- A host where to install EJBCA on, reachable form the Ansible host using SSH with configured SSH keys for SSH agent based login
+- the target host need the configured hostname in DNS or hostsfile for Apache to startup properly, i.e.
+>/etc/hosts: 192.168.122.92 ca01.solitude.skyrim
+
+Dependencies
+------------
+
+This is a self contained playbook.  All the roles in this playbook are needed to get sucessfully use this playbook.
+
+Security
+------------
+
+Some software is downloaded when running this playbook. It is your responsibility to ensure that the files downloaded are the correct ones, and that integrity is protected. It is recmmende to use an internal repository, with approved files, in your organization if security is of a concern.
+
+Quick Start
+-----------
+>ansible-playbook -i inventory deployEJBCA.yml --ask-become-pass
 
 Example Playbook
 ----------------
@@ -297,23 +321,6 @@ certification_authorities_crl_files:
 
 ```
 
-Requirements
-------------
-
-- Internet Access
-- Access to a repository containing packages, likely on the internet.
-- A recent version of Ansible. (Tests run on the current, previous and next release of Ansible.)
-- A web respository that has the enterprise version of EJBCA to download
-
-
-
-Dependencies
-------------
-
-This is a self contained playbook.  All the roles in this playbook are needed to get sucessfully use this playbook
-
-
-
 Compatibility
 -------------
 
@@ -339,7 +346,20 @@ Some variarations of the build matrix do not work. These are the variations and 
 |---------------------------|------------------------|
 | TBD | TBD |
 
+Installation Notes
+------------------
+1. Using a CentOS8 VM to install onto, installing python3 from yum makes /usr/bin/python3 available, while ANsble by default looks for /usr/bin/python.
+Add  
+```
+vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+to deployEJBCA.yml
 
+2. Also seen on CentOS8 is that Apache enables TLSv1.3 bby default, and FireFox does not work with client certificate authentication using that. This results in EJBCA Admin UI being unreachable. The TLS config in Apache in available on the target, after the installation, in /etc/httpd/conf.d/ssl.conf
+The setting in question is _SSLProtocol -all +TLSv1.2_ and You can enable this setting in the playbook in the file ./roles/ansible-ejbca-httpd/templates/ssl2.conf.j2.
+
+3. The superadmin keystore, SkyrimSuperAdministrator.p12 file ends up in ~/Desktop in the host where you run the ansible-playbook command.
 
 
 License
