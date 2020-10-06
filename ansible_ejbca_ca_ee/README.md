@@ -27,7 +27,7 @@ Some software is downloaded when running this playbook. It is your responsibilit
 
 Quick Start
 -----------
-Edit _customer_info/customer_vars.yml_ and run:
+Edit _customer_info/customer_vars.yml_ and _inventory_ and run:
 
 >ansible-playbook -i inventory deployEJBCA.yml --ask-become-pass
 
