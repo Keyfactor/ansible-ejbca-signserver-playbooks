@@ -302,6 +302,5 @@ Some variarations of the build matrix do not work. These are the variations and 
 LGPL v2.1 or later
 
 # Author Information
-------------------
 
 [PrimeKey](https://primekey.com)
