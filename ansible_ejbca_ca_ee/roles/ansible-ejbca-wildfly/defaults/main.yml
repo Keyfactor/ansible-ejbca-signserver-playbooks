@@ -15,7 +15,7 @@ wildfly_version: 19.1.0.Final
 wildfly_major_v: "{{ wildfly_version.partition('.')[0] }}"
 
 
-wildfly_base_download_url: http://download.jboss.org/wildfly
+wildfly_base_download_url: https://download.jboss.org/wildfly
 wildfly_name: wildfly-{{ wildfly_version }}
 wildfly_download_validate_certs: "yes"
 wildfly_download_file: "{{ wildfly_name }}.tar.gz"
