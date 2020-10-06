@@ -212,7 +212,7 @@ Some variarations of the build matrix do not work. These are the variations and 
 License
 -------
 
-TBD
+LGPL v2.1 or later
 
 
 Author Information
