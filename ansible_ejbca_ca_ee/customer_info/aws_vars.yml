@@ -1,11 +1,11 @@
 ---
 
-organizationName: "American Electric Power"
-organizationNameShort: AEP
-organizationNameCRL: "American+Electric+Power"
+organizationName: "PrimeKey"
+organizationNameShort: PK
+organizationNameCRL: "PrimeKey"
 organizationDomainName: pkihosted-dev.c2company.com
 countryName: US
-superAdminCn: "AEP PKI Administrator"
+superAdminCn: "PK PKI Administrator"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
