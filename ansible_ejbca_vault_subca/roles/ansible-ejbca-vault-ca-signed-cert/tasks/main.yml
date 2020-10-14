@@ -1,0 +1,6 @@
+---
+# tasks file for ansible-ejbca-vault-ca-signed-cert
+
+- include_tasks: import_signed_cert.yml
+
+- include_tasks: create_pki_domain.yml

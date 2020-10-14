@@ -1,0 +1,6 @@
+---
+
+- hosts: docker_hosts
+  roles:
+   - ansible-ejbca-vault-ca-signed-cert
+   

@@ -1,0 +1,27 @@
+---
+# defaults file for ansible-ejbca-vault-ca-setup
+vault_cli_dir: "{{ ansible_env.HOME }}/cli"
+
+unseal_keys_dir_output: "{{ playbook_dir }}/unsealKey"
+root_token_dir_output: "{{ playbook_dir }}/rootKey"
+vault_csr_dir_output: "{{ playbook_dir }}/vaultCSR"
+
+vault_local_dir_output:
+  - "{{ unseal_keys_dir_output }}"
+  - "{{ root_token_dir_output }}"
+  - "{{ vault_csr_dir_output }}"
+
+vault_role_policies:
+  - name: admin
+    src: admin-policy.hcl.j2
+    dest: "{{ ansible_env.HOME }}/cli/admin-policy.hcl"
+  - name: provisioner
+    src: provisioner-policy.hcl.j2
+    dest: "{{ ansible_env.HOME }}/cli/provisioner-policy.hcl"
+
+vault_local_addr: "http://127.0.0.1:8200"
+
+vault_int_pki_name: pki_int
+
+vault_int_ca_dn: 'common_name="Vault Intermediate Authority GX2"  organization="Skyrim"'
+vault_int_ca_keysize: 2048

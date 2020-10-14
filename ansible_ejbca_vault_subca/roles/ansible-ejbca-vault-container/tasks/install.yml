@@ -1,0 +1,37 @@
+---
+
+- name: Install packages
+  become: yes
+  become_method: sudo
+  package:
+    name: "{{ vault_packages }}"
+    state: present
+
+- name: Install Python Docker
+  become: yes
+  become_method: sudo
+  pip:
+    name: "{{ vault_python_packages }}"
+
+- name: Check if vault CLI directory exists
+  become: no
+  stat:
+    path: "{{ vault_cli_dir }}"
+  register: vault_cli_dir_status
+
+- block:
+    - name: Create "{{ vault_cli_dir }}"
+      become: no
+      file:
+        path: "{{ vault_cli_dir }}"
+        state: directory
+
+    - name: Download and unpack Vault CLI archive
+      become: no
+      unarchive:
+        src: "{{ vault_cli_url }}"
+        dest: "{{ vault_cli_dir }}"
+        remote_src: yes
+      register: unpacked_vault_cli
+  when: not vault_cli_dir_status.stat.exists
+  

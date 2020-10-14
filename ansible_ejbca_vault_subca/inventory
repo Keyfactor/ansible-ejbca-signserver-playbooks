@@ -1,0 +1,5 @@
+[docker_hosts]
+docker01.solitude.skyrim ansible_host=172.16.170.133
+
+[primekeyServers]
+ejbca01.solitude.skyrim ansible_host=172.16.170.129

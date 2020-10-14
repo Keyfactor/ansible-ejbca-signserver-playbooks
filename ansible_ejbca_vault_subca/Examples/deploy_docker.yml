@@ -1,0 +1,10 @@
+---
+- hosts: docker_hosts
+  become: yes
+  become_method: sudo
+  vars:
+    docker_users:
+      - srajala
+
+  roles:
+    - ansible-role-docker 

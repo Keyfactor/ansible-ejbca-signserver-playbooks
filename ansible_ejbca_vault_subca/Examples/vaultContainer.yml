@@ -1,0 +1,4 @@
+---
+- hosts: docker_hosts
+  roles:
+   - ansible-ejbca-vault-container

@@ -1,0 +1,33 @@
+---
+
+- name: Check if vault config directory exists
+  become: no
+  stat:
+    path: "{{ vault_cfg_dir }}"
+  register: vault_cfg_dir_status
+
+- name: Create vault file structure
+  become: no
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop: "{{ vault_volume_dirs }}"
+  when: not vault_cfg_dir_status.stat.exists
+
+- name: Create Vault config file
+  become: no
+  template:
+    src: vault.json.j2
+    dest: "{{ vault_cfg_dir }}/config/vault.json"
+
+- name: Create Docker Compose file
+  become: no
+  template:
+    src: docker-compose.yaml.j2
+    dest: "{{ vault_cfg_dir }}/../docker-compose.yaml"
+
+- name: Create and start vault
+  become: no
+  docker_compose:
+    project_src: "{{ vault_cfg_dir }}/../"
+  register: dock_result

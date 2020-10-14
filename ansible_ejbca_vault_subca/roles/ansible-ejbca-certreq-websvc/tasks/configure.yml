@@ -1,0 +1,27 @@
+---
+
+- name: Stage the webservice properties file
+  template:
+    src: ejbcawsracli.properties.j2
+    dest: "{{ ejbca_toolbox }}/ejbcawsracli.properties"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    backup: yes
+
+- name: Obtain truststore for WebService TLS
+  uri:
+    url: "{{ ejbcawsracli_truststore_url }}"
+    validate_certs: no
+    dest: "{{ ejbcawsracli_truststore_path }}"
+    creates:  "{{ ejbcawsracli_truststore_path }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+
+- name: Obtain Root CA cert that will sign vault csr
+  uri:
+    url: "{{ vault_int_root_ca_cert_url }}"
+    validate_certs: no
+    dest: "/var/tmp/{{ vault_int_ca_ejbca_rootca_sign }}.crt"
+    creates:  "/var/tmp/{{ vault_int_ca_ejbca_rootca_sign }}.crt"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"

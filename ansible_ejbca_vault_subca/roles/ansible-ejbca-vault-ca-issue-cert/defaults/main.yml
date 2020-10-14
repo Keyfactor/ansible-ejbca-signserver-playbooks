@@ -1,0 +1,18 @@
+---
+# defaults file for ansible-ejbca-vault-ca-issue-cert
+
+vault_cli_dir: "{{ ansible_env.HOME }}/cli"
+
+root_token_dir_output: "{{ playbook_dir }}/rootKey"
+vault_csr_dir_output: "{{ playbook_dir }}/vaultCSR"
+
+vault_local_addr: "http://127.0.0.1:8200"
+vault_int_pki_name: pki_int
+
+vault_int_pki_ee_domain: 
+  - instance: solitude-skyrim
+    common_name: test1.solitude.skyrim
+    ttl: 24h
+  - instance: solitude-skyrim
+    common_name: test2.solitude.skyrim
+    ttl: 48h

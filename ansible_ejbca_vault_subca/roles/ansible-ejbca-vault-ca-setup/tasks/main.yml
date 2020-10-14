@@ -1,0 +1,4 @@
+---
+# tasks file for ansible-ejbca-vault-ca-setup
+
+- include_tasks:  configure.yml
