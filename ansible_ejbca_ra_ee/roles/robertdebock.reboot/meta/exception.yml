@@ -1,6 +1,0 @@
----
-exceptions:
-  - variation: archlinux/base
-    reason: New-style module did not handle its own exit
-  - variation: alpine
-    reason: the `ansible_virtualization_type` is incorrect on GitHub actions.

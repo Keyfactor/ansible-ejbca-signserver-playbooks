@@ -1,0 +1,94 @@
+---
+
+- name: Install EPEL
+  package:
+    name: epel-release
+    state: present
+
+- name: Install OpenJDK Development, unzip CentOS/RHEL 8
+  dnf:
+    name: "{{ ejbca_packages_8 }}"
+    state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+
+- name: Install OpenJDK Development, unzip, & Ant CentOS/RHEL 7
+  yum:
+    name: "{{ ejbca_packages_7 }}"
+    state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+
+- name: Install SoftHSM CentOS/RHEL 8
+  dnf:
+    name: "{{ ejbca_softhsm_8 }}"
+    state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") and
+        (ejbca_softhsm_enable|bool)
+
+- name: Install SoftHSM CentOS/RHEL 7
+  yum:
+    name: "{{ ejbca_softhsm_7 }}"
+    state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") and
+        (ejbca_softhsm_enable|bool)
+
+- name: Download ant with check (sha256)
+  get_url:
+    url: "{{ ant_url }}"
+    dest: /opt
+    checksum: "{{ ant_checksum }}"
+
+- name: Create directory for ant
+  file:
+    path: /opt/apache-ant
+    state: directory
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+
+- name: Unarchive ant
+  unarchive:
+    src: "/opt/{{ ant_version }}"
+    dest: /opt/apache-ant
+    remote_src: True
+    extra_opts: [--strip-components=1]
+
+- name: Create link for ant
+  file:
+    src: /opt/apache-ant/bin/ant
+    dest: /usr/bin/ant
+    state: link
+
+- name: Remove ant archive
+  file:
+    path: "/opt/{{ ant_version }}"
+    state: absent
+
+- name: Check if ejbca directory exists
+  stat:
+    path: "{{ ejbca_root_dir }}/{{ ejbca_src_dir_name }}"
+  register: ejbca_src_dir
+
+- name: Download and unpack EJBCA EE archive
+  unarchive:
+    src: "{{ ejbca_software_url }}"
+    dest: /opt
+    remote_src: yes
+  when: not ejbca_src_dir.stat.exists
+  register: unpacked_ejbca
+
+- name: Create symlink to installed version
+  file:
+    state: link
+    src: "{{ ejbca_root_dir }}/{{ ejbca_src_dir_name }}"
+    dest: "{{ ejbca_home }}"
+
+- name: Download the JDBC Driver
+  get_url:
+    url: "{{ ejbca_jdbc_driver }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    dest: "{{ wildfly_home }}/standalone/deployments/{{ ejbca_jdbc_gen_name }}"
+    checksum: "{{ ejbca_jdbc_driver_checksum }}"

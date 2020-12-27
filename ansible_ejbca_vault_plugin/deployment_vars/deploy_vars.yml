@@ -9,7 +9,8 @@ countryName: US
 ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
 vault_csr_dir_output: "{{ playbook_dir }}/vaultCSR"
 vault_crt_stage_dir: /var/tmp
-vault_cfg_dir: "{{ ansible_env.HOME }}/vault"
+vault_cfg_dir: "/home/srajala/vault"
+#vault_cfg_dir: "{{ ansible_env.HOME }}/vault"
 
 sub_ca_1_id: -127947408
 root_ca_1_id: -1905764898
@@ -87,12 +88,12 @@ ejbca_enrollment_fqdn: "enroll.{{ organizationDomainName }}"
 docker_users:
   - srajala
 
-vault_cli_url: https://releases.hashicorp.com/vault/1.5.3/vault_1.5.3_linux_amd64.zip
+vault_cli_url: https://releases.hashicorp.com/vault/1.6.1/vault_1.6.1_linux_amd64.zip
 
 vault_plugin_download_urls:
   - url: http://172.16.170.133:8080/ejbca/ejbca-vault-plugin-v1-alpine.tar.gz
-    name: ejbca-vault-plugin
-    path: ejbcav1
+    name: ejbca-vault-plugin-v3
+    path: ejbcav3
     checksum: cb6a0d4c7e959b55088acc851e01f55cc02091c7a1c3d36166cadee7297f2ff3
 
 vault_role_policies:

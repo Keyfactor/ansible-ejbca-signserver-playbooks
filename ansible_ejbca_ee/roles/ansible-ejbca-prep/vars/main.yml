@@ -1,0 +1,26 @@
+---
+# vars file for primekeyprep
+
+
+# List of repository packages that will be installed by this role
+ejbca_packages_8:
+  - unzip
+  - java-11-openjdk-devel
+  - nss-tools
+  - wget
+  - jq
+
+ejbca_softhsm_8:
+  - http://repo.okay.com.mx/centos/8/x86_64/release/softhsm-2.4.0-2.el8.x86_64.rpm
+
+ejbca_packages_7:
+  - unzip
+  - java-11-openjdk-devel
+  - ant.noarch
+  - nss-tools
+  - wget
+  - jq
+  - libsemanage-python
+
+ejbca_softhsm_7:
+  - softhsm

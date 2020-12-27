@@ -1,0 +1,33 @@
+---
+
+- hosts: ejbcaVaServers
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/internal_va_vars.yml
+  roles:
+    - ansible-hostname
+    - ansible-role-mariadb
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-prep
+    - ansible-ejbca-va-ee
+
+- hosts: ejbcaCaServers
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  pre_tasks:
+    - include_vars: deployment_info/internal_va_vars.yml
+  roles:
+    - ansible-ejbca-certreq-cli
+
+- hosts: ejbcaVaServers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  pre_tasks:
+    - include_vars: deployment_info/internal_va_vars.yml 
+  roles:
+    - ansible-ejbca-peer-in
+    - ansible-ejbca-va-ocsp-bind
+    - ansible-ejbca-httpd

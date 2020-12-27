@@ -1,0 +1,19 @@
+#------------------- OCSP Logging settings -------------
+# {{ ansible_managed | comment }}
+# Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
+# Specifies if transaction logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
+# Change below to true if you want transaction information to be logged
+#
+# See the OCSP installation guide for more details on the transaction and audit logging.
+#
+# Default: false
+ocsp.trx-log = {{ ejbca_ocsp_trx_log| default('true') }}
+
+# Reference: RFC 3339 - Date and Time on the Internet: Timestamps
+# Standard compliant example, the final 'Z' means that the time zone is GMT, i.e. time UTC+00:
+ocsp.log-date = yyyy-MM-dd HH:mm:ss.SSSZ
+
+# Audit logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
+# change ocsp.audit-log to true of you want audit logging turned on
+# Default: false
+ocsp.audit-log = {{ ejbca_ocsp_audit_log| default('true') }}
