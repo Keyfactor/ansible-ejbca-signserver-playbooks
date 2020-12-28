@@ -18,11 +18,7 @@ use_external_ra: true
 # If enabled configures a Peer connectiona nd key binding for Sign Server
 use_external_ss: true
 
-wildfly_version: 20.0.1.Final
-wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
-wildfly_standalone_file: standalone-20.xml.datasource.j2
-wildfly_disable_infinispan: true
-
+# Maria DB settings for the EJBCA DB
 mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
 mariadb_binlog_formatt: ROW
 mariadb_databases:
@@ -39,6 +35,7 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
+# EJBCA version and deployment info
 ejbca_version: 7.4.3
 ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3.zip
 ejbca_src_dir_name: ejbca_ee_7_4_3
@@ -51,6 +48,11 @@ ejbca_crl_dir:
   - /opt/web/CRLs
   - /opt/web/AIA
 
+# Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource configured in Wildfly for EJBCA to access the DB
+wildfly_version: 20.0.1.Final
+wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
+wildfly_standalone_file: standalone-20.xml.datasource.j2
+wildfly_disable_infinispan: true
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
@@ -60,9 +62,11 @@ appsrv_datasources:
     user: ejbca-usr
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
 
+# CLI access info
 ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
 
+# Super Admin accounts to create
 management_add_end_entities:
   - username: "SkyrimSuperAdministrator"
     dn: "C={{ countryName }},O={{ organizationName }},OU=Administrators,CN={{ superAdminCn }}"
@@ -72,12 +76,14 @@ management_add_end_entities:
     certprofile: adminMgmtCA
     eeprofile: AdminInternal  
 
+# Super Admin entities to add to the Super Admin Role
 management_add_administrators:
   - role: "Super Administrator Role"
     caname: "ManagementCA"
     match_with: "WITH_COMMONNAME"
     match_value: "{{ superAdminCn }}"
 
+# Crypto token that contains the private key which is used to create the key binding used for peering
 ejbca_peer_crypto_token:
   - name: peeringCryptoToken
     slot_label: KeyBinding_SLOT
@@ -93,6 +99,7 @@ ejbca_peer_crypto_token:
     sign_key_size: "3072"
     sign_key_label: peerKeyBindingSign0001
 
+# Key bindings used for the certificate that peering uses to authenticate to external RA/VA & SignServer
 ejbca_keybinding:
   - name: peerClient-ocsp
     crypto_token_name: peeringCryptoToken
@@ -131,6 +138,7 @@ ejbca_keybinding:
     useType: sign
     enabled: "{{ use_external_ss }}"
 
+# Peer connectors to configure on the CA for connecting to external VA, RA, & SignServer
 ejbca_peerConnector:
   - name: OCSP-01
     url: "https://ocsp01.{{ organizationDomainName }}/ejbca/peer/v1"
@@ -266,6 +274,7 @@ sub_add_certification_authorities:
       defaultkey_label: "defaultKey0001"
       testkey_label: "testKey"
 
+# CA DN in Web format and filename used to configure cronjob for downloading CRL's and hosting them on webserver
 certification_authorities_crl_files:
   - crlfilename: "{{ organizationNameShort | lower }}-mgmtca.crl"
     cadn: "CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
@@ -274,6 +283,7 @@ certification_authorities_crl_files:
   - crlfilename: "{{ organizationNameShort | lower }}-subca-g1.crl"
     cadn: "CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
 
+# Enrollment protocols to disable on EJBCA
 disable_ejbca_protocols:
   - name: ACME
   - name: EST
@@ -281,6 +291,7 @@ disable_ejbca_protocols:
   - name: SCEP
   #- name: 'RA Web'
 
+# Enrollment protocols to enable on EJBCA
 enable_ejbca_protocols:
   - name: Certstore
   - name: CMP
@@ -295,8 +306,10 @@ enable_ejbca_protocols:
 # Add the management CA to HTTP trust chain file. 
 add_mgmt_ca: true
 
+# Create CRL and AIA folder symbolic links for webserver to host these files
 httpd_create_aia_crl_dir: true
 
+# Info to create HTTPD end entity in EJBCA for the TLS certificate
 httpd_identity_info:
   id_dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
   id_name: "ca01.{{ organizationDomainName }}"
@@ -308,6 +321,7 @@ httpd_identity_info:
   id_eeprofile: "tlsServer{{ organizationName }}"
   id_caname: "{{ organizationName }}-Sub-CA"
 
+# List of HTTPD certificate files to configure for HTTPD to use for TLS
 httpd_cert_files:
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}.pem"
     dest: "/etc/pki/tls/certs/{{ httpd_identity_info.id_name }}.crt"

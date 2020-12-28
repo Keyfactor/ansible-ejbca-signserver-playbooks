@@ -48,6 +48,7 @@ ejbca_crl_dir_enabled: false
 web_httpserver_external_privhttps: 443
 web_reqcertindb: false
 
+# EJBCA RA property files
 ejbca_templated_properties_files:
   - src: cesecore.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
