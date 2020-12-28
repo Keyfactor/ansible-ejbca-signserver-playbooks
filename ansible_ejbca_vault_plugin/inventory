@@ -1,11 +1,11 @@
 [docker_hosts]
-docker02.solitude.skyrim ansible_host=172.16.170.158
+docker02.solitude.skyrim ansible_host=172.16.170.8
 
 [ejbcaCaServers]
-ejbca01.solitude.skyrim ansible_host=172.16.170.129
-
-[ejbcaVaServers]
-ejbcava01.solitude.skyrim ansible_host=172.16.170.128
+ejbca01.solitude.skyrim ansible_host=172.16.170.5
 
 [ejbcaRaServers]
-ejbcara01.solitude.skyrim ansible_host=172.16.170.142
+ejbcara01.solitude.skyrim ansible_host=172.16.170.6
+
+[ejbcaVaServers]
+ejbcava01.solitude.skyrim ansible_host=172.16.170.7

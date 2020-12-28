@@ -1,0 +1,12 @@
+---
+
+
+- name: Create cryptotoken for key binding
+  command: "{{ ejbca_home }}/bin/ejbca.sh cryptotoken create --token {{ ejbca_va_keybinding[0].crypto_token_name }} --pin {{ ejbca_va_keybinding[0].token_pin }} --autoactivate true --type {{  ejbca_va_keybinding[0].type }} --lib {{ hsm_shared_library }} --slotlabel {{ ejbca_va_keybinding[0].slot_label }} --slotlabeltype {{ ejbca_va_keybinding[0].slot_identifier_type }}"
+  #loop: "{{ ejbca_va_keybinding }}"
+  no_log: false
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_cryptotoken
+  failed_when: keybinding_cryptotoken.rc >= 2
+  changed_when: keybinding_cryptotoken.rc == 0

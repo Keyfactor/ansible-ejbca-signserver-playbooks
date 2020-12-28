@@ -1,0 +1,107 @@
+---
+
+organizationName: "Internal Test"
+organizationNameShort: IT
+organizationNameCRL: "Internal+Test"
+organizationDomainName: pkihosted-dev.c2company.com
+countryName: US
+superAdminCn: "IT PKI Administrator"
+sharedVarsLocation: ~/ansible/ansibleCacheDir
+
+management_ca_id: 1116623359
+root_ca_1_id: 400534506
+sub_ca_1_id: -2018990018
+
+peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+
+mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
+mariadb_binlog_formatt: ROW
+mariadb_databases:
+  - name: ejbca
+    collation: "utf8_general_ci"
+    encoding: "utf8"
+mariadb_users:
+  - name: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    priv: "ejbca.*:ALL"
+    host: "%"
+  - name: ejbca-usr
+    password: ejbca
+    priv: "ejbca.*:ALL"
+    host: "localhost"
+
+wildfly_version: 20.0.1.Final
+wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
+wildfly_standalone_file: standalone-20.xml.datasource.j2
+wildfly_disable_infinispan: true
+
+ejbca_version: 7.4.3
+ejbca_software_url: http://172.31.2.113:8080/ejbca/ejbca_ee_7_4_3_RA.zip
+ejbca_src_dir_name: ejbca_ee_7_4_3_RA
+ejbca_type: RA
+ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
+ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+# Location to write the CRL files on server
+ejbca_crl_dir_enabled: false
+
+#web.properties
+web_httpserver_external_privhttps: 443
+web_reqcertindb: false
+
+# EJBCA RA property files
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    host: 127.0.0.1
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+
+management_import_certification_authorities:
+  - caname: "ManagementCA"
+    cert_download_url: "https://{{ organizationNameShort|lower }}-ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ management_ca_id }}&format=pem"
+    cert_file_location: /var/tmp/managementca.crt
+    superadmincn: "{{ superAdminCn }}"
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    cert_download_url: "https://{{ organizationNameShort|lower }}-ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ root_ca_1_id }}&format=pem"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
+    superadmincn: ""
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    cert_download_url: "https://{{ organizationNameShort|lower }}-ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_1_id }}&format=pem&level=0"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA.crt"
+    superadmincn: ""
+
+identity_info:
+  - dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
+    name: "{{ organizationNameShort|lower }}-ra01.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ organizationNameShort|lower }}-ra01.{{ organizationDomainName }}"
+    username: ra_httpd_tls
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName={{ organizationNameShort|lower }}-ra01.{{ organizationDomainName }}, dNSName={{ organizationNameShort|lower }}-enroll.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+    useType: ra
+
+# Add the management CA to HTTP trust chain file. 
+add_mgmt_ca: true
+httpd_create_aia_crl_dir: false
+httpd_identity_info:
+  id_name: "{{ identity_info[0].name }}"
+  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"

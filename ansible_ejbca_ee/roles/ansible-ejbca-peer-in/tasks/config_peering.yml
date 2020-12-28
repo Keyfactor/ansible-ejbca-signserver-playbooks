@@ -1,0 +1,7 @@
+---
+
+- name: Enable Inbound Peer Connections
+  command: "{{ ejbca_home }}/bin/ejbca.sh peer config --enable-in TRUE --enable-out FALSE"
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"

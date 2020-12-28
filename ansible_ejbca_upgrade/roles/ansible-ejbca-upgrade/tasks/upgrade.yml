@@ -31,6 +31,14 @@
   when:
     - not ejbca_src_dir_check.stat.exists 
 
+- name: Configure EJBCA cache configuration in persistence-ds-template.xml
+  template:
+    src: persistence-ds-template.xml.j2
+    dest: "{{ ejbca_home }}/modules/ejbca-entity/resources/persistence-ds-template.xml"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  when: wildfly_disable_infinispan|bool
+
 - name: Set file permissions for {{ ejbca_home }}
   file:
     path: "{{ ejbca_home }}"

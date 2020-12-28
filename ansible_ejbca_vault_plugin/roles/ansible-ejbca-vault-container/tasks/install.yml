@@ -18,6 +18,11 @@
   stat:
     path: "{{ vault_cli_dir }}"
   register: vault_cli_dir_status
+  ignore_errors: yes
+
+- name: Show debug
+  debug:
+    var: vault_cli_dir_status
 
 - block:
     - name: Create "{{ vault_cli_dir }}"

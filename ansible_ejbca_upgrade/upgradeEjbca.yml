@@ -12,7 +12,7 @@
     ejbca_group: ejbca
     ejbca_user: ejbca
   roles:
-    #- ansible-ejbca-upgrade
+    - ansible-ejbca-upgrade
 
 - hosts: ejbcaCaServers[0]
   become: yes
@@ -25,8 +25,8 @@
     ejbca_software_url: "{{ ejbca_software_ee_url }}"
     ejbca_group: ejbca
     ejbca_user: ejbca
+    - ansible-ejbca-complete-upgrade
   roles:
-    #- ansible-ejbca-complete-upgrade
 
 - hosts: ejbcaRaServers
   become: yes

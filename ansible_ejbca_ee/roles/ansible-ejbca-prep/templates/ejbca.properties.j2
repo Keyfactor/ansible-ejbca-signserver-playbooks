@@ -1,0 +1,13 @@
+#
+# $Id: ejbca.properties.sample 33474 2019-10-02 10:31:32Z jeklund $
+#
+{{ ansible_managed | comment }}
+
+appserver.home={{ ejbca_appserver_home| default('/opt/wildfly') }}
+ejbca.productionmode={{ ejbca_productionmode| default('true') }}
+allow.external-dynamic.configuration={{ ejbca_allow_external_dynamic_configuration| default('true') }}
+ca.cmskeystorepass={{ ejbca_ca_cmskeystorepass| default('changeit') }}
+approval.defaultrequestvalidity={{ ejbca_approval_defaultrequestvalidity| default('259200') }}
+approval.defaultapprovalvalidity={{ ejbca_approval_defaultapprovalvalidity| default('259200') }}
+ejbca.cli.defaultusername={{ ejbca_cli_defaultusername| default('ejbca') }}
+ejbca.cli.defaultpassword={{ ejbca_cli_defaultpassword| default('ejbca') }}
