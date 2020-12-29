@@ -49,9 +49,13 @@ ejbca_crl_dir:
   - /opt/web/AIA
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource configured in Wildfly for EJBCA to access the DB
-wildfly_version: 20.0.1.Final
-wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
-wildfly_standalone_file: standalone-20.xml.datasource.j2
+#wildfly_version: 20.0.1.Final
+#wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
+#wildfly_standalone_file: standalone-20.xml.datasource.j2
+wildfly_version: 21.0.2.Final
+wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
+wildfly_standalone_file: standalone-21.xml.datasource.j2
+# Disabling only works on Wildfly 20 or earlier, Wildfly 21 remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
@@ -60,6 +64,7 @@ appsrv_datasources:
     port: 3306
     database: ejbca
     user: ejbca-usr
+    credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
 
 # CLI access info

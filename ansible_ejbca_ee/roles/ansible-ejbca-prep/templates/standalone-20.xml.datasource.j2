@@ -68,18 +68,12 @@
             <handlers>
                 <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
-            <logger log-boot="true" log-read-only="false" enabled="false">
+            <logger log-boot="true" log-read-only="false" enabled="true">
                 <handlers>
                     <handler name="file"/>
                 </handlers>
             </logger>
         </audit-log>
-        <management-interfaces>
-            <http-interface security-realm="ManagementRealm" console-enabled="false">
-                <http-upgrade enabled="true"/>
-                <socket-binding http="management-http"/>
-            </http-interface>
-        </management-interfaces>
         <access-control provider="simple">
             <role-mapping>
                 <role name="SuperUser">
@@ -189,7 +183,8 @@
                     </pool>
                     <security>
                         <user-name>{{ item.user }}</user-name>
-                        <password>{{ item.password }}</password>
+                        <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
+                        <!-- password>{{ item.password }}</password -->
                     </security>
                     <validation>
                         <check-valid-connection-sql>select 1;</check-valid-connection-sql>
@@ -236,7 +231,7 @@
             </session-bean>
             <pools>
                 <bean-instance-pools>
-                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                    <strict-max-pool name="mdb-strict-max-pool" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                     <strict-max-pool name="slsb-strict-max-pool" max-pool-size="32" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                 </bean-instance-pools>
             </pools>
@@ -363,16 +358,21 @@
                 </mechanism-provider-filtering-sasl-server-factory>
                 <provider-sasl-server-factory name="global"/>
             </sasl>
+            <credential-stores>
+                <credential-store name="defaultCS" relative-to="jboss.server.config.dir" location="credentials" create="true">
+                    <credential-reference type="COMMAND" clear-text="{EXT}{{ wildfly_elytron_pass_file }}"/>
+                </credential-store>
+            </credential-stores>
         </subsystem>
 {% if wildfly_disable_infinispan is sameas false %}
-        <!-- <subsystem xmlns="urn:jboss:domain:infinispan:10.0">
-            <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
+        <subsystem xmlns="urn:jboss:domain:infinispan:10.0">
+            <!-- <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
                 <local-cache name="passivation">
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
                 <local-cache name="sso"/>
                 <local-cache name="routing"/>
-            </cache-container>
+            </cache-container>-->
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
                     <object-memory size="10000"/>
@@ -384,7 +384,7 @@
                 </local-cache>
                 <local-cache name="timestamps"/>
             </cache-container>
-        </subsystem> -->
+        </subsystem> 
 {% endif %}
         <subsystem xmlns="urn:jboss:domain:io:3.0">
             <worker name="default" io-threads="100" task-core-threads="25" task-max-threads="100"/>
@@ -471,7 +471,7 @@
         <subsystem xmlns="urn:jboss:domain:undertow:11.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" default-security-domain="other" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
             <buffer-cache name="default"/>
             <server name="default-server">
-                <ajp-listener name="ajp-listener" socket-binding="ajp" enabled="true" scheme="https"/>
+                <ajp-listener name="ajp-listener" socket-binding="ajp" scheme="https"/>
                 <http-listener name="remoting" socket-binding="remoting" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                     <http-invoker security-realm="ApplicationRealm"/>

@@ -189,7 +189,8 @@
                     </pool>
                     <security>
                         <user-name>{{ item.user }}</user-name>
-                        <password>{{ item.password }}</password>
+                        <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
+                        <!-- password>{{ item.password }}</password -->
                     </security>
                     <validation>
                         <check-valid-connection-sql>select 1;</check-valid-connection-sql>
@@ -240,7 +241,7 @@
             </session-bean>
             <pools>
                 <bean-instance-pools>
-                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                    <strict-max-pool name="mdb-strict-max-pool" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                     <strict-max-pool name="slsb-strict-max-pool" max-pool-size="32" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                 </bean-instance-pools>
             </pools>
@@ -368,6 +369,11 @@
                 </mechanism-provider-filtering-sasl-server-factory>
                 <provider-sasl-server-factory name="global"/>
             </sasl>
+            <credential-stores>
+                <credential-store name="defaultCS" relative-to="jboss.server.config.dir" location="credentials" create="true">
+                    <credential-reference type="COMMAND" clear-text="{EXT}{{ wildfly_elytron_pass_file }}"/>
+                </credential-store>
+            </credential-stores>
         </subsystem>
 {% if wildfly_disable_infinispan is sameas false %}
         <subsystem xmlns="urn:jboss:domain:infinispan:9.0">

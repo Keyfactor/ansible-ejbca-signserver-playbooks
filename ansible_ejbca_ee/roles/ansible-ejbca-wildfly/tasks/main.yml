@@ -1,9 +1,15 @@
 ---
 # task file for wildfly
 
-- include_tasks: install.yml
-- include_tasks: configure.yml
+- name: Download Wildfly {{ wildfly_version }} and install software
+  include_tasks: install.yml
+
+- name: Configure Wildfly {{ wildfly_version }}
+  include_tasks: configure.yml
+  when: not wildfly_src_dir.stat.exists
+
 #- include_tasks: users.yml
 
-#- include_tasks: ssl.yml
-#  when: wildfly_enable_ssl
+- name: Configure Wildfly SSL with a self-signed certificate
+  include_tasks: ssl.yml
+  when: wildfly_enable_ssl|bool

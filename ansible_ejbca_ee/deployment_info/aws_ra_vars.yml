@@ -30,10 +30,14 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
-wildfly_version: 20.0.1.Final
-wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
-wildfly_standalone_file: standalone-20.xml.datasource.j2
-wildfly_disable_infinispan: true
+#wildfly_version: 20.0.1.Final
+#wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
+#wildfly_standalone_file: standalone-20.xml.datasource.j2
+wildfly_version: 21.0.2.Final
+wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
+wildfly_standalone_file: standalone-21.xml.datasource.j2
+# Disabling only works on Wildfly 20 or earlier, Wildfly 21 remoting now requires infinispan cache
+wildfly_disable_infinispan: truen: true
 
 ejbca_version: 7.4.3
 ejbca_software_url: http://172.31.2.113:8080/ejbca/ejbca_ee_7_4_3_RA.zip
@@ -68,7 +72,9 @@ appsrv_datasources:
     port: 3306
     database: ejbca
     user: ejbca-usr
+    credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    
 ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
 

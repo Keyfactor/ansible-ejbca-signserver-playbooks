@@ -12,7 +12,7 @@ wildfly_manage_service: true
 wildfly_remove_download_file: true
 
 # wildfly_version is set in customer_info/customer_vars.yml
-#wildfly_version: 20.0.1.Final
+wildfly_version: 20.0.1.Final
 wildfly_major_v: "{{ wildfly_version.partition('.')[0] }}"
 wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
 
@@ -68,7 +68,7 @@ wildfly_messaging_group_address: ''
 wildfly_management_users: []
 wildfly_app_users: []
 
-wildfly_enable_ssl: no
+wildfly_enable_ssl: false
 wildfly_keystore_name: my.jks
 wildfly_keystore_path: "{{ wildfly_dir }}/standalone/configuration/\
                         {{ wildfly_keystore_name }}"

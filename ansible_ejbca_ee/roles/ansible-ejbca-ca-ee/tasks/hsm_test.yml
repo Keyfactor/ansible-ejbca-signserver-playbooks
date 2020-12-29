@@ -25,8 +25,8 @@
   changed_when: tested_hsm_slots_results.rc != 0
   failed_when: false
 
-- debug:
-    var: tested_hsm_slots_results
+#- debug:
+#    var: tested_hsm_slots_results
 
 - debug:
     msg: "Could not access all HSM slots specified in variable management_test_slots"
