@@ -51,24 +51,6 @@
   loop: "{{ ejbca_crl_dir }}"
   when: ejbca_crl_dir_enabled|bool
 
-#- name: Create HSM directory
-#  file:
-#    path: "{{ item.dir }}"
-#    state: directory
-#    owner: "{{ ejbca_user }}"
-#    group: "{{ ejbca_group }}"
-#  loop: "{{ ejbca_softhsm }}"
-#  loop_control:
-#    label: "{{ item.dir }}"
-
-#- name: Link the softhsm lib
-#  file:
-#    state: link
-#    src: "{{ item.src }}"
-#    dest: "{{ item.dest }}"
-#  loop: "{{ ejbca_softhsm }}"
-#  loop_control:
-#    label: "{{ item.dest }}"
 - block:
   - name: Set permissions on softhsm lib directory
     file:
@@ -78,6 +60,7 @@
       mode: 0750
       owner: "{{ ejbca_user }}"
       group: "{{ ejbca_group }}"
+    when: ejbca_softhsm_enable|bool
 
   - name: Check SoftHSM Slots
     shell: "softhsm2-util --show-slots | grep {{ item.slot_name }}"
@@ -86,6 +69,7 @@
     changed_when: show_hsm_slots.rc != 0
     failed_when: false
     no_log: true
+    when: ejbca_softhsm_enable|bool
 
   - name: Create SoftHSM slots
     command: "softhsm2-util --init-token --free --label {{ item.item.slot_name }} --so-pin {{ item.item.slot_so_pin }} --pin {{ item.item.slot_pin }}"
@@ -96,6 +80,58 @@
     register: create_hsm_slots
     when: item.changed
   when: ejbca_softhsm_enable|bool
+
+- name: Check if Elytron Credential store pass exists
+  stat:
+    path: "{{ wildfly_elytron_pass_file }}"
+  register: elytron_pass_file_exists
+
+- name: Check if Elytron Credential store file exists
+  stat:
+    path: "{{ wildfly_home }}/standalone/configuration/credentials"
+  register: elytron_store_file_exists
+
+- name: Elytron Credential store configuration
+  block:
+    - name: Create directory
+      file:
+        path: "{{ wildfly_elytron_pass_dir }}"
+        state: directory
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0700
+
+    - name: Create fact
+      set_fact:
+        cred_pass: "{{ pass_33 }}"
+      no_log: true
+
+    - name: Create file
+      template:
+        src: wildfly_pass.j2
+        dest: "{{ wildfly_elytron_pass_file }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0700
+
+    - name: Create credential store
+      command: "{{ wildfly_home }}/bin/elytron-tool.sh credential-store --create --location {{ wildfly_home }}/standalone/configuration/credentials --password {{ cred_pass }}"
+      become: yes  
+      become_user: "{{ ejbca_user }}"
+      args:
+        creates: "{{ wildfly_home }}/standalone/configuration/credentials"
+      no_log: true
+
+    - name: Add Database password to credential store
+      command: "{{ wildfly_home }}/bin/elytron-tool.sh credential-store --location {{ wildfly_home }}/standalone/configuration/credentials --password {{ cred_pass }} --add {{ item.credential_ref }} --secret {{ item.password }}"
+      become: yes  
+      become_user: "{{ ejbca_user }}"
+      loop: "{{ appsrv_datasources }}"
+      no_log: true
+
+  when: 
+    - not elytron_pass_file_exists.stat.exists
+    - not elytron_store_file_exists.stat.exists
 
 - name: Deploy Wildfly standalone.xml
   template:

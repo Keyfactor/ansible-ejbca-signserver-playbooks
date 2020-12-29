@@ -40,7 +40,7 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
     mode: 0664
-  loop: "{{ configdump_ra_files_dump1 }}"
+  loop: "{{ configdump_va_files_dump1 }}"
   when: ejbca_type == "VA"
 
 - name: Import Dump files for Dump1

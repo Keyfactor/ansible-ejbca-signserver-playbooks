@@ -51,7 +51,7 @@ fi
 #
 if [ "x$JAVA_OPTS" = "x" ]; then
    JAVA_OPTS="-Xms{{ wildfly_java_xms }} -Xmx{{ wildfly_java_xmx }} -XX:MetaspaceSize=512M -XX:MaxMetaspaceSize=512m -Djava.net.preferIPv4Stack=true"
-   JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS -Djava.awt.headless=true -Djboss.tx.node.id=ejbca"
+   JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS -Djava.awt.headless=true -Djboss.tx.node.id={{ node_id_12 }} -Djdk.tls.ephemeralDHKeySize={{ wildfly_dh_size| default('2048') }}"
 else
    echo "JAVA_OPTS already set in environment; overriding default settings with values: $JAVA_OPTS"
 fi

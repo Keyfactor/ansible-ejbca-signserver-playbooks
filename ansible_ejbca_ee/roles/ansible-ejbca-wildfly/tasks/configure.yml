@@ -16,33 +16,33 @@
 
 - name: Create wildfly etc directory
   file:
-    path: '{{ wildfly_conf_dir }}'
+    path: "{{ wildfly_conf_dir }}"
     state: directory
-    owner: '{{ ejbca_user }}'
-    group: '{{ ejbca_group }}'
-    mode: '0750'
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0750
 
 - name: Copy wildfly configuration
   template:
     src: wildfly.conf.j2
-    dest: '{{ wildfly_conf_dir }}/wildfly.conf'
+    dest: "{{ wildfly_conf_dir }}/wildfly.conf"
     owner: root
-    group: '{{ ejbca_group }}'
-    mode: '0640'
+    group: "{{ ejbca_group }}"
+    mode: 0640
   notify:
     - change standalone data mode
 
 - name: Create symlink to /etc/default/wildfly.conf
   file:
     state: link
-    src: '{{ wildfly_conf_dir }}/wildfly.conf'
+    src: "{{ wildfly_conf_dir }}/wildfly.conf"
     dest: /etc/default/wildfly.conf
 
 - name: Create symlink to upstream init script
   file:
     state: link
-    src: '{{ wildfly_home }}/{{ wildfly_init_src_path }}/init.d/wildfly-init-{{ ansible_os_family | lower }}.sh'
-    dest: '{{ wildfly_init_dir }}/wildfly'
+    src: "{{ wildfly_home }}/{{ wildfly_init_src_path }}/init.d/wildfly-init-{{ ansible_os_family | lower }}.sh"
+    dest: "{{ wildfly_init_dir }}/wildfly"
   when: ansible_service_mgr in ['init', 'upstart']
   notify:
     - change standalone data mode
@@ -54,15 +54,16 @@
     owner: root
     group: root 
     mode: 0640
-  when: ansible_service_mgr == 'systemd'
+  when: 
+    - ansible_service_mgr == 'systemd'
 
 - name: Copy launch.sh to wildfly bin 
   template:
     src: launch.sh.j2
     dest: "{{ wildfly_home }}/bin/launch.sh"
-    owner: '{{ ejbca_user }}'
-    group: '{{ ejbca_group }}'
-    mode: 0770
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0750
   
 - name: Copy wildfly standalone.conf file
   template: 
@@ -70,7 +71,7 @@
     dest: "{{ wildfly_home }}/bin/standalone.conf"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}" 
-    mode: 0770
+    mode: 0750
   notify:
   #  - restart wildfly
     - change standalone data mode
@@ -78,32 +79,33 @@
 - block:
   - name: Open wildfly management http tcp port
     firewalld:
-      port: '{{ wildfly_manage_http_port }}/tcp'
+      port: "{{ wildfly_manage_http_port }}/tcp"
       permanent: yes
       immediate: yes
       state: enabled
 
   - name: Open wildfly management https tcp port
     firewalld:
-      port: '{{ wildfly_manage_https_port }}/tcp'
+      port: "{{ wildfly_manage_https_port }}/tcp"
       permanent: yes
       immediate: yes
       state: enabled
 
   - name: Open wildfly http tcp port
     firewalld:
-      port: '{{ wildfly_http_port }}/tcp'
+      port: "{{ wildfly_http_port }}/tcp"
       permanent: yes
       immediate: yes
       state: enabled
 
   - name: Open wildfly https tcp port
     firewalld:
-      port: '{{ wildfly_https_port }}/tcp'
+      port: "{{ wildfly_https_port }}/tcp"
       permanent: yes
       immediate: yes
       state: enabled
-  when: wildfly_manage_firewall
+  when: 
+    - wildfly_manage_firewall
 
 - meta: flush_handlers
 
@@ -117,13 +119,15 @@
     #  wait_for:
     #    path: "{{ wildfly_dir }}/standalone/log/server.log"
     #    search_regex: 'started in'
-  when: wildfly_manage_service
+  when: 
+    - wildfly_manage_service
 
 - name: Delete wildfly tar file
   file:
-    path: '{{ wildfly_download_dir }}/{{ wildfly_download_file }}'
+    path: "{{ wildfly_download_dir }}/{{ wildfly_download_file }}"
     state: absent
   when: wildfly_remove_download_file
+  tags: cleanup
 
 - name: find script files
   find:
@@ -166,7 +170,7 @@
     state: absent
   loop: "{{ wildfly_remove_dirs }}"
 
-- name: find text, conf, & properties
+- name: Find text, conf, & properties
   find:
     path: "{{ wildfly_home }}"
     file_type: file
@@ -184,7 +188,7 @@
   loop_control:
     label: "{{ item.path }}"
 
-- name: set permissions to 660 for jars and xml
+- name: Set permissions to 660 for jars and xml
   shell: "{{ item }}"
   loop: "{{ wildfly_file_perms }}"
   become: yes

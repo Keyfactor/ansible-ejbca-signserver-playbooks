@@ -44,10 +44,13 @@
     mode: '{{ wildfly_dir_mode }}'
     creates: "{{ wildfly_dir }}/bin/standalone.sh"
     remote_src: yes
+  when: not wildfly_src_dir.stat.exists
 
 - name: Create symlink to installed version
   file:
     state: link
     src: "{{ wildfly_dir }}"
     dest: "{{wildfly_home }}"
-  when: wildfly_create_symlink
+  when: 
+    - wildfly_create_symlink
+    - not wildfly_src_dir.stat.exists

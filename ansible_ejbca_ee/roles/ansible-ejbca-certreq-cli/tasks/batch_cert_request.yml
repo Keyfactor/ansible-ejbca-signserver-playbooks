@@ -61,7 +61,7 @@
     tags: certreq-cli-batch
     when:
       - ejbca_src_dir_name is defined 
-      - ejbca_type == "RA
+      - ejbca_type == "RA"
 
   - name: Add serial number to Peering Admin Role
     command: "{{ ejbca_sh }} roles addrolemember --role 'RA-Peer-Connection' --caname '{{ item.caname }}' --with CertificateAuthenticationToken:WITH_SERIALNUMBER --value '{{ cert_serialNumber.stdout.split('=')[1] }}'"
@@ -74,7 +74,7 @@
     tags: ra_peer_sn_role, certreq-cli-batch
     when:
       - ejbca_src_dir_name is defined 
-      - ejbca_type == "RA
+      - ejbca_type == "RA"
 
   #- name: Create fact for certificate serial numbers
   #  set_fact: 

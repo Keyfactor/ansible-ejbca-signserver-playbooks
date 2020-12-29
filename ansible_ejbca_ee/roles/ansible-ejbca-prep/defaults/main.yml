@@ -134,3 +134,7 @@ mail_from: "ejbca-donotreply@{{ organizationDomainName }}"
 web_httpserver_external_privhttps: 443
 web_selfreg_enabled: false
 web_reqcertindb: true
+
+# Elytron password file location
+wildfly_elytron_pass_dir: /opt/elytron
+wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"

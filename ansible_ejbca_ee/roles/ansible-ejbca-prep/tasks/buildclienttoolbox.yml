@@ -7,6 +7,7 @@
 
 - name: Ensure clientToolBox is built and copied outside of EJBCA dist folder
   block:
+    
   - name: Ensure clientToolBox is built
     command: ant clientToolBox
     become: yes

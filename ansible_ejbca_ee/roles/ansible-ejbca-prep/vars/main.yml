@@ -24,3 +24,5 @@ ejbca_packages_7:
 
 ejbca_softhsm_7:
   - softhsm
+
+pass_33: "{{ lookup('password', '/dev/null length=33 chars=ascii_letters') }}"
