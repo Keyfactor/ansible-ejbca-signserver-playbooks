@@ -11,6 +11,7 @@ ejbca_packages_8:
   - jq
 
 ejbca_softhsm_8:
+  - http://repo.okay.com.mx/centos/8/x86_64/release/okay-release-1-3.el8.noarch.rpm
   - http://repo.okay.com.mx/centos/8/x86_64/release/softhsm-2.4.0-2.el8.x86_64.rpm
 
 ejbca_packages_7:

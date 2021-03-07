@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "23Dec2020-Skyrim-SA"
+superAdminCn: "02Mar2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
@@ -36,9 +36,9 @@ mariadb_users:
     host: "localhost"
 
 # EJBCA version and deployment info
-ejbca_version: 7.4.3
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3.zip
-ejbca_src_dir_name: ejbca_ee_7_4_3
+ejbca_version: 7.4.3.3
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_3.zip
+ejbca_src_dir_name: ejbca_ee_7_4_3_3
 ejbca_type: CA
 ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
 ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
@@ -52,10 +52,17 @@ ejbca_crl_dir:
 #wildfly_version: 20.0.1.Final
 #wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
 #wildfly_standalone_file: standalone-20.xml.datasource.j2
-wildfly_version: 21.0.2.Final
-wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
-wildfly_standalone_file: standalone-21.xml.datasource.j2
-# Disabling only works on Wildfly 20 or earlier, Wildfly 21 remoting now requires infinispan cache
+#wildfly_version: 21.0.2.Final
+#wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
+#wildfly_standalone_file: standalone-21.xml.datasource.j2
+wildfly_version: 22.0.1.Final
+wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
+wildfly_standalone_file: standalone-22.xml.datasource.j2
+wildfly_use_galleon: true
+wildfly_galleon_version: 4.2.6
+wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
+wildfly_jboos_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
+# Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
@@ -193,10 +200,13 @@ management_add_certification_authorities:
     signalg: "SHA384WithRSA"
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
     crlPeriod: 259200000
     crlIssueInterval: 86400000
     useLdapDnOrder: false
@@ -218,10 +228,13 @@ management_add_certification_authorities:
     signalg: "SHA512WithRSA"
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
     crlPeriod: 15552000000
     crlIssueInterval: 0
     useLdapDnOrder: false
@@ -264,10 +277,13 @@ sub_add_certification_authorities:
     signalg: "SHA384WithRSA"
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
     crlPeriod: 259200000
     crlIssueInterval: 86400000
     useLdapDnOrder: false
@@ -312,7 +328,7 @@ enable_ejbca_protocols:
 add_mgmt_ca: true
 
 # Create CRL and AIA folder symbolic links for webserver to host these files
-httpd_create_aia_crl_dir: true
+httpd_create_aia_crl_dir: false
 
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
 httpd_identity_info:

@@ -16,13 +16,13 @@
 - name: Check if vault CLI directory exists
   become: no
   stat:
-    path: "{{ vault_cli_dir }}"
+    path: "{{ vault_cli_dir }}/vault"
   register: vault_cli_dir_status
   ignore_errors: yes
 
-- name: Show debug
-  debug:
-    var: vault_cli_dir_status
+#- name: Show debug
+#  debug:
+#    var: vault_cli_dir_status
 
 - block:
     - name: Create "{{ vault_cli_dir }}"

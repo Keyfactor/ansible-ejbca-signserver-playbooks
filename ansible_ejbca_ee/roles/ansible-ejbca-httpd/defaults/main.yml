@@ -19,6 +19,7 @@ httpd_packages:
   - httpd
   - mod_ssl
 
+httpd_create_aia_crl_dir: false
 httpd_web_dirs:
   - src: "/opt/web/CRLs"
     dest: "/var/www/html/CRLs"
