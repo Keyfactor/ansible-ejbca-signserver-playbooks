@@ -4,3 +4,4 @@
 *.swp
 peerCertSerialNums/*
 ejbcaCSR/*
+devsec*

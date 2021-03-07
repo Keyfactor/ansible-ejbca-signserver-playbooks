@@ -6,7 +6,7 @@
     path: "{{ vault_certreq_dir }}"
   register: vault_certreq_dir_status
 
-- name: Create vault file structure
+- name: Create certs directory structure
   become: no
   file:
     path: "{{ vault_certreq_dir }}"

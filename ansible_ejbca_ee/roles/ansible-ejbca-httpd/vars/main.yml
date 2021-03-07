@@ -3,7 +3,7 @@
 httpd_conf_files_8:
   - src: httpd.conf.j2
     dest: /etc/httpd/conf/httpd.conf
-  - src: ssl-va.conf.j2
+  - src: ssl-8.conf.j2
     dest: /etc/httpd/conf.d/ssl.conf
   - src: 00-base.conf.j2
     dest: /etc/httpd/conf.modules.d/00-base.conf
@@ -21,7 +21,7 @@ httpd_conf_files_8:
 httpd_conf_files_7:
   - src: httpd.conf.j2
     dest: /etc/httpd/conf/httpd.conf
-  - src: ssl-va-7.conf.j2
+  - src: ssl-7.conf.j2
     dest: /etc/httpd/conf.d/ssl.conf
   - src: 80-7.conf.j2
     dest: /etc/httpd/conf.d/80.conf

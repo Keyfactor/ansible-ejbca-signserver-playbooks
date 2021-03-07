@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "23Dec2020-Skyrim-SA"
+superAdminCn: "02Mar2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 management_ca_id: 966011820
@@ -17,10 +17,17 @@ peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_
 #wildfly_version: 20.0.1.Final
 #wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
 #wildfly_standalone_file: standalone-20.xml.datasource.j2
-wildfly_version: 21.0.2.Final
-wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
-wildfly_standalone_file: standalone-21.xml.datasource.j2
-# Disabling only works on Wildfly 20 or earlier, Wildfly 21 remoting now requires infinispan cache
+#wildfly_version: 21.0.2.Final
+#wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
+#wildfly_standalone_file: standalone-21.xml.datasource.j2
+wildfly_version: 22.0.1.Final
+wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
+wildfly_standalone_file: standalone-22.xml.datasource.j2
+wildfly_use_galleon: true
+wildfly_galleon_version: 4.2.6
+wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
+wildfly_jboos_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
+# Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
 mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
@@ -39,9 +46,9 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
-ejbca_version: 7.4.3
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_VA.zip
-ejbca_src_dir_name: ejbca_ee_7_4_3_VA
+ejbca_version: 7.4.3.3
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_3_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_4_3_3_VA
 ejbca_type: VA
 ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
 ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc

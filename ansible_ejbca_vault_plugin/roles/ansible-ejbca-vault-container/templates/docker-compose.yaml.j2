@@ -19,6 +19,8 @@ services:
       - ./logs:/vault/logs
       - ./file:/vault/file
       - ./config:/vault/config
+    environment:
+      - VAULT_CACERT=/vault/config/chain.crt
     cap_add:
       - IPC_LOCK
     entrypoint: vault server -config=/vault/config/vault.json
