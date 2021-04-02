@@ -2,11 +2,19 @@
 
 - name: Test that HSM slots are available
   include_tasks: hsm_test.yml
+  loop: "{{ sub_test_slots }}"
+  loop_control:
+    label: "{{ item.slot_identifier }}"
+  no_log: true
   tags: hsm_test
   when: sub_test_slots[0] is defined
 
 - name: Generate HSM keys
   include_tasks: clienttoolbox_key_generation.yml
+  loop: "{{ sub_generate_hsm_keys }}"
+  loop_control:
+    label: "{{ item.slot_identifier }}"
+  no_log: true
   tags: clienttoolbox_key_generation
   when: sub_generate_hsm_keys[0] is defined
 
@@ -19,11 +27,12 @@
   include_tasks: config_apply_indexes.yml
   when: management_database_indexes.apply_indexes
 
-- name: Import configdump of Root CA templates and EKU's 
-  include_tasks: config_dump_1.yml
-
 - name: Initialize Policy or Subordinate CAs with CLI commands
   include_tasks: init_sub_ca.yml
+  loop: "{{ sub_add_certification_authorities }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  no_log: true
   tags: create_cas
   when: sub_add_certification_authorities[0] is defined
 

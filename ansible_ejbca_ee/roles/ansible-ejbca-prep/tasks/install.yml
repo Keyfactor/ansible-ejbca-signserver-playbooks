@@ -4,6 +4,9 @@
   package:
     name: epel-release
     state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+
 
 - name: Install OpenJDK Development, unzip CentOS/RHEL 8
   dnf:

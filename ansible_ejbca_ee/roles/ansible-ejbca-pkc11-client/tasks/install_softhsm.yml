@@ -12,7 +12,7 @@
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Import Okay Repo key from a file
-  ansible.builtin.rpm_key:
+  rpm_key:
     state: present
     key: /etc/pki/rpm-gpg/RPM-GPG-KEY-OKAY
   when: 

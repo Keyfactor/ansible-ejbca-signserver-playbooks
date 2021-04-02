@@ -51,6 +51,9 @@ ejbca_crl_dir:
   - /opt/web/CRLs
   - /opt/web/AIA
 
+ant_version: apache-ant-1.10.9-bin.tar.gz
+ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
+
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource configured in Wildfly for EJBCA to access the DB
 #wildfly_version: 20.0.1.Final
 #wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
@@ -59,12 +62,15 @@ ejbca_crl_dir:
 #wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
 #wildfly_standalone_file: standalone-21.xml.datasource.j2
 wildfly_version: 22.0.1.Final
-wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
+wildfly_checksum: sha256:08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01 #tar.gz file
+#wildfly_checksum: sha256:0ec1c475212258bca43c5351197a4b5b3d050b2b4d53f3f331e530ea424aa819 #zip file
 wildfly_standalone_file: standalone-22.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
 wildfly_jboos_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
+wildfly_download_url: "http://172.16.170.133:8080/ejbca/"
+wildfly_download_file: "{{ wildfly_name }}.tar.gz"
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 appsrv_datasources:
@@ -94,6 +100,82 @@ hsm_shared_library: /usr/lib64/libsofthsm2.so
 # CLI access info
 ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+
+# EJBCA audit log database protection configurations
+# slot_index: Index of HSM slot used for database integrity protection
+# key_label: Label of key used for database integrity protection
+# signature_algorithm: Algorithm used to sign database rows
+# token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
+ejbca_databaseprotection:
+  slot_label: DB_Protect_SLOT
+  slot_identifier_type: "SLOT_LABEL"
+  slot_index: 0
+  key_label: dbProtect0001
+  signature_algorithm: SHA256WithRSA
+  key_size: "3072"
+  token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+  testkey_label: "testKey"
+  hsm_shared_library: "{{ hsm_shared_library }}"
+
+# Create SoftHSM slots with softhsm-util
+softhsm_gen_hsm_slots:
+  - slot_name: Management_CA_SLOT
+    slot_so_pin: "{{ encrypted_mgmtca_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+  - slot_name: POLICY1_CA_SLOT
+    slot_so_pin: "{{ encrypted_policyca1_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+  - slot_name:  DB_Protect_SLOT
+    slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+
+# List of HSM slots that should be tested that they are accessible
+sub_test_slots:
+  - slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+  - slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+  - slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+
+sub_generate_hsm_keys:
+    # ManagementCA Keys
+  - key_label: "{{ sub_add_certification_authorities[0].pkcs11_token.signkey_label }}"
+    key_size: "{{ sub_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ sub_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ sub_add_certification_authorities[0].pkcs11_token.defaultkey_label }}"
+    key_size: "{{ sub_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ sub_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ sub_add_certification_authorities[0].pkcs11_token.testkey_label }}"
+    key_size: "1024"
+    slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ sub_add_certification_authorities[0].tokenpass }}"
+    # Policy CA1 Keys
+  - key_label: "{{ sub_add_certification_authorities[1].pkcs11_token.signkey_label }}"
+    key_size: "{{ sub_add_certification_authorities[1].keyspec }}"
+    slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ sub_add_certification_authorities[1].tokenpass }}"
+  - key_label: "{{ sub_add_certification_authorities[1].pkcs11_token.defaultkey_label }}"
+    key_size: "{{ sub_add_certification_authorities[1].keyspec }}"
+    slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ sub_add_certification_authorities[1].tokenpass }}"
+  - key_label: "{{ sub_add_certification_authorities[1].pkcs11_token.testkey_label }}"
+    key_size: "1024"
+    slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ sub_add_certification_authorities[1].tokenpass }}"
+    #Database Protection Keys
+  - key_label: "{{ ejbca_databaseprotection.key_label }}"
+    key_size: "{{ ejbca_databaseprotection.key_size }}"
+    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
+    slot_label: "{{ ejbca_databaseprotection.slot_label }}"
+    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
+  - key_label: "{{ ejbca_databaseprotection.testkey_label }}"
+    key_size: "1024"
+    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
+    slot_lable: "{{ ejbca_databaseprotection.slot_label }}"
+    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
 
 # Super Admin accounts to create
 management_add_end_entities:
@@ -258,8 +340,8 @@ sub_add_certification_authorities:
       defaultkey_label: "defaultKey0001"
       testkey_label: "testKey"
   - caname: "{{ organizationNameShort }}-Sub-CA"
-    certprofile: "SubCA-{{ organizationNameShort }}-G1"
-    dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    certprofile: "PolicyCA1-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "External"
     subjectaltname: ""
     validity: "3650"
@@ -271,12 +353,12 @@ sub_add_certification_authorities:
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Policy+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
     #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
     #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Policy+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Policy+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
     crlPeriod: 259200000
     crlIssueInterval: 86400000
     useLdapDnOrder: false
@@ -285,7 +367,7 @@ sub_add_certification_authorities:
     externalcachain_file: /var/tmp/rootca.pem
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
-      slot_identifier_value: "Sub_CA_SLOT"
+      slot_identifier_value: "POLICY1_CA_SLOT"
       signkey_label: "signKey0001"
       defaultkey_label: "defaultKey0001"
       testkey_label: "testKey"

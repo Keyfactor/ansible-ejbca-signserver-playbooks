@@ -29,7 +29,7 @@ ejbca_user: wildfly
 ejbca_user_profile: "/home/{{ ejbca_user }}"
 
 # Location to write the CRL files on server
-ejbca_crl_dir_enabled: true
+ejbca_crl_dir_enabled: false
 ejbca_crl_dir:
   - /opt/web/CRLs
   - /opt/web/AIA
@@ -41,7 +41,7 @@ ejbca_crl_dir:
 # token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
 ejbca_databaseprotection:
   slot_label: DB_Protect_SLOT
-  key_label: dbProtect00001
+  key_label: dbProtect0001
   signature_algorithm: SHA256WithRSA
   token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
   hsm_shared_library: /usr/lib64/libsofthsm2.so
@@ -91,14 +91,14 @@ appsrv_datasources:
 #ejbca.properties
 ejbca_appserver_home: "{{ wildfly_home }}"
 ejbca_productionmode: false
-ejbca_allow_external_dynamic_configuration: false
+ejbca_allow_external_dynamic_configuration: true
 # Password used to protect CMS keystores in the database (CAs CMS signer/enc certificate).
 ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
 ejbca_cli_defaultusername: ejbca
 ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 
 #cesecore.properties
-core_allow_external_dynamic_configuration: false
+core_allow_external_dynamic_configuration: true
 core_ca_serialnumberoctetsize: 20
 core_db_keepjbossserialization: false
 core_db_keepinternalcakeystores: false

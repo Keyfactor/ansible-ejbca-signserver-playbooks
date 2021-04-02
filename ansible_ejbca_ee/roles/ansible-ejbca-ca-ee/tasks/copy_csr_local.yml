@@ -9,8 +9,8 @@
 
 - name: Copy the CA CSRs locally 
   fetch:
-    src: "{{ ejbca_home }}/{{ item.caname }}.der"
-    dest: "{{ ejbca_csr_dir_output }}/"
+    src: "{{ ejbca_home }}/{{ item.caname }}_csr.der"
+    dest: "{{ ejbca_csr_dir_output }}/{{ item.caname }}_csr.der"
     flat: yes
   loop: "{{ sub_add_certification_authorities }}"
   no_log: true

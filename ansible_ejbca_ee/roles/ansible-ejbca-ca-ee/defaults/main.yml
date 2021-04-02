@@ -326,7 +326,7 @@ management_generate_hsm_keys:
   - key_label: "{{ ejbca_databaseprotection.key_label }}"
     key_size: "{{ ejbca_databaseprotection.key_size }}"
     slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
-    slot_lable: "{{ ejbca_databaseprotection.slot_label }}"
+    slot_label: "{{ ejbca_databaseprotection.slot_label }}"
     #slot_conf:
       #src: "slot-module.cfg.j2"
       #dest: "{{ ejbca_home }}/../ejbca-custom/slot-dbprotect.cfg"

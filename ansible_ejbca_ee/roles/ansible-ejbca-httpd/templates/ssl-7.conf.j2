@@ -79,14 +79,69 @@ SSLCryptoDevice builtin
   SSLOptions +ExportCertData +StrictRequire +StdEnvVars
   </Location>
 
+  # Cert Auth for adminwebn
+  <Location /ejbca/adminweb>
+  SSLVerifyClient require
+  SSLVerifyDepth  4
+  SSLOptions +ExportCertData +StrictRequire +StdEnvVars
+  </Location>
+  
+  # Redirecting traffic to EJBCA REST Service
+  <Location /ejbca/ejbca-rest-api>
+  SSLVerifyClient require
+  SSLVerifyDepth  4
+  SSLOptions +ExportCertData +StrictRequire +StdEnvVars
+  </Location>
+ 
+ # Redirecting traffic to EJBCA Web Service (Soap)
+  <Location /ejbca/ejbcaws>
+  SSLVerifyClient optional
+  SSLVerifyDepth  4
+  SSLOptions +ExportCertData +StrictRequire +StdEnvVars
+  </Location>
+
+{% if use_external_ra is defined and use_external_ra is sameas false and ejbca_type is defined and 'CA' == ejbca_type or ejbca_type is defined and 'RA' == ejbca_type %}
+  # Cert Auth for ra
+  <Location /ejbca/ra>
+{% if use_external_ra is sameas false %}
+    SSLVerifyClient optional 
+{% else %}
+    SSLVerifyClient require 
+{% endif %}
+  SSLVerifyDepth  4
+  SSLOptions +ExportCertData +StrictRequire +StdEnvVars
+  </Location>
+
+{% if use_external_ra is defined and use_external_ra is sameas false and ejbca_type is defined and 'CA' or ejbca_type is defined and 'RA' == ejbca_type %}
+  <Location /.well-known/est/device/simpleenroll>
+  SSLOptions +ExportCertData +StrictRequire +StdEnvVars
+  ProxyPass balancer://EJBCACluster/.well-known/est
+  ProxyPassReverse balancer://EJBCACluster/.well-known/est
+  </Location>
+
+  <Location /.well-known/est/firewall/simplereenroll>
+  SSLVerifyClient require
+  SSLVerifyDepth  4
+  SSLOptions +ExportCertData +StrictRequire +StdEnvVars
+  ProxyPass balancer://EJBCACluster/.well-known/est
+  ProxyPassReverse balancer://EJBCACluster/.well-known/est
+  </Location>
+  {% endif %}
+
+  <Location /.well-known/>
+  ProxyPass balancer://EJBCACluster/.well-known/
+  ProxyPassReverse balancer://EJBCACluster/.well-known/
+  </Location> 
+  {% endif %}
+
   # Redirecting traffic to EJBCA public
   <Location /ejbca>
   ProxyPass balancer://EJBCACluster/ejbca
   ProxyPassReverse balancer://EJBCACluster/ejbca
   </Location>
 
-  # Redirect /, /ejbca, /signserver and non-proxied URLs to /ejbca/
-  RewriteCond %{THE_REQUEST} !(/ejbca/.*)
+  # Redirect /, /ejbca and non-proxied URLs to /ejbca/
+  RewriteCond %{THE_REQUEST} !(/ejbca/.*|/.well-known/.*)
   RewriteRule (.*) https://%{HTTP_HOST}/ejbca/ [R]
 
 </VirtualHost>

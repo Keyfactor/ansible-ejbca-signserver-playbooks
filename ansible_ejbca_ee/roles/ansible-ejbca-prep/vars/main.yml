@@ -13,7 +13,7 @@ ejbca_packages_8:
 ejbca_packages_7:
   - unzip
   - java-11-openjdk-devel
-  - ant.noarch
+  #- ant.noarch # Not using because we want Java 11
   - nss-tools
   - wget
   - jq

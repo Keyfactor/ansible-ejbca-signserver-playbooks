@@ -16,7 +16,7 @@ softhsm_gen_hsm_slots:
   - slot_name: Sub_CA_SLOT
     slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
-  - slot_name: "{{ ejbca_databaseprotection.slot_label }}"
+  - slot_name:  DB_Protect_SLOT
     slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
   - slot_name: KeyBinding_SLOT
