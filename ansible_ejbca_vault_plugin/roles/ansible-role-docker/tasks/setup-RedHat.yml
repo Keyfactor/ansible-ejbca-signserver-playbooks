@@ -1,4 +1,41 @@
 ---
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+    
+- name: "Docker Engine CE: Increase vm.max_map_count"
+  lineinfile:
+    path: /etc/sysctl.d/50-maxmapcount.conf
+    line: vm.max_map_count=262144
+    create: yes
+    validate: 'sysctl --load=%s'
+
+- name: Configure Firewalld to allow container communication
+  block:
+    - name: Open http port
+      firewalld:
+        service: 'http'
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Open https port
+      firewalld:
+        service: 'https'
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Add masquerade
+      firewalld:
+        masquerade: yes
+        state: enabled
+        permanent: true
+        zone: public
+  when: enable_firewall|bool
+
 - name: Ensure old versions of Docker are not installed.
   package:
     name:

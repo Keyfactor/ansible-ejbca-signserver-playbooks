@@ -51,36 +51,6 @@
   loop: "{{ ejbca_crl_dir }}"
   when: ejbca_crl_dir_enabled|bool
 
-- block:
-  - name: Set permissions on softhsm lib directory
-    file:
-      path: /var/lib/softhsm
-      state: directory
-      recurse: yes
-      mode: 0750
-      owner: "{{ ejbca_user }}"
-      group: "{{ ejbca_group }}"
-    when: ejbca_softhsm_enable|bool
-
-  - name: Check SoftHSM Slots
-    shell: "softhsm2-util --show-slots | grep {{ item.slot_name }}"
-    register: show_hsm_slots
-    loop: "{{ ejbca_gen_hsm_slots }}"
-    changed_when: show_hsm_slots.rc != 0
-    failed_when: false
-    no_log: true
-    when: ejbca_softhsm_enable|bool
-
-  - name: Create SoftHSM slots
-    command: "softhsm2-util --init-token --free --label {{ item.item.slot_name }} --so-pin {{ item.item.slot_so_pin }} --pin {{ item.item.slot_pin }}"
-    become: yes  
-    become_user: "{{ ejbca_user }}" 
-    loop: "{{ show_hsm_slots.results }}"
-    no_log: true
-    register: create_hsm_slots
-    when: item.changed
-  when: ejbca_softhsm_enable|bool
-
 - name: Check if Elytron Credential store pass exists
   stat:
     path: "{{ wildfly_elytron_pass_file }}"

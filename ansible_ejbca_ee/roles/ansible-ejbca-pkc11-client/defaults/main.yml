@@ -1,0 +1,24 @@
+---
+# defaults file for ansible-ejbca-pkc11-client
+
+ejbca_group: wildfly
+ejbca_user: wildfly
+
+use_softhsm: true
+
+softhsm_gen_hsm_slots:
+  - slot_name: Management_CA_SLOT
+    slot_so_pin: "{{ encrypted_mgmtca_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+  - slot_name: Root_CA_SLOT
+    slot_so_pin: "{{ encrypted_rootca_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_rootca_token_pin | default('foo123') }}"
+  - slot_name: Sub_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
+  - slot_name: "{{ ejbca_databaseprotection.slot_label }}"
+    slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+  - slot_name: KeyBinding_SLOT
+    slot_so_pin: "{{ encrypted_peerkeybind_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"

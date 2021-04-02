@@ -33,6 +33,7 @@
   no_log: true
   register: checking_existing_keys
   changed_when: '"Signature test of key " + item.key_label + ":" not in checking_existing_keys.stdout'
+  when: management_generate_hsm_keys[0] is defined
 
 - name: Generate key if it does not exist for Management & Root
   command: >
@@ -66,6 +67,7 @@
   no_log: true
   register: checking_existing_sub_keys
   changed_when: '"Signature test of key " + item.key_label + ":" not in checking_existing_sub_keys.stdout'
+  when: sub_generate_hsm_keys[0] is defined
 
 - name: Generate key if it does not exist for Sub CA
   command: >

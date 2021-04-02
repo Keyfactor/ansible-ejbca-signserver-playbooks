@@ -11,8 +11,9 @@ docker_restart_handler_state: restarted
 
 # Docker Compose options.
 docker_install_compose: true
-docker_compose_version: "1.25.4"
-docker_compose_path: /usr/local/bin/docker-compose
+docker_compose_version: "1.27.4"
+docker_compose_path: /usr/bin/docker-compose
+docker_compose_hash: "sha256:04216d65ce0cd3c27223eab035abfeb20a8bef20259398e3b9d9aa8de633286d"
 
 # Used only for Debian/Ubuntu. Switch 'stable' to 'edge' if needed.
 docker_apt_release_channel: stable
@@ -29,3 +30,5 @@ docker_yum_gpg_key: https://download.docker.com/linux/centos/gpg
 
 # A list of users who will be added to the docker group.
 docker_users: []
+
+enable_firewall: false

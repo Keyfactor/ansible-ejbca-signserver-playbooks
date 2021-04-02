@@ -91,6 +91,38 @@
   #changed_when: keybinding_sign_csr.rc == 0
   when: ( item.name not in keybinding_list.stdout ) and ( item.enabled|bool )
 
+- name: Import cert for key binding 
+  command: "{{ ejbca_home }}/bin/ejbca.sh keybind import --name {{ item.name }} -f /var/tmp/{{ item.name }}.crt"
+  loop: "{{ ejbca_keybinding }}"
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_import_cert
+  failed_when: keybinding_import_cert.rc >= 2
+  #changed_when: keybinding_import_cert.rc == 0
+  when: ( item.name not in keybinding_list.stdout )  and ( item.enabled|bool )
+
+- name: Activate key binding 
+  command: "{{ ejbca_home }}/bin/ejbca.sh keybind setstatus --name {{ item.name }} -v Active"
+  loop: "{{ ejbca_keybinding }}"
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_setstatus
+  failed_when: keybinding_setstatus.rc >= 2
+  #changed_when: keybinding_setstatus.rc == 0
+  when: ( item.name not in keybinding_list.stdout ) and ( item.enabled|bool )
+
+# TODO - Figure out why this can't be set via CLI, but works by setting in the UI
+#- name: Set Next Key Pair Alias 
+#  command: "{{ ejbca_home }}/bin/ejbca.sh keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
+#  no_log: true
+#  become: yes
+#  become_user: "{{ ejbca_user }}"
+#  register: keybinding_modify
+#  loop: "{{ ejbca_keybinding }}"
+#  when: item.name not in keybinding_list.stdout
+
 - name: Determine certificate serial number
   command: "openssl x509 -noout -serial -in /var/tmp/{{ item.name }}.crt"
   loop: "{{ ejbca_keybinding }}"
@@ -104,7 +136,9 @@
     peer_cert_serial_numbers: |
       [
       {% for line in cert_serialNumber.results %}
+      {% if line.stdout is defined %}
       {{ '{' }}  'serial':'{{ line.stdout.split('=')[1] }}', 'name':'{{ line.item.name }}', 'type':'{{ line.item.useType}}', 'ca':'{{ line.item.caname}}' {{ '}' }},
+      {% endif %}
       {% endfor %}
       ]
 
@@ -140,35 +174,3 @@
   delegate_to: localhost
   register: write_the_output2
   #no_log: true
-
-- name: Import cert for key binding 
-  command: "{{ ejbca_home }}/bin/ejbca.sh keybind import --name {{ item.name }} -f /var/tmp/{{ item.name }}.crt"
-  loop: "{{ ejbca_keybinding }}"
-  no_log: true
-  become: yes
-  become_user: "{{ ejbca_user }}"
-  register: keybinding_import_cert
-  failed_when: keybinding_import_cert.rc >= 2
-  #changed_when: keybinding_import_cert.rc == 0
-  when: ( item.name not in keybinding_list.stdout )  and ( item.enabled|bool )
-
-- name: Activate key binding 
-  command: "{{ ejbca_home }}/bin/ejbca.sh keybind setstatus --name {{ item.name }} -v Active"
-  loop: "{{ ejbca_keybinding }}"
-  no_log: true
-  become: yes
-  become_user: "{{ ejbca_user }}"
-  register: keybinding_setstatus
-  failed_when: keybinding_setstatus.rc >= 2
-  #changed_when: keybinding_setstatus.rc == 0
-  when: ( item.name not in keybinding_list.stdout ) and ( item.enabled|bool )
-
-# TODO - Figure out why this can't be set via CLI, but works by setting in the UI
-#- name: Set Next Key Pair Alias 
-#  command: "{{ ejbca_home }}/bin/ejbca.sh keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
-#  no_log: true
-#  become: yes
-#  become_user: "{{ ejbca_user }}"
-#  register: keybinding_modify
-#  loop: "{{ ejbca_keybinding }}"
-#  when: item.name not in keybinding_list.stdout

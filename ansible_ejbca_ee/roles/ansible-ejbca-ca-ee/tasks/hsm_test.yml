@@ -24,6 +24,7 @@
   register: tested_hsm_slots_results
   changed_when: tested_hsm_slots_results.rc != 0
   failed_when: false
+  when: management_test_slots[0] is defined
 
 #- debug:
 #    var: tested_hsm_slots_results
@@ -49,7 +50,8 @@
   register: tested_sub_hsm_slots_results
   changed_when: tested_sub_hsm_slots_results.rc != 0
   failed_when: false
-
+  when: sub_test_slots[0] is defined
+  
 - debug:
     msg: "Could not access all HSM slots specified in variable sub_test_slots"
   when: tested_sub_hsm_slots_results.changed

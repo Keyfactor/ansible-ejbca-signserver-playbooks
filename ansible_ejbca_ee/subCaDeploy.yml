@@ -4,7 +4,7 @@
   become: yes
   become_method: sudo
   pre_tasks:
-    - include_vars: deployment_info/internal_ca_vars.yml
+    - include_vars: deployment_info/internal_ca_subdorinate_vars
   roles:
     - ansible-hostname
     - ansible-role-mariadb
@@ -12,5 +12,3 @@
     - ansible-ejbca-pkc11-client
     - ansible-ejbca-prep
     - ansible-ejbca-ca-ee
-    - ansible-ejbca-httpd
-

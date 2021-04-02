@@ -27,10 +27,25 @@
   become: yes
   become_user: "{{ ejbca_user }}"
   loop: "{{ sub_add_certification_authorities }}"
+  when: item.rootDn != "External"
 
 #- debug:
 #    var: root_ca_id.results
 # --signedby "{{ item.stdout_lines[2].split(' ')[2] }}"
+
+- name: Download external CA chain for creating an External CA
+  uri:
+    url: "{{ item.externalcachain_url }}"
+    validate_certs: no
+    dest: "{{ item.externalcachain_file }}"
+    creates: "{{ item.externalcachain_file }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  loop: "{{ sub_add_certification_authorities }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  no_log: true
+  when: item.rootDn == "External"
 
 - name: Create Sub CA
   command: >
@@ -54,11 +69,43 @@
   register: initializing_sub_ca
   failed_when: initializing_sub_ca.rc >= 2
   changed_when: initializing_sub_ca.rc == 0
+  when: item.rootDn != "External"
 
 - debug:
     msg: "Initializing Sub CA failed with message: {{ item.stdout }}"
   when: item.rc == 1
   loop: "{{ initializing_sub_ca.results }}"
+  loop_control:
+    label: "{{ item.item.item.caname }}"
+
+- name: Create a CA CSR to be signed by an external CA
+  command: >
+   "{{ ejbca_home }}/bin/ejbca.sh" ca init
+   --caname "{{ item.item.caname }}"
+   --dn "{{ item.item.dn }}"
+   --tokenType "{{ item.item.tokentype }}"
+   --tokenPass "{{ item.item.tokenpass }}"
+   {% if item.item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}--tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.item.caname }}.catoken.properties"{% endif %}
+   --keyspec "{{ item.item.keyspec }}"
+   --keytype "{{ item.item.keytype }}" -s "{{ item.item.signalg }}"
+   -v "{{ item.item.validity }}"
+   --policy "{{ item.item.policy }}"
+   {% if item.item.subjectaltname is defined %}--subjectaltname "{{ item.item.subjectaltname }}" {% endif %}
+   --signedby "{{ item.rootDn }}"
+   -externalcachain "{{ externalcachain_file }}"
+  loop: "{{ sub_add_certification_authorities }}"
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: initializing_sub_ca_csr
+  failed_when: initializing_sub_ca_csr.rc >= 2
+  changed_when: initializing_sub_ca_csr.rc == 0
+  when: item.rootDn == "External"
+
+- debug:
+    msg: "Initializing Sub CA generate CSR failed with message: {{ item.stdout }}"
+  when: item.rc == 1
+  loop: "{{ initializing_sub_ca_csr.results }}"
   loop_control:
     label: "{{ item.item.item.caname }}"
 
@@ -71,3 +118,4 @@
   register: auto_activate_token_sub
   failed_when: auto_activate_token_sub.rc >= 2
   changed_when: auto_activate_token_sub.rc == 0
+  when: item.rootDn != "External"

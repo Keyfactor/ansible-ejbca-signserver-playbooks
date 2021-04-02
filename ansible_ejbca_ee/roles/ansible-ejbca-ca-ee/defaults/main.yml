@@ -245,6 +245,7 @@ management_add_certification_authorities:
 # keytype: RSA, DSA or ECDSA
 # keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
 # signalg: Signature algorithm
+# externalcachain_url: URL to download CA chain for creating a CA signed by an external CA
 # tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
 # tokenpass: Password for the CA token
 # pkcs11_token: Dict of parameters needed for PKCS11 token
@@ -275,12 +276,43 @@ sub_add_certification_authorities:
     crlIssueInterval: 86400000
     useLdapDnOrder: false
     doEnforceUniqueDistinguishedName: false
+    externalcachain_url: 
+    externalcachain_file: 
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "Sub_CA_SLOT"
       signkey_label: "signKey00001"
       defaultkey_label: "defaultKey00001"
       testkey_label: "testKey"
+  #- caname: "{{ organizationNameShort }}-Sub-CA"
+  #  certprofile: "SubCA-{{ organizationName }}-G1"
+  #  dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+  #  rootDn: "External"
+  #  subjectaltname: ""
+  #  validity: "3650"
+  # validity_yml: "10y"
+  #  policy: "null"
+  #  keytype: "RSA"
+  # keyspec: "3072"
+  #  signalg: "SHA384WithRSA"
+  #  tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+  #  tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
+  #  defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort }}-subca-g1.crl"
+  #  defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+  #  authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}SubCAG1.p7b"
+  #  certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}SubCAG1.p7b"
+  #  crlPeriod: 259200000
+  #  crlIssueInterval: 86400000
+  #  useLdapDnOrder: false
+  #  doEnforceUniqueDistinguishedName: false
+  #  externalcachain_url: http://it-ca.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
+  #  externalcachain_file: /var/tmp/rootca.pem
+  #  pkcs11_token:
+  #    slot_identifier_type: "SLOT_LABEL"
+  #    slot_identifier_value: "Sub_CA_SLOT"
+  #    signkey_label: "signKey00001"
+  #    defaultkey_label: "defaultKey00001"
+  #    testkey_label: "testKey"
 
 # List of HSM keys that should be generated using clientToolBox
 # key_label: Key label
