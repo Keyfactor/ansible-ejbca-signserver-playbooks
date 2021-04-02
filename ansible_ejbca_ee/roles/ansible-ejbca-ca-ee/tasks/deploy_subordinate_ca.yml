@@ -26,3 +26,8 @@
   include_tasks: init_sub_ca.yml
   tags: create_cas
   when: sub_add_certification_authorities[0] is defined
+
+- name: Copy CA CSRs to the Ansible Controller 
+  include_tasks: copy_csr_local.yml
+  tags: create_cas
+  when: sub_add_certification_authorities[0] is defined  

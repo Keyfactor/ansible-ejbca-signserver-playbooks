@@ -181,7 +181,7 @@
 {% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}
                 <datasource jndi-name="{{ item.jndi_name }}" pool-name="{{ item.pool_name }}" use-ccm="true">
                     <connection-url>jdbc:{{ item.database_connection_type| default('mariadb') }}://{{ item.host }}:{{ item.port }}/{{ item.database }}</connection-url>
-                    <driver-class>{{ item.database_driver_class| default('org.mariadb.jdbc.Driver' }}</driver-class>
+                    <driver-class>{{ item.database_driver_class| default('org.mariadb.jdbc.Driver') }}</driver-class>
                     <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>

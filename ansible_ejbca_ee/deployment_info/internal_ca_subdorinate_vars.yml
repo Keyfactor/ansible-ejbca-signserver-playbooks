@@ -204,7 +204,7 @@ ejbca_peerConnector:
 # defaultkey_label: Default (encryption) key label
 # testkey_label: Test key label
 # The order must be Management CA and then Root CA
-management_add_certification_authorities:
+#management_add_certification_authorities:
 
 
 # List of certification authorities that should be added using CLI
@@ -249,7 +249,7 @@ sub_add_certification_authorities:
     crlPeriod: 259200000
     crlIssueInterval: 86400000
     useLdapDnOrder: false
-    externalcachain_url: http://it-ca.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
+    externalcachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     externalcachain_file: /var/tmp/rootca.pem
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
@@ -281,7 +281,7 @@ sub_add_certification_authorities:
     crlIssueInterval: 86400000
     useLdapDnOrder: false
     doEnforceUniqueDistinguishedName: false
-    externalcachain_url: http://it-ca.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
+    externalcachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     externalcachain_file: /var/tmp/rootca.pem
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"

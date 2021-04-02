@@ -1,0 +1,17 @@
+---
+
+- name: Create local directories
+  become: no
+  file:
+    path: "{{ ejbca_csr_dir_output }}"
+    state: directory
+  delegate_to: localhost
+
+- name: Copy the CA CSRs locally 
+  fetch:
+    src: "{{ ejbca_home }}/{{ item.caname }}.der"
+    dest: "{{ ejbca_csr_dir_output }}/"
+    flat: yes
+  loop: "{{ sub_add_certification_authorities }}"
+  no_log: true
+  register: copy_down_csr
