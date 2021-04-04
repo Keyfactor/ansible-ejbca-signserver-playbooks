@@ -22,3 +22,6 @@ softhsm_gen_hsm_slots:
   - slot_name: KeyBinding_SLOT
     slot_so_pin: "{{ encrypted_peerkeybind_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+  - slot_name: POLICY1_CA_SLOT
+    slot_so_pin: "{{ encrypted_policyca1_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"

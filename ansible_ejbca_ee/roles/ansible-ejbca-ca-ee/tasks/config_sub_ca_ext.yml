@@ -101,7 +101,7 @@
   loop_control:
     label: "{{ item.caname }}"
   register: doEnforceUniqueDistinguishedName_check
-  changed_when: item.doEnforceUniqueDistinguishedName|string not in doEnforceUniqueDistinguishedName_check.stdout
+  changed_when: item.enforce_unique_dn|string not in doEnforceUniqueDistinguishedName_check.stdout
   no_log: true
 
 - name: Configure the CRLPeriod for Sub CA's
@@ -189,7 +189,7 @@
   no_log: true
   
 - name: Configure the Enforce Unique Distinguished Name for Sub CA's
-  command: "{{ ejbca_sh }} ca editca {{ item.item.caname }} doEnforceUniqueDistinguishedName {{ item.item.doEnforceUniqueDistinguishedName }}"
+  command: "{{ ejbca_sh }} ca editca {{ item.item.caname }} doEnforceUniqueDistinguishedName {{ item.item.enforce_unique_dn }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"

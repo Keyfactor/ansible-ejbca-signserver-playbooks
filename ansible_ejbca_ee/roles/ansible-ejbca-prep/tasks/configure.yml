@@ -22,14 +22,21 @@
         group: "{{ ejbca_group }}"
       when: ejbca_user not in primekey_owns_it.stat.pw_name
 
-    - name: Ensure ejbca-custom/conf directory exists
-      file:
-        path: "{{ ejbca_home }}/../ejbca-custom/conf"
-        state: directory
-        owner: "{{ ejbca_user }}"
-        group: "{{ ejbca_group }}"
-
   when: ejbca_manage_user
+
+- name: Create ejbca-custom/conf directory
+  file:
+    path: "{{ ejbca_home }}/../ejbca-custom/conf"
+    state: directory
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+
+- name: Create ejbca-custom/p12 directory
+  file:
+    path: "{{ ejbca_home }}/../ejbca-custom/p12"
+    state: directory
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
 
 - name: Ensure statedump package is unpacked if statedump is being built
   unarchive:

@@ -34,29 +34,109 @@
   tags: check_deployment
   when: management_database_indexes.apply_indexes or management_add_certification_authorities[0] is defined or management_import_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
 
-- name: Import configdump of Root CA templates and EKU's 
-  include_tasks: config_dump_1.yml
+- name: Prepare configdump template files
+  include_tasks: config_configdump.yml
 
 - name: Apply indexes
   include_tasks: config_apply_indexes.yml
   when: management_database_indexes.apply_indexes
 
-- name: Setup configured CAs with CLI commands
-  include_tasks: init_mgmt_root_ca.yml
-  tags: create_cas
-  when: management_add_certification_authorities[0] is defined
+- name: Use Configdump to create the Management & Root CA's
+  block:
 
-- name: Import configdump of profiles and services
-  include_tasks: config_dump_2.yml
+    - name: Create crypto tokens for Management & Root CA's
+      include_tasks: add_crypto_token.yml
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
 
-- name: Configure ManagmentCA and Root CA settings
-  include_tasks: config_root_ca_ext.yml
+    - name: Stage Management & Root CA to create with configdump
+      template:
+        src: ca-template.yml.j2
+        dest: "{{ ejbca_home }}/dump/dump1/certification-authorities/{{ item.caname }}.yaml"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0664
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
 
-- name: Initialize Sub CA's
-  include_tasks: init_sub_ca.yml
+    - name: Intialize Management & Root CA's with configdump
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1 --initialize"
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+  when: deploy_with_configdump|bool and management_add_certification_authorities[0] is defined 
 
-- name: Configure Sub CA's
-  include_tasks: config_sub_ca_ext.yml
+- name: Use CLI to create the Management & Root CA's
+  block:
+
+    - name: Import configdump of Root CA templates and EKU's
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1"
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+      
+    - name: Initialize Management & Root CAs with CLI commands
+      include_tasks: init_ca.yml
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
+      tags: create_cas
+
+    - name: Configure ManagmentCA and Root CA settings
+      include_tasks: config_root_ca_ext.yml
+
+  when: management_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
+
+- name: Use Configdump to create the Sub CA's
+  block:
+
+    - name: Create crypto tokens for Sub CA's
+      include_tasks: add_crypto_token.yml
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+
+    - name: Stage Sub CA's to create with configdump
+      template:
+        src: ca-template.yml.j2
+        dest: "{{ ejbca_home }}/dump/dump2/certification-authorities/{{ item.caname }}.yaml"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0664
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+
+    - name: Intialize Sub CA's with configdump
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2 --initialize"
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+  when: deploy_with_configdump|bool and sub_add_certification_authorities[0] is defined
+
+- name: Use CLI to create the Management & Root CA's
+  block:
+
+    - name: Import configdump of profiles and services
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+      
+    - name: Initialize Sub CA's with CLI commands
+      include_tasks: init_ca.yml
+      loop: "{{ sub_add_certification_authorities }}"
+      loop_control:
+        label: "{{ item.caname }}"
+      no_log: true
+      tags: create_cas
+
+    - name: Configure Sub CA's
+      include_tasks: config_sub_ca_ext.yml
+
+  when: sub_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
 
 - name: Create Key Binding 
   include_tasks: add_keybinding_ca.yml
@@ -66,18 +146,30 @@
   include_tasks: add_peer_conn.yml
   when: use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
-- name: Create external VA services and publisher
-  include_tasks: config_dump_va.yml
+- name: Create external VA services and publisher with configdump
+  command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
   when: use_external_va|bool
 
 - name: Import Approval Profiles
   include_tasks: add_app_profs.yml
 
 - name: Import configdump of profiles, services, & publishers
-  include_tasks: config_dump_3.yml
+  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump3"
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
 
-- name: Create external RA role
-  include_tasks: config_dump_ra.yml
+- name: Create external RA role with configdump
+  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/ra"
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
   when: use_external_ra|bool
 
 - name: Configure EJBCA Enrollment protocols

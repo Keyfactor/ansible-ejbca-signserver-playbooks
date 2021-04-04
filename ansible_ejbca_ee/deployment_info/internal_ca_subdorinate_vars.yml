@@ -10,6 +10,7 @@ sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 deploy_mgmt_root_sub: false
 deploy_subordinate_ca: true
+deploy_with_configdump: false
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
 # create Peer connection, and create an auth key binding
@@ -312,6 +313,7 @@ sub_add_certification_authorities:
     certprofile: "managementCA"
     dn: "CN=ManagementCA,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "External"
+    #rootDn: IT-Root-CA
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -319,8 +321,11 @@ sub_add_certification_authorities:
     keytype: "RSA"
     keyspec: "3072"
     signalg: "SHA384WithRSA"
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
     #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
     defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
@@ -329,20 +334,37 @@ sub_add_certification_authorities:
     authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
     certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
     crlPeriod: 259200000
-    crlIssueInterval: 86400000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 10m
+    delta_crl_period: 0m
     useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
     externalcachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     externalcachain_file: /var/tmp/rootca.pem
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "Management_CA_SLOT"
       signkey_label: "signKey00001"
       defaultkey_label: "defaultKey0001"
       testkey_label: "testKey"
-  - caname: "{{ organizationNameShort }}-Sub-CA"
+  - caname: "{{ organizationNameShort }}-Policy-CA1"
     certprofile: "PolicyCA1-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "External"
+    #rootDn: IT-Root-CA
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -350,8 +372,11 @@ sub_add_certification_authorities:
     keytype: "RSA"
     keyspec: "3072"
     signalg: "SHA384WithRSA"
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
     #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
     defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Policy+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
@@ -359,12 +384,27 @@ sub_add_certification_authorities:
     #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
     authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Policy+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
     certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Policy+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    crlPeriod: 259200000
-    crlIssueInterval: 86400000
+    crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 10m
+    delta_crl_period: 0m
     useLdapDnOrder: false
-    doEnforceUniqueDistinguishedName: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
     externalcachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     externalcachain_file: /var/tmp/rootca.pem
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "POLICY1_CA_SLOT"
@@ -427,3 +467,16 @@ httpd_cert_files:
     dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
     dest: "/etc/pki/tls/certs/trusted-ca.crt"
+
+configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
+  - "{{ ejbca_home }}/dump/dump1/certification-authorities"
+
+configdump_files:
+  - src: 'cp-RootCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/RootCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-managementCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
+  - src: 'extended-key-usages.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'

@@ -1,0 +1,49 @@
+Object Type: Certification Authority
+Version: 2
+Name: {{ item.caname }}
+Type of CA: X.509
+Description: {{ item.description | default('Created using configdump') }}
+Serial Number Octet Size: {{ item.serial_number_octet_size | default('20') }}
+Pre-produce OCSP Responses: {{ item.pre_produce_ocsp_responses | default('false') }}
+Store responses on-demand: {{ item.store_responses_on_demand | default('false') }}
+Certificate Profile: {{ item.certprofile }}
+Default Certificate Profile: Not used
+Use Append-Only Table: {{ item.use_append_only_table | default('false') }}
+CA Token:
+  Signature Algorithm: {{ item.signalg }}
+  Encryption Algorithm: {{ item.signalg }}
+  Crypto Token: {{ item.caname }}
+  Default Key: {{ item.pkcs11_token.defaultkey_label }}
+  Certificate Signing Key: {{ item.pkcs11_token.signkey_label }}
+  CRL Signing Key: {{ item.pkcs11_token.signkey_label }}
+  Key Encryption Key: {{ item.pkcs11_token.defaultkey_label }}
+  Test Key: {{ item.pkcs11_token.testkey_label }}
+  Key Sequence Format: Numeric
+  Key Sequence: '00000'
+Enforce Unique Public Keys: {{ item.enforce_unique_public_keys | default('true') }}
+Enforce key renewal: {{ item.enforce_key_renewal | default('false') }}
+Enforce Unique DN: {{ item.enforce_unique_dn | default('true') }}
+User Storage: {{ item.user_storage | default('true') }}
+Certificate Storage: {{ item.certificate_storage | default('true') }}
+Accept Revocations for Non-Existing Entries: {{ item.accept_revocations_for_non_existing_entries | default('false') }}
+Subject DN: {{ item.dn }}
+Signed By: {{ item.rootDn | default('Self Signed') }}
+Validity: {{ item.validity_yml}}
+Use UTF-8 in Policy Notice Text: {{ item.use_utf8_in_policy_notice_text | default('false') }}
+LDAP DN Order: {{ item.useLdapDnOrder | default('false') }}
+Authority Key Id Used: true
+CRL Number Used: true
+CA Issuer URI:
+- {{ item.certificateAiaDefaultCaIssuerUri }}
+Partitioned CRL Used: {{ item.partitioned_crl_used | default('false') }}
+CRL Expiration Period: {{ item.crlPeriod_yml }}
+CRL Issue Interval: {{ item.crlIssueInterval_yml }}
+CRL Overlap Time: {{ item.crl_overlap_time }}
+Delta CRL Period: {{ item.delta_crl_period }}
+Default CRL Distribution Point: {{ item.defaultCRLDP }}
+OCSP Service Default URI: {{ item.defaultOCSPServiceLocator }}
+AIA CA Issuer URIs:
+- {{ item.authorityInformationAccess }}
+Finish User: {{ item.finish_user  | default('true') }}
+CA Healthcheck Enabled: {{ item.ca_healthcheck_enabled  | default('true') }}
+Request Processor: {{ item.request_processor  | default('null') }}
