@@ -1,5 +1,0 @@
----
-# tasks file for roles/ansible-ejbca-complete-upgrade
-
-- name: Complete EJBCA upgrade
-  include_tasks: config_complete_upgrade.yml

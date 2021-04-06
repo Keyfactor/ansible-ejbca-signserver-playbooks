@@ -1,7 +1,0 @@
----
-# tasks file for roles/ansible-ejbca-ca-add-sn-to-admin-role
-
-- name: Add Serial Number to {{ ejbca_intune_ra_admin_role_name }} Role
-  include: add_sn_to_admin_role.yml
-  tags: add_cert_sn_role
- 

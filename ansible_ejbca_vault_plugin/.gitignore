@@ -1,9 +1,0 @@
-.DS_Store
-*.log
-*.retry
-*.swp
-ejbcaCSR/*
-vaultCSR/*
-rootKey/*
-unsealKey/*
-devsec*

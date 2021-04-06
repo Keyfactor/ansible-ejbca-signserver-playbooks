@@ -1,9 +1,0 @@
----
-# tasks file for ansible-ejbca-upgrade
-
-- name: Prepare configuration files for upgrade
-  include_tasks: config_conf_files.yml
-
-- name: Upgrade EJBCA EE version
-  import_tasks: upgrade.yml
-   
