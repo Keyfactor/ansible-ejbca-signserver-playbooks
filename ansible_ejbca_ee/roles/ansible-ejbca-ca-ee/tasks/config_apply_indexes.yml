@@ -3,7 +3,7 @@
 - name: Create EJBCA database indexes
   command: >
     {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh jdbc 
-    --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].host }}:{{ appsrv_datasources[0].port }}{% if appsrv_datasources[0].database_connection_type == "mariadb" %}/{{ appsrv_datasources[0].database }}{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %};DatabaseName={{ appsrv_datasources[0].database }}{{ appsrv_datasources[0].mssql_connection_parameters }}{% endif %} 
+    --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].host }}:{{ appsrv_datasources[0].port }}{% if appsrv_datasources[0].database_connection_type == "mariadb" %}/{{ appsrv_datasources[0].database }}{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %};DatabaseName={{ appsrv_datasources[0].database }}{{ appsrv_datasources[0].connection_parameters }}{% endif %} 
     --username {{ appsrv_datasources[0].user }} 
     --password {{ appsrv_datasources[0].password }}
     {{ item.index }}
