@@ -16,6 +16,12 @@ ansible_ejbca_vault_subca/
 
 ansible_ejbca_ee/**/AzureTest*
 
+
+#ignore ansible files
+ansible.cfg
+inventory
+
+
 #ignore mac files
 .DS_Store
 **/.DS_Store
