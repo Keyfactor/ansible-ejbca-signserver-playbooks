@@ -20,7 +20,7 @@ ansible_ejbca_ee/**/AzureTest*
 #ignore ansible files
 ansible.cfg
 inventory
-
+ansible_ejbca_ee/inventory
 
 #ignore mac files
 .DS_Store
