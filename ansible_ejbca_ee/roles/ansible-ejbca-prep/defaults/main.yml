@@ -14,7 +14,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 
 ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
-ejbca_jdbc_gen_name: mariadb-java-client.jar
+ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
 
 ant_version: apache-ant-1.10.9-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
@@ -88,6 +88,17 @@ appsrv_datasources:
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
 
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
 #ejbca.properties
 ejbca_appserver_home: "{{ wildfly_home }}"
 ejbca_productionmode: false
@@ -105,7 +116,6 @@ core_db_keepinternalcakeystores: false
 core_ca_keepocspextendedservice: false
 
 #database.properties
-ejbca_db_database_name: mysql
 ejbca_db_database_useSeparateCertificateTable: true
 
 #mail.properties

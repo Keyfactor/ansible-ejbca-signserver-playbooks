@@ -1,10 +1,18 @@
 ---
 
 - name: Create EJBCA database indexes
-  command: "{{ item.index }}"
+  command: >
+    {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh jdbc 
+    --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].host }}:{{ appsrv_datasources[0].port }}/{{ appsrv_datasources[0].database }}{% if appsrv_datasources[0].connection_parameters is defined %};{{ appsrv_datasources[0].connection_parameters }}{% endif %} 
+    --username {{ appsrv_datasources[0].user }} 
+    --password {{ appsrv_datasources[0].password }}
+    {{ item.index }}
   loop: "{{ ejbca_database_indexes }}" 
   no_log: true
+  become_user: "{{ ejbca_user }}"
+  become_method: sudo
   register: applying_database_indexes
+  ignore_errors: yes
 
 - name: Log the Index errors 
   debug:
