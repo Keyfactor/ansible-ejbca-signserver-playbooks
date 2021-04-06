@@ -1,0 +1,19 @@
+
+# ignore files at the top level
+LICENSE
+README.md
+primekey_logo.png
+
+
+# ignore the following directories
+
+ansible_ejbca_upgrade/
+ansible_ejbca_vault_plugin/
+ansible_ejbca_vault_subca/
+
+
+#ignore files for Azure
+
+ansible_ejbca_ee/**/AzureTest*
+
+
