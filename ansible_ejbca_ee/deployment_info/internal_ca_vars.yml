@@ -81,6 +81,7 @@ appsrv_datasources:
     user: ejbca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+ejbca_db_database_name: mariadb
 
 # Uncomment to configure Wildfly to send logs to a Syslog server 
 #appsrv_syslogsources:

@@ -7,6 +7,6 @@ database.url=jdbc:{{ item.database_connection_type| default('mariadb') }}://{{ i
 database.driver={{ item.database_driver_class| default('org.mariadb.jdbc.Driver') }}
 database.username={{ item.user }}
 database.password={{ item.password }}
-database.name={%if "mariadb" == item.database_connection_type %}mysql{%else%}{{ item.database_connection_type }}{% endif %}
+database.name={{ item.ejbca_db_database_name| default('mysql') }}
 {% endfor %}{% endif %}
 
