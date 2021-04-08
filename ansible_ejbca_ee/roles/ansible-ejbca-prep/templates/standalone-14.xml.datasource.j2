@@ -34,6 +34,10 @@
         <property name="org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH" value="true"/>
         <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT" value="2048"/>
         <property name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH" value="true"/>
+{% if wildfly_enable_kerberos is sameas true %}
+        <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+        <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
+{% endif %}
     </system-properties>
     <management>
         <security-realms>

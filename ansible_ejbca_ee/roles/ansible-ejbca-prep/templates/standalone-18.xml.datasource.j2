@@ -35,6 +35,10 @@
         <property name="org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH" value="true"/>
         <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT" value="2048"/>
         <property name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH" value="true"/>
+{% if wildfly_enable_kerberos is sameas true %}
+        <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+        <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
+{% endif %}
     </system-properties>
     <management>
         <security-realms>
@@ -388,7 +392,7 @@
                 </credential-store>
             </credential-stores>
         </subsystem>
-{% if wildfly_disable_infinispan is sameas false %}
+{% if wildfly_disable_infinispan is sameas false and wildfly_enable_kerberos is sameas false %}
         <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
             <!-- <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
                 <local-cache name="passivation">
@@ -413,7 +417,48 @@
                 </local-cache>
                 <local-cache name="timestamps"/>
             </cache-container>
-        </subsystem> 
+        </subsystem>
+{% elif wildfly_disable_infinispan is sameas true and wildfly_enable_kerberos is sameas true %}
+         <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
+            <cache-container name="security" default-cache="mssqlKerberosTemplate">
+                <local-cache name="mssqlKerberosTemplate">
+                    <!-- <eviction strategy="LRU" max-entries="1000"/> -->
+                    <expiration max-idle="3540000" lifespan="3540000"/>
+                </local-cache>
+            </cache-container>
+        </subsystem>
+{% elif wildfly_disable_infinispan is sameas false and wildfly_enable_kerberos is sameas true %}
+        <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
+            <!-- <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
+                <local-cache name="passivation">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <transaction mode="BATCH"/>
+                    <file-store passivation="true" purge="false"/>
+                </local-cache>
+                <local-cache name="sso">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <transaction mode="BATCH"/>
+                </local-cache>
+                <local-cache name="routing"/>
+            </cache-container> -->
+            <cache-container name="security" default-cache="mssqlKerberosTemplate">
+                <local-cache name="mssqlKerberosTemplate">
+                    <!-- <eviction strategy="LRU" max-entries="1000"/> -->
+                    <expiration max-idle="3540000" lifespan="3540000"/>
+                </local-cache>
+            </cache-container>
+            <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
+                <local-cache name="entity">
+                    <object-memory size="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="local-query">
+                    <object-memory size="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="timestamps"/>
+            </cache-container>
+        </subsystem>
 {% endif %}
         <subsystem xmlns="urn:jboss:domain:io:3.0">
             <worker name="default" io-threads="100" task-core-threads="25" task-max-threads="100"/>

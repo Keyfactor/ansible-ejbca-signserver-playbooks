@@ -86,7 +86,16 @@ appsrv_datasources:
     user: ejbca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
-ejbca_db_database_name: mariadb
+
+wildfly_enable_kerberos: true
+wildfly_kerberos_enable_debug_log: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:
 
 # Uncomment to configure Wildfly to send logs to a Syslog server 
 #appsrv_syslogsources:

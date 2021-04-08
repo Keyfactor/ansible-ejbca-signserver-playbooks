@@ -93,8 +93,16 @@ appsrv_datasources:
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
     #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
     connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
-    # This is the setting within /opt/ejbca/conf/database.properties definging database.name. Default is mariadb
-    ejbca_db_database_name: mssql
+
+wildfly_enable_kerberos: true
+wildfly_kerberos_enable_debug_log: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:
 
 # Uncomment to configure Wildfly to send logs to a Syslog server 
 #appsrv_syslogsources:

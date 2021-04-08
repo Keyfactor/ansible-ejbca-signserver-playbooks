@@ -2,7 +2,7 @@
 
 - name: State Okay Repo GPG Key
   copy:
-    src: RPM-GPG-KEY-OKAY
+    src: RPM-GPG-KEY-okayinc
     dest: /etc/pki/rpm-gpg/
     owner: root
     group: root
@@ -14,7 +14,7 @@
 - name: Import Okay Repo key from a file
   rpm_key:
     state: present
-    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-OKAY
+    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-okayinc
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")

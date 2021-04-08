@@ -110,6 +110,15 @@
     - not elytron_pass_file_exists.stat.exists
     - not elytron_store_file_exists.stat.exists
 
+- name: Configure Wildfly Kerberos config file
+  template:
+    src: krb5.conf.j2
+    dest: "{{ wildfly_kerberos_file_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: wildfly_enable_kerberos|bool
+
 - name: Deploy Wildfly standalone.xml
   template:
     src: "{{ wildfly_standalone_file }}"

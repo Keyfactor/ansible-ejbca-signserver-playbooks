@@ -129,3 +129,13 @@ web_reqcertindb: true
 # Elytron password file location
 wildfly_elytron_pass_dir: /opt/elytron
 wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
+
+wildfly_enable_kerberos: false
+wildfly_kerberos_enable_debug_log: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:

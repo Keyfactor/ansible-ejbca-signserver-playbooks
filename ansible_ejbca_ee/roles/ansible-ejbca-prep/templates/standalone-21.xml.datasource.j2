@@ -32,6 +32,10 @@
         <property name="org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH" value="true"/>
         <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT" value="2048"/>
         <property name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH" value="true"/>
+{% if wildfly_enable_kerberos is sameas true %}
+        <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+        <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
+{% endif %}
     </system-properties>
     <management>
         <security-realms>
@@ -382,6 +386,13 @@
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
             </cache-container>
+{% if wildfly_enable_kerberos is sameas true %}
+            <cache-container name="security" default-cache="mssqlKerberosTemplate">
+                <local-cache name="mssqlKerberosTemplate">
+                    <!-- <eviction strategy="LRU" max-entries="1000"/> -->
+                    <expiration max-idle="3540000" lifespan="3540000"/>
+                </local-cache>
+            </cache-container> {% endif %}
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
                     <heap-memory size="10000"/>
