@@ -1,0 +1,8 @@
+---
+# tasks file for ansible-ejbca-pkc11-client
+
+- name: Install SoftHSM
+  include_tasks: install_softhsm.yml
+  tags: install_softhsm
+  when: use_softhsm|bool
+  

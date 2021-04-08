@@ -1,4 +1,4 @@
-# roles/mariadb/vars/RedHat.yml
+# roles/mariadb/vars/Fedora.yml
 ---
 
 mariadb_packages:

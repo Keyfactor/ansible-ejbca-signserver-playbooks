@@ -1,0 +1,13 @@
+---
+
+- hosts: ejbcaCaServers
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/SubManagementCA_AzureSQL_vars.yml
+  roles:
+    - ansible-hostname
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ejbca-prep
+    - ansible-ejbca-ca-ee

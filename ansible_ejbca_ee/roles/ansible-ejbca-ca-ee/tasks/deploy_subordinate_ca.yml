@@ -1,0 +1,82 @@
+---
+
+- name: Test that HSM slots are available
+  include_tasks: hsm_test.yml
+  loop: "{{ sub_test_slots }}"
+  loop_control:
+    label: "{{ item.slot_identifier }}"
+  no_log: true
+  tags: hsm_test
+  when: sub_test_slots[0] is defined
+
+- name: Generate HSM keys
+  include_tasks: clienttoolbox_key_generation.yml
+  loop: "{{ sub_generate_hsm_keys }}"
+  loop_control:
+    label: "{{ item.slot_identifier }}"
+  no_log: true
+  tags: clienttoolbox_key_generation
+  when: sub_generate_hsm_keys[0] is defined
+
+- name: Check deployment
+  include_tasks: check_deployment.yml
+  tags: check_deployment
+  when: management_database_indexes.apply_indexes or sub_add_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
+
+- name: Prepare configdump template files
+  include_tasks: config_configdump.yml
+
+- name: Apply indexes
+  include_tasks: config_apply_indexes.yml
+  when: management_database_indexes.apply_indexes
+
+- name: Use Configdump to create the CA's
+  block:
+
+    - name: Create crypto tokens for Policy/Sub/Management CA's
+      include_tasks: add_crypto_token.yml
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+
+    - name: Stage Management & Root CA to create with configdump
+      template:
+        src: ca-template.yml.j2
+        dest: "{{ ejbca_home }}/dump/dump1/certification-authorities/{{ item.caname }}.yaml"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0664
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+
+    - name: Import External CA's
+      include_tasks: add_external_cas.yml
+      loop: 
+        - "{{ sub_add_certification_authorities[0] }}"
+      no_log: true
+      
+    - name: Intialize Policy/Sub/Management CA's with configdump
+      command: "./dist/configdump/configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1 --initialize"
+      args:
+        chdir: "{{ ejbca_home }}"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+  when: deploy_with_configdump|bool and sub_add_certification_authorities[0] is defined
+
+- name: Use CLI to create the CA's
+  block:
+
+    - name: Initialize Policy or Subordinate CAs with CLI commands
+      include_tasks: init_ca.yml
+      loop: "{{ sub_add_certification_authorities }}"
+      loop_control:
+        label: "{{ item.caname }}"
+      no_log: true
+      tags: create_cas
+  
+  when: sub_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
+
+- name: Copy CA CSRs to the Ansible Controller 
+  include_tasks: copy_csr_local.yml
+  tags: create_cas
+  when: sub_add_certification_authorities[0] is defined  

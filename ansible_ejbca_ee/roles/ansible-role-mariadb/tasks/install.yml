@@ -9,6 +9,9 @@
     gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
     gpgcheck: true
   tags: mariadb
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+        (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
 
 - name: Ensure "module_hotfixes=1 is in section "[MariaDB]" in specified file
   ini_file:
@@ -21,14 +24,21 @@
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
 
-- name: Install packages CentOS/RHEL 7
+- name: Install packages CentOS 7
   package:
     name: "{{ item }}"
     state: installed
   loop: "{{ mariadb_packages }}"
   tags: mariadb
-  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+
+- name: Install packages RHEL 7
+  package:
+    name: "{{ item }}"
+    state: installed
+  loop: "{{ rhel_mariadb_packages }}"
+  tags: mariadb
+  when: (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
 - name: Install packages CentOS/RHEL 8
   package:

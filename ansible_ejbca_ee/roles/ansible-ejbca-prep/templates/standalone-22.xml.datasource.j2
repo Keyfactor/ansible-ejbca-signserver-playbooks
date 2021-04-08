@@ -140,9 +140,22 @@
             <logger category="org.apache.cxf">
                 <level name="WARN"/>
             </logger>
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+            <syslog-handler name="{{ item.name }}" enabled="{{ item.enabled }}">
+                <level name="{{ log_level }}"/>
+                <hostname value="{{ syslog_host }}"/>
+                <app-name value="{{ syslog_app_name }}"/>
+                <server-address value={{ syslog_server_address }}/>
+                <port value="{{ syslog_server_port }}"/>
+                <facility value="{{ syslog_facility }}"/>
+            </syslog-handler>
+{% endfor %}{% endif %}
             <root-logger>
                 <level name="INFO"/>
                 <handlers>
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+                    <handler name="{{ item.name }}"/>
+{% endfor %}{% endif %}
                     <handler name="FILE"/>
                 </handlers>
             </root-logger>
@@ -158,9 +171,9 @@
             <datasources>
 {% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}
                 <datasource jndi-name="{{ item.jndi_name }}" pool-name="{{ item.pool_name }}" use-ccm="true">
-                    <connection-url>jdbc:mariadb://{{ item.host }}:{{ item.port }}/{{ item.database }}</connection-url>
-                    <driver-class>org.mariadb.jdbc.Driver</driver-class>
-                    <driver>mariadb-java-client.jar</driver>
+                    <connection-url>jdbc:{{ item.database_connection_type| default('mariadb') }}://{{ item.host }}:{{ item.port }}{% if item.database_connection_type == "mariadb" %}/{{ item.database }}{% elif item.database_connection_type == "sqlserver" %};DatabaseName={{ item.database }}{{ item.connection_parameters }}{% endif %}</connection-url>
+                    <driver-class>{{ item.database_driver_class| default('org.mariadb.jdbc.Driver') }}</driver-class>
+                    <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
                         <min-pool-size>5</min-pool-size>

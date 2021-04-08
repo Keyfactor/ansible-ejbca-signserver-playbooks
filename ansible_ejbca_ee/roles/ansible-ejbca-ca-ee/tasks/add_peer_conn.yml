@@ -27,7 +27,9 @@
     peer_connection_info: |
       [
       {% for line in create_peer_connectors.results %}
+      {% if line.stdout is defined %}
       {{ '{' }}  'id':'{{ line.stdout.split(' ')[4] }}', 'name':'{{ line.item.name }}', 'type': '{{ line.item.type }}' {{ '}' }},
+      {% endif %}
       {% endfor %}
       ]
   when: create_peer_connectors is defined

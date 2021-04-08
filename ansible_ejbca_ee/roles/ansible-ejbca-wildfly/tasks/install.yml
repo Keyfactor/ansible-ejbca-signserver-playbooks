@@ -7,6 +7,13 @@
     state: present
   when: wildfly_manage_java_pkg or wildfly_use_galleon|bool
 
+- name: Install unzip
+  package:
+    name: unzip
+    state: present
+  when: 
+    - wildfly_use_galleon|bool
+
 - name: Check if wildfly directory exists
   stat:
     path: "{{ wildfly_dir }}"

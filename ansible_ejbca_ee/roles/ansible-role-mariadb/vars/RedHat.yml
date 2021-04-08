@@ -7,6 +7,12 @@ mariadb_packages:
   - MySQL-python
   - MariaDB-backup
 
+rhel_mariadb_packages:
+  - rh-mariadb103-mariadb
+  - rh-mariadb103-mariadb-backup
+  - rh-mariadb103-mariadb-common
+  - MariaDB-client
+
 mariadb_packages_8:
   - MariaDB-common
   - MariaDB-server

@@ -9,6 +9,7 @@
     - ansible-hostname
     - ansible-role-mariadb
     - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
     - ansible-ejbca-prep
     - ansible-ejbca-va-ee
 

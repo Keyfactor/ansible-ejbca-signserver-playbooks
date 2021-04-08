@@ -14,30 +14,25 @@ organizationNameShort: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 
 ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
-ejbca_jdbc_gen_name: mariadb-java-client.jar
+ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
 
 ant_version: apache-ant-1.10.9-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
 ant_checksum: sha256:5f8a85ddee6effe79163aa54c7bef6b60305e37200dedc1986437fb5c072a9f3
 
-wildfly_standalone_file: standalone-19.xml.datasource.j2
+wildfly_standalone_file: standalone-22.xml.datasource.j2
 wildfly_disable_infinispan: true
 
 ejbca_manage_user: true
 ejbca_group: wildfly
 ejbca_user: wildfly
 ejbca_user_profile: "/home/{{ ejbca_user }}"
-ejbca_softhsm_enable: true
+
 # Location to write the CRL files on server
-ejbca_crl_dir_enabled: true
+ejbca_crl_dir_enabled: false
 ejbca_crl_dir:
   - /opt/web/CRLs
   - /opt/web/AIA
-
-ejbca_softhsm:
-  - dir: /opt/softhsm
-    src: /usr/lib64/libsofthsm2.so
-    dest: /opt/softhsm/hsm_pkcs11.so
 
 # EJBCA audit log database protection configurations
 # slot_index: Index of HSM slot used for database integrity protection
@@ -46,28 +41,10 @@ ejbca_softhsm:
 # token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
 ejbca_databaseprotection:
   slot_label: DB_Protect_SLOT
-  key_label: dbProtect00001
+  key_label: dbProtect0001
   signature_algorithm: SHA256WithRSA
   token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
   hsm_shared_library: /usr/lib64/libsofthsm2.so
-
-
-ejbca_gen_hsm_slots:
-  - slot_name: Management_CA_SLOT
-    slot_so_pin: "{{ encrypted_mgmtca_so_token_pin | default('foo123') }}" 
-    slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
-  - slot_name: Root_CA_SLOT
-    slot_so_pin: "{{ encrypted_rootca_so_token_pin | default('foo123') }}"
-    slot_pin: "{{ encrypted_rootca_token_pin | default('foo123') }}"
-  - slot_name: Sub_CA_SLOT
-    slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
-    slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
-  - slot_name: "{{ ejbca_databaseprotection.slot_label }}"
-    slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
-    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
-  - slot_name: KeyBinding_SLOT
-    slot_so_pin: "{{ encrypted_peerkeybind_so_token_pin | default('foo123') }}"
-    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
 
 # EJBCA CA property files
 ejbca_templated_properties_files:
@@ -101,30 +78,44 @@ ejbca_build_configdump: false
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
+    database_type: mariadb
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
     port: 3306
     database: ejbca
     user: ejbca-usr
+    credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
 
 #ejbca.properties
 ejbca_appserver_home: "{{ wildfly_home }}"
 ejbca_productionmode: false
-ejbca_allow_external_dynamic_configuration: false
+ejbca_allow_external_dynamic_configuration: true
 # Password used to protect CMS keystores in the database (CAs CMS signer/enc certificate).
 ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
 ejbca_cli_defaultusername: ejbca
 ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 
 #cesecore.properties
-core_allow_external_dynamic_configuration: false
+core_allow_external_dynamic_configuration: true
 core_ca_serialnumberoctetsize: 20
 core_db_keepjbossserialization: false
 core_db_keepinternalcakeystores: false
 core_ca_keepocspextendedservice: false
 
 #database.properties
-ejbca_db_database_name: mysql
 ejbca_db_database_useSeparateCertificateTable: true
 
 #mail.properties

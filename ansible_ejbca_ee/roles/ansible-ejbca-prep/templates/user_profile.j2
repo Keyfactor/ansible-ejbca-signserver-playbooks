@@ -8,8 +8,8 @@ fi
 # EJBCA variables
 APPSRV_HOME={{ wildfly_home| default('/opt/wildfly') }}
 EJBCA_HOME={{ ejbca_home| default('/opt/ejbca') }}
-JAVA_HOME=/usr/lib/jvm/java
-ANT_HOME=/usr/share/ant
+JAVA_HOME={{ ejbca_java_home | default('/usr/lib/jvm/java') }}
+ANT_HOME={{ ejbca_ant_home | default('/opt/apache-ant') }}
 CLASSPATH=/opt/ejbca:$CLASSPATH
 
 PATH=$PATH:$HOME/.local/bin:$HOME/bin:${APPSRV_HOME}/bin:${EJBCA_HOME}/bin:${JAVA_HOME}/bin:${ANT_HOME}/bin:$PATH

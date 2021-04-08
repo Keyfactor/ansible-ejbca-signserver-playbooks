@@ -45,4 +45,14 @@
     state: started
     enabled: true
   tags: mariadb
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+        (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
 
+- name: Ensure service is started for RHEL 7 MariaDB
+  service:
+    name: "{{ rhel_mariadb_service }}"
+    state: started
+    enabled: true
+  tags: mariadb
+  when: (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 

@@ -4,6 +4,9 @@
   package:
     name: epel-release
     state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+
 
 - name: Install OpenJDK Development, unzip CentOS/RHEL 8
   dnf:
@@ -18,49 +21,6 @@
     state: present
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
-
-- name: State Okay Repo GPG Key
-  copy:
-    src: RPM-GPG-KEY-OKAY
-    dest: /etc/pki/rpm-gpg/
-    owner: root
-    group: root
-    mode: 0644
-  when: 
-    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
-    - (ejbca_softhsm_enable|bool)
-
-- name: Import Okay Repo key from a file
-  ansible.builtin.rpm_key:
-    state: present
-    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-OKAY
-  when: 
-    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
-    - (ejbca_softhsm_enable|bool)
-
-- name: Install SoftHSM CentOS/RHEL 8
-  dnf:
-    name: "{{ ejbca_softhsm_8 }}"
-    state: present
-    #disable_gpg_check: yes
-  when: 
-    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
-    - (ejbca_softhsm_enable|bool)
-
-        #(ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-        #(ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") and
-        #(ejbca_softhsm_enable|bool)
-
-- name: Install SoftHSM CentOS/RHEL 7
-  yum:
-    name: "{{ ejbca_softhsm_7 }}"
-    state: present
-  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") and
-        (ejbca_softhsm_enable|bool)
 
 - name: Check if ant directory exists
   stat:
