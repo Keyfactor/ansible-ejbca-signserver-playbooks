@@ -102,7 +102,7 @@
     url: '{{ wildfly_jboos_client_download_url }}'
     dest: '{{ wildfly_dir }}/bin/client/{{ wildfly_jboos_client_file }}'
     validate_certs: '{{ wildfly_download_validate_certs }}'
-    checksum: "{{ wildfly_jboos_client_checksum }}"
+    checksum: "{{ wildfly_jboss_client_checksum }}"
   when: 
     - not wildfly_src_dir.stat.exists
     - wildfly_use_galleon|bool

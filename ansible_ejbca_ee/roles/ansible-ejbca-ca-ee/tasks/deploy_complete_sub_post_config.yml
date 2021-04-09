@@ -1,0 +1,5 @@
+---
+
+- name: Import signed CA certificate
+  include_tasks: add_external_cas.yml
+  when: sub_test_slots[0] is defined

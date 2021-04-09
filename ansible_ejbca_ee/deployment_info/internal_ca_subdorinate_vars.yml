@@ -8,10 +8,6 @@ countryName: US
 superAdminCn: "31Mar2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
-deploy_mgmt_root_sub: false
-deploy_subordinate_ca: true
-deploy_with_configdump: false
-
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
 # create Peer connection, and create an auth key binding
 use_external_va: true
@@ -64,14 +60,15 @@ ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}
 #wildfly_version: 21.0.2.Final
 #wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
 #wildfly_standalone_file: standalone-21.xml.datasource.j2
-wildfly_version: 22.0.1.Final
+wildfly_version: 23.0.0.Final
 wildfly_checksum: sha256:08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01 #tar.gz file
 #wildfly_checksum: sha256:0ec1c475212258bca43c5351197a4b5b3d050b2b4d53f3f331e530ea424aa819 #zip file
-wildfly_standalone_file: standalone-22.xml.datasource.j2
+wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboos_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
+#wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
+wildfly_jboss_client_checksum: sha256:6d41c7f3ba33cbcfb1a5a639eccc1d04c494f855f15324e175736c4ac184336d #WF 23
 wildfly_download_url: "http://172.16.170.133:8080/ejbca/wildfly-22.0.1.Final.tar.gz"
 wildfly_download_file: "{{ wildfly_name }}.tar.gz"
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
@@ -90,6 +87,7 @@ appsrv_datasources:
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
 
 wildfly_enable_kerberos: true
+krb_conf_use_os_file: true
 wildfly_kerberos_enable_debug_log: false
 wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
 krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
@@ -371,8 +369,8 @@ sub_add_certification_authorities:
     finish_user: true
     ca_healthcheck_enabled: true
     request_processor: null
-    externalcachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
-    externalcachain_file: /var/tmp/rootca.pem
+    external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
+    external_root_cachain_file: /var/tmp/rootca.pem
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
@@ -494,6 +492,10 @@ configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
   - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
   - "{{ ejbca_home }}/dump/dump1/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump2/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump2/services"
 
 configdump_files:
   - src: 'cp-RootCA-G1.yaml.j2'
@@ -502,3 +504,23 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
   - src: 'extended-key-usages.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
+  - src: 'cp-SubCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-tlsPeerConnector.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsPeerConnector.yaml'
+  - src: 'ee-tlsPeerConnMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsPeerConnMgmt.yaml'
+  - src: 'service-DailyCRLUpdate.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/DailyCRLUpdate.yaml'
+  - src: 'service-HSM_Keepalive.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/HSM_Keepalive.yaml'
+  - src: 'ext-certTempInfo.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/custom-certificate-extensions/certTempInfo.yaml'
+  - src: 'ee-tlsServerMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsServerMgmt.yaml'
+  - src: 'ee-userAuthentication.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/userAuthentication.yaml'
+  - src: 'cp-tlsServerMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerMgmtCA.yaml'
+  - src: 'cp-tlsServerAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerAuth.yaml'

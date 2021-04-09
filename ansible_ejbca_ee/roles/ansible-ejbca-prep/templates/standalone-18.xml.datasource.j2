@@ -36,8 +36,12 @@
         <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT" value="2048"/>
         <property name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH" value="true"/>
 {% if wildfly_enable_kerberos is sameas true %}
-        <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+{% if krb_conf_use_os_file is sameas true %}
+        <property name="java.security.krb5.conf" value="/etc/krb5.conf"/>        
+{% else %}
         <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
+{% endif %}
+        <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
 {% endif %}
     </system-properties>
     <management>

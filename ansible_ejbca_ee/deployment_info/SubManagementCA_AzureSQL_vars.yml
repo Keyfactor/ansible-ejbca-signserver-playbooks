@@ -74,7 +74,7 @@ wildfly_standalone_file: standalone-22.xml.datasource.j2
 wildfly_use_galleon: false
 
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboos_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
+wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
 wildfly_download_url: "http://172.16.170.133:8080/ejbca/wildfly-22.0.1.Final.tar.gz"
 wildfly_download_file: "{{ wildfly_name }}.tar.gz"
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
@@ -96,6 +96,7 @@ appsrv_datasources:
 
 wildfly_enable_kerberos: true
 wildfly_kerberos_enable_debug_log: false
+krb_conf_use_os_file: true
 wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
 krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
 krb_conf_realms:

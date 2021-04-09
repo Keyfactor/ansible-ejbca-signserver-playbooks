@@ -133,6 +133,7 @@ wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
 wildfly_enable_kerberos: false
 wildfly_kerberos_enable_debug_log: false
 wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+krb_conf_use_os_file: true
 krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
 krb_conf_realms:
   - realm: INTERNAL.PRIMEKEY.COM

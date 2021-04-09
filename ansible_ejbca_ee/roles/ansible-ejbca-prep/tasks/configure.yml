@@ -117,7 +117,7 @@
     owner: root
     group: root
     mode: 0644
-  when: wildfly_enable_kerberos|bool
+  when: not krb_conf_use_os_file|bool
 
 - name: Deploy Wildfly standalone.xml
   template:
