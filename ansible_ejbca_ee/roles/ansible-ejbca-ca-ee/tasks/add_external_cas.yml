@@ -2,10 +2,10 @@
 
 - name: Download external CA chain for creating an External CA {{ item.caname }}
   uri:
-    url: "{{ item.externalcachain_url }}"
+    url: "{{ item.external_cachain_url }}"
     validate_certs: no
-    dest: "{{ item.externalcachain_file }}"
-    creates: "{{ item.externalcachain_file }}"
+    dest: "{{ item.external_cachain_file }}"
+    creates: "{{ item.external_cachain_file }}"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
   no_log: true
@@ -14,7 +14,7 @@
   command: >
     {{ ejbca_home }}/bin/ejbca.sh ca importcacert
     --caname {{ item.rootDn }}
-    -f {{ item.externalcachain_file }}
+    -f {{ item.external_cachain_file }}
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"

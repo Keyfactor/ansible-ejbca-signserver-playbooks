@@ -118,13 +118,15 @@ krb_conf_realms:
 
 # HSM Configuration
 # Use softhsm for PKCS11
-use_softhsm: true
+use_softhsm: false
+use_safenet_lunasa: true
 # If true, allows running application server service via preload
 ncipher_preload: false
 # Path to the preload executable
 preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
-hsm_shared_library: /usr/lib64/libsofthsm2.so
+#hsm_shared_library: /usr/lib64/libsofthsm2.so
+hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
 
 # CLI access info
 ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
@@ -377,8 +379,10 @@ sub_add_certification_authorities:
     finish_user: true
     ca_healthcheck_enabled: true
     request_processor: null
-    externalcachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
-    externalcachain_file: /var/tmp/rootca.pem
+    external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
+    external_root_cachain_file: /var/tmp/rootca.pem
+    external_cachain_url:
+    external_cachain_file:
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
