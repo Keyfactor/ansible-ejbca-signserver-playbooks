@@ -44,8 +44,10 @@ ejbca_version: 7.4.3.3
 ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_3.zip
 ejbca_src_dir_name: ejbca_ee_7_4_3_3
 ejbca_type: CA
-ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
-ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+#ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
+#ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 # Location to write the CRL files on server
 ejbca_crl_dir_enabled: true
 ejbca_crl_dir:

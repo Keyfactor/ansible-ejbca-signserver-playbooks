@@ -6,11 +6,11 @@
   pre_tasks:
     - include_vars: deployment_info/internal_ca_vars.yml
   roles:
-    - ansible-hostname
-    - ansible-role-mariadb
-    - ansible-ejbca-wildfly
-    - ansible-ejbca-pkc11-client
-    - ansible-ejbca-prep
+    #- ansible-hostname
+    #- ansible-role-mariadb
+    #- ansible-ejbca-wildfly
+    #- ansible-ejbca-pkc11-client
+    #- ansible-ejbca-prep
     - ansible-ejbca-ca-ee
     - ansible-ejbca-httpd
 

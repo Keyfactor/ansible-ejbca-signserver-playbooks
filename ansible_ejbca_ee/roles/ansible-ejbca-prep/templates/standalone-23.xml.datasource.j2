@@ -43,7 +43,7 @@
             <handlers>
                 <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
-            <logger log-boot="true" log-read-only="false" enabled="false">
+            <logger log-boot="true" log-read-only="false" enabled="true">
                 <handlers>
                     <handler name="file"/>
                 </handlers>
@@ -81,22 +81,93 @@
                 <suffix value=".yyyy-MM-dd"/>
                 <append value="true"/>
             </periodic-rotating-file-handler>
+<size-rotating-file-handler name="EJBCAFILE" autoflush="true">
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="ejbca.log"/>
+                <rotate-size value="32M"/>
+                <max-backup-index value="31"/>
+                <append value="true"/>
+            </size-rotating-file-handler>
             <logger category="com.arjuna">
                 <level name="WARN"/>
             </logger>
-            <logger category="io.jaegertracing.Configuration">
+
+            <logger category="org.jboss.resteasy.resteasy_jaxrs.i18n">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.jboss.as.ejb3.deployment">
                 <level name="WARN"/>
             </logger>
             <logger category="org.jboss.as.config">
-                <level name="DEBUG"/>
+                <level name="INFO"/>
+            </logger>
+            <logger category="org.jboss.as">
+                <level name="WARN"/>
             </logger>
             <logger category="sun.rmi">
                 <level name="WARN"/>
             </logger>
+            <logger category="org.ejbca" use-parent-handlers="false">
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="EJBCAFILE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </logger>
+            <logger category="org.cesecore" use-parent-handlers="false">
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="EJBCAFILE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </logger>
+            <logger category="org.jboss">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.cesecore.config.ConfigurationHolder" use-parent-handlers="false">
+                <level name="WARN"/>
+                <handlers>
+                    <handler name="EJBCAFILE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </logger>
+            <logger category="org.hibernate.dialect.H2Dialect">
+                <level name="ERROR"/>
+            </logger>
+            <logger category="org.hibernate">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.wildfly">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.jboss.security">
+                <level name="INFO"/>
+            </logger>
+            <logger category="org.xnio">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.apache.cxf">
+                <level name="WARN"/>
+            </logger>
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+            <syslog-handler name="{{ item.name }}" enabled="{{ item.enabled }}">
+                <level name="{{ log_level }}"/>
+                <hostname value="{{ syslog_host }}"/>
+                <app-name value="{{ syslog_app_name }}"/>
+                <server-address value={{ syslog_server_address }}/>
+                <port value="{{ syslog_server_port }}"/>
+                <facility value="{{ syslog_facility }}"/>
+            </syslog-handler>
+{% endfor %}{% endif %}
             <root-logger>
                 <level name="INFO"/>
                 <handlers>
-                    <handler name="CONSOLE"/>
+
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+                    <handler name="{{ item.name }}"/>
+{% endfor %}{% endif %}
                     <handler name="FILE"/>
                 </handlers>
             </root-logger>
@@ -109,7 +180,38 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:6.0">
-            <datasources/>
+            <datasources>
+{% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}
+                <datasource jndi-name="{{ item.jndi_name }}" pool-name="{{ item.pool_name }}" use-ccm="true">
+                    <connection-url>jdbc:{{ item.database_connection_type| default('mariadb') }}://{{ item.host }}:{{ item.port }}{% if item.database_connection_type == "mariadb" %}/{{ item.database }}{% elif item.database_connection_type == "sqlserver" %};DatabaseName={{ item.database }}{{ item.connection_parameters }}{% endif %}</connection-url>
+                    <driver-class>{{ item.database_driver_class| default('org.mariadb.jdbc.Driver') }}</driver-class>
+                    <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+                    <pool>
+                        <min-pool-size>5</min-pool-size>
+                        <max-pool-size>150</max-pool-size>
+                        <prefill>true</prefill>
+                    </pool>
+                    <security>
+                        <user-name>{{ item.user }}</user-name>
+
+                        <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
+                        <!-- password>{{ item.password }}</password -->
+                    </security>
+                    <validation>
+                        <check-valid-connection-sql>select 1;</check-valid-connection-sql>
+                        <validate-on-match>true</validate-on-match>
+                        <background-validation>false</background-validation>
+                    </validation>
+                    <statement>
+                        <prepared-statement-cache-size>50</prepared-statement-cache-size>
+                        <share-prepared-statements>true</share-prepared-statements>
+                    </statement>
+                </datasource>
+{% endfor %}{% endif %}                
+                <drivers>
+                </drivers>
+            </datasources>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:2.0">
             <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}"/>
@@ -124,10 +226,10 @@
                     <managed-thread-factory name="default" jndi-name="java:jboss/ee/concurrency/factory/default" context-service="default"/>
                 </managed-thread-factories>
                 <managed-executor-services>
-                    <managed-executor-service name="default" jndi-name="java:jboss/ee/concurrency/executor/default" context-service="default" hung-task-termination-period="0" hung-task-threshold="60000" keepalive-time="5000"/>
+                    <managed-executor-service name="default" jndi-name="java:jboss/ee/concurrency/executor/default" context-service="default" hung-task-threshold="60000" keepalive-time="5000"/>
                 </managed-executor-services>
                 <managed-scheduled-executor-services>
-                    <managed-scheduled-executor-service name="default" jndi-name="java:jboss/ee/concurrency/scheduler/default" context-service="default" hung-task-termination-period="0" hung-task-threshold="60000" keepalive-time="3000"/>
+                    <managed-scheduled-executor-service name="default" jndi-name="java:jboss/ee/concurrency/scheduler/default" context-service="default" hung-task-threshold="60000" keepalive-time="3000"/>
                 </managed-scheduled-executor-services>
             </concurrent>
             <default-bindings context-service="java:jboss/ee/concurrency/context/default" managed-executor-service="java:jboss/ee/concurrency/executor/default" managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default" managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
@@ -140,14 +242,10 @@
                 <stateful default-access-timeout="5000" cache-ref="simple" passivation-disabled-cache-ref="simple"/>
                 <singleton default-access-timeout="5000"/>
             </session-bean>
-            <mdb>
-                <resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:activemq-ra.rar}"/>
-                <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
-            </mdb>
             <pools>
                 <bean-instance-pools>
-                    <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                     <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                    <strict-max-pool name="slsb-strict-max-pool" max-pool-size="32" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                 </bean-instance-pools>
             </pools>
             <caches>
@@ -170,8 +268,8 @@
             </remote>
             <thread-pools>
                 <thread-pool name="default">
-                    <max-threads count="10"/>
-                    <keepalive-time time="60" unit="seconds"/>
+                    <max-threads count="100"/>
+                    <keepalive-time time="75" unit="minutes"/>
                 </thread-pool>
             </thread-pools>
             <default-security-domain value="other"/>
@@ -280,30 +378,25 @@
                 </mechanism-provider-filtering-sasl-server-factory>
                 <provider-sasl-server-factory name="global"/>
             </sasl>
-            <tls>
-                <key-stores>
-                    <key-store name="applicationKS">
-                        <credential-reference clear-text="password"/>
-                        <implementation type="JKS"/>
-                        <file path="application.keystore" relative-to="jboss.server.config.dir"/>
-                    </key-store>
-                </key-stores>
-                <key-managers>
-                    <key-manager name="applicationKM" key-store="applicationKS" generate-self-signed-certificate-host="localhost">
-                        <credential-reference clear-text="password"/>
-                    </key-manager>
-                </key-managers>
-                <server-ssl-contexts>
-                    <server-ssl-context name="applicationSSC" key-manager="applicationKM"/>
-                </server-ssl-contexts>
-            </tls>
+            <credential-stores>
+                <credential-store name="defaultCS" relative-to="jboss.server.config.dir" location="credentials" create="true">
+                    <credential-reference type="COMMAND" clear-text="{EXT}{{ wildfly_elytron_pass_file }}"/>
+                </credential-store>
+            </credential-stores>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:infinispan:12.0">
-            <cache-container name="ejb" default-cache="passivation" aliases="sfsb" modules="org.wildfly.clustering.ejb.infinispan">
+            <cache-container name="ejb" aliases="sfsb" default-cache="passivation" modules="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
             </cache-container>
+{% if wildfly_enable_kerberos is sameas true %}
+            <cache-container name="security" default-cache="mssqlKerberosTemplate">
+                <local-cache name="mssqlKerberosTemplate">
+                    <!-- <eviction strategy="LRU" max-entries="1000"/> -->
+                    <expiration max-idle="3540000" lifespan="3540000"/>
+                </local-cache>
+            </cache-container> {% endif %}
             <cache-container name="hibernate" modules="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
                     <heap-memory size="10000"/>
@@ -320,7 +413,7 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:io:3.0">
-            <worker name="default"/>
+            <worker name="default" io-threads="100" task-core-threads="25" task-max-threads="100"/>
             <buffer-pool name="default"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:2.0"/>
@@ -332,13 +425,13 @@
                     <core-threads count="50"/>
                     <queue-length count="50"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="10" unit="seconds"/>
+                    <keepalive-time time="75" unit="minutes"/>
                 </short-running-threads>
                 <long-running-threads>
                     <core-threads count="50"/>
                     <queue-length count="50"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="10" unit="seconds"/>
+                    <keepalive-time time="75" unit="minutes"/>
                 </long-running-threads>
             </default-workmanager>
             <cached-connection-manager/>
@@ -348,8 +441,8 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jsf:1.1"/>
         <subsystem xmlns="urn:jboss:domain:mail:4.0">
-            <mail-session name="default" jndi-name="java:jboss/mail/Default">
-                <smtp-server outbound-socket-binding-ref="mail-smtp"/>
+            <mail-session name="java:/EjbcaMail" jndi-name="java:/EjbcaMail">
+                <smtp-server outbound-socket-binding-ref="ejbca-mail-smtp"/>
             </mail-session>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:2.0">
@@ -357,7 +450,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:4.0">
             <endpoint worker="default"/>
-            <http-connector name="http-remoting-connector" connector-ref="default" sasl-authentication-factory="application-sasl-authentication"/>
+            <http-connector name="http-remoting-connector" connector-ref="remoting" sasl-authentication-factory="application-sasl-authentication"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:6.0"/>
         <subsystem xmlns="urn:jboss:domain:security:2.0">
@@ -400,7 +493,8 @@
         <subsystem xmlns="urn:jboss:domain:undertow:12.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
             <buffer-cache name="default"/>
             <server name="default-server">
-                <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
+                <ajp-listener name="ajp-listener" socket-binding="ajp" scheme="https"/>
+                <http-listener name="remoting" socket-binding="remoting" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                     <http-invoker/>
                 </host>
@@ -411,7 +505,8 @@
             </servlet-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:2.0" statistics-enabled="${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}">
-            <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
+            <modify-wsdl-address>true</modify-wsdl-address>
+            <wsdl-host>jbossws.undefined.host</wsdl-host>
             <endpoint-config name="Standard-Endpoint-Config"/>
             <endpoint-config name="Recording-Endpoint-Config">
                 <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
@@ -431,14 +526,13 @@
         </interface>
     </interfaces>
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
-        <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
-        <socket-binding name="http" port="${jboss.http.port:8080}"/>
-        <socket-binding name="https" port="${jboss.https.port:8443}"/>
+        <socket-binding name="ajp" interface="public" port="${jboss.ajp.port:8009}"/>
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+        <socket-binding name="remoting" interface="management" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
-        <outbound-socket-binding name="mail-smtp">
+        <outbound-socket-binding name="ejbca-mail-smtp">
             <remote-destination host="${jboss.mail.server.host:localhost}" port="${jboss.mail.server.port:25}"/>
         </outbound-socket-binding>
     </socket-binding-group>
