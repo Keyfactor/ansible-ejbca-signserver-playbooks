@@ -3,3 +3,23 @@
 - name: Import signed CA certificate
   include_tasks: add_external_cas.yml
   when: sub_test_slots[0] is defined
+
+- name: Configdump import cert profiles, end entity profiles, and services
+  command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
+
+- name: Configure EJBCA Enrollment protocols
+  include_tasks: config_ejbca_services.yaml
+
+- name: Add end entities
+  include_tasks: add_end_entities.yml
+  tags: add_end_entities
+  when: management_add_end_entities[0] is defined
+
+- name: Add administrators
+  include_tasks: add_administrators.yml
+  tags: add_administrators
+  when: management_add_administrators[0] is defined

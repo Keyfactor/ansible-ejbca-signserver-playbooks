@@ -1,5 +1,5 @@
 # ------------- Database configuration ------------------------
-{{ ansible_managed | comment }}
+#{{ ansible_managed | comment }}
 
 database.useSeparateCertificateTable={{ ejbca_db_database_useSeparateCertificateTable }}
 {% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}

@@ -104,6 +104,8 @@ appsrv_datasources:
 # HSM Configuration
 # Use softhsm for PKCS11
 use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
 softhsm_gen_hsm_slots:
   - slot_name: OCSP_KeyBinding_SLOT
     slot_so_pin: "{{ encrypted_ocsp_so_token_pin | default('foo123') }}" 
@@ -115,8 +117,13 @@ preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
 hsm_shared_library: /usr/lib64/libsofthsm2.so
 
-ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
-ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+jbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 management_import_certification_authorities:
   - caname: "ManagementCA"

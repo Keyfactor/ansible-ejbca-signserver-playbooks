@@ -110,14 +110,27 @@
     - not elytron_pass_file_exists.stat.exists
     - not elytron_store_file_exists.stat.exists
 
-- name: Configure Wildfly Kerberos config file
-  template:
-    src: krb5.conf.j2
-    dest: "{{ wildfly_kerberos_file_path }}"
-    owner: root
-    group: root
-    mode: 0644
-  when: not krb_conf_use_os_file|bool
+- name: Configure Wildfly Kerberos 
+  block:
+    - name: Configure Wildfly Kerberos config file
+      template:
+        src: krb5.conf.j2
+        dest: "{{ wildfly_kerberos_file_path }}"
+        owner: root
+        group: root
+        mode: 0644
+      when: not krb_conf_use_os_file|bool
+
+    - name: Download kerberbos keytab file for Wildfly
+      get_url:
+        url: "{{ wildfly_kerberos_keytab_file_url }}"
+        dest: "{{ wildfly_kerberos_keytab_file }}"
+        checksum: "{{ wildfly_kerberos_keytab_file_url_checksum }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0640
+
+when: wildfly_enable_kerberos|bool
 
 - name: Deploy Wildfly standalone.xml
   template:

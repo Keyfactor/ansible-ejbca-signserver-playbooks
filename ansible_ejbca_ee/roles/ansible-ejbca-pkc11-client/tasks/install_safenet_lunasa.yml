@@ -2,6 +2,6 @@
 
 - name: Append the user groups for {{ ejbca_user }} to add the group 'hsmusers'
   user:
-    name: {{ ejbca_user }}
+    name: "{{ ejbca_user }}"
     groups: hsmusers
     append: yes

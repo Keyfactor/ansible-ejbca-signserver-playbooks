@@ -444,6 +444,24 @@
         <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0"/>
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             <security-domains>
+{% if wildfly_enable_kerberos is sameas true %}
+                <security-domain name="mssqlKerberos" cache-type="infinispan">
+                    <authentication>
+                        <login-module name="Kerberos-Module" code="org.jboss.security.negotiation.KerberosLoginModule" module="org.jboss.security.negotiation" flag="required" >
+                            <module-option name="storeKey" value="false"/>
+                            <module-option name="useKeyTab" value="true"/>
+                            <module-option name="doNotPrompt" value="true"/>
+                            <module-option name="debug" value="true"/>
+                            <module-option name="keyTab" value="{{ wildfly_kerberos_keytab_file }}"/>
+                            <module-option name="principal" value="{{ wildfly_kerberos_keytab_principal }}"/>
+                            <module-option name="isInitiator" value="true"/>
+                            <module-option name="refreshKrb5Config" value="true"/>
+                            <module-option name="addGSSCredential" value="true"/>
+                            <module-option name="wrapGSSCredential" value="true"/>
+                            <module-option name="credentialLifetime" value="-1"/>
+                        </login-module>
+                    </authentication>
+                </security-domain>{%endif%}
                 <security-domain name="other" cache-type="default">
                     <authentication>
                         <login-module code="Remoting" flag="optional">

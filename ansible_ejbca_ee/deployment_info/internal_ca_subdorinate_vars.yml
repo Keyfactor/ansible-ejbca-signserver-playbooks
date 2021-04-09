@@ -111,6 +111,8 @@ krb_conf_realms:
 # HSM Configuration
 # Use softhsm for PKCS11
 use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
 # If true, allows running application server service via preload
 ncipher_preload: false
 # Path to the preload executable
@@ -119,8 +121,8 @@ preload_path: /opt/nfast/bin/preload
 hsm_shared_library: /usr/lib64/libsofthsm2.so
 
 # CLI access info
-ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
-ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
 
 # EJBCA audit log database protection configurations
 # slot_index: Index of HSM slot used for database integrity protection
@@ -502,10 +504,6 @@ configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump2/services"
 
 configdump_files:
-  - src: 'cp-RootCA-G1.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/RootCA-{{ organizationNameShort }}-G1.yaml'
-  - src: 'cp-managementCA.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
   - src: 'extended-key-usages.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
   - src: 'cp-SubCA-G1.yaml.j2'

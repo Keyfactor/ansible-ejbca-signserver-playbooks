@@ -97,6 +97,12 @@ appsrv_datasources:
 wildfly_enable_kerberos: true
 wildfly_kerberos_enable_debug_log: false
 krb_conf_use_os_file: true
+wildfly_kerberos_keytab_file: "{{ wildfly_home }}/standalone/configuration/ejbca.keytab"
+# URL to download the keytab file used for kerberos.
+wildfly_kerberos_keytab_file_url:
+# SHA256 checksum of the keytab file
+wildfly_kerberos_keytab_file_url_checksum:
+wildfly_kerberos_keytab_principal: SVCEJBCA@INTERNAL.PRIMEKEY.COM
 wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
 krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
 krb_conf_realms:
@@ -119,6 +125,7 @@ krb_conf_realms:
 # HSM Configuration
 # Use softhsm for PKCS11
 use_softhsm: false
+use_ncipher: false
 use_safenet_lunasa: true
 # If true, allows running application server service via preload
 ncipher_preload: false
@@ -129,8 +136,13 @@ preload_path: /opt/nfast/bin/preload
 hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
 
 # CLI access info
-ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
-ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+jbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 # EJBCA audit log database protection configurations
 # slot_index: Index of HSM slot used for database integrity protection
@@ -474,7 +486,7 @@ enable_ejbca_protocols:
 #  - name: 'Web Service'
 
 # Add the management CA to HTTP trust chain file. 
-add_mgmt_ca: true
+add_mgmt_ca: false
 
 # Create CRL and AIA folder symbolic links for webserver to host these files
 httpd_create_aia_crl_dir: false
@@ -487,9 +499,9 @@ httpd_identity_info:
   id_username: ca_httpd_tls
   id_password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
   id_altname: "dNSName=ca01.{{ organizationDomainName }}, dNSName=ca.{{ organizationDomainName }}, dNSName=sapi.ca.{{ organizationDomainName }}, dNSName=api.ca.{{ organizationDomainName }}"
-  id_certprofile: tlsServerClientAuth
-  id_eeprofile: "tlsServer{{ organizationName }}"
-  id_caname: "{{ organizationName }}-Sub-CA"
+  id_certprofile: tlsServerMgmtCA
+  id_eeprofile: "tlsServerMgmt"
+  id_caname: "ManagementCA"
 
 # List of HTTPD certificate files to configure for HTTPD to use for TLS
 httpd_cert_files:
@@ -504,11 +516,31 @@ configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
   - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
   - "{{ ejbca_home }}/dump/dump1/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump2/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump2/services"
 
 configdump_files:
-#  - src: 'cp-RootCA-G1.yaml.j2'
-#    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/RootCA-{{ organizationNameShort }}-G1.yaml'
-  - src: 'cp-managementCA.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
   - src: 'extended-key-usages.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
+  - src: 'cp-SubCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-tlsPeerConnector.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsPeerConnector.yaml'
+  - src: 'ee-tlsPeerConnMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsPeerConnMgmt.yaml'
+  - src: 'service-DailyCRLUpdate.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/DailyCRLUpdate.yaml'
+  - src: 'service-HSM_Keepalive.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/HSM_Keepalive.yaml'
+  - src: 'ext-certTempInfo.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/custom-certificate-extensions/certTempInfo.yaml'
+  - src: 'ee-tlsServerMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsServerMgmt.yaml'
+  - src: 'ee-userAuthentication.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/userAuthentication.yaml'
+  - src: 'cp-tlsServerMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerMgmtCA.yaml'
+  - src: 'cp-tlsServerAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerAuth.yaml'

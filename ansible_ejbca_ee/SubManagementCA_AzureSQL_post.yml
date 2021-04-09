@@ -5,10 +5,7 @@
   become_method: sudo
   pre_tasks:
     - include_vars: deployment_info/SubManagementCA_AzureSQL_vars.yml
-    - include_vars: deployment_info/build_option_deploy_sub_ca.yml
+    - include_vars: deployment_info/build_option_deploy_complete_sub_ca.yml
   roles:
-    - ansible-hostname
-    - ansible-ejbca-wildfly
-    - ansible-ejbca-pkc11-client
-    - ansible-ejbca-prep
     - ansible-ejbca-ca-ee
+    - ansible-ejbca-httpd
