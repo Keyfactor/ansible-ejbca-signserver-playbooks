@@ -130,7 +130,7 @@
         group: "{{ ejbca_group }}"
         mode: 0640
 
-when: wildfly_enable_kerberos|bool
+  when: wildfly_enable_kerberos|bool
 
 - name: Deploy Wildfly standalone.xml
   template:

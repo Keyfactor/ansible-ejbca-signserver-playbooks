@@ -8,10 +8,6 @@ countryName: US
 superAdminCn: "31Mar2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
-deploy_mgmt_root_sub: false
-deploy_subordinate_ca: true
-deploy_with_configdump: false
-
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
 # create Peer connection, and create an auth key binding
 use_external_va: false
@@ -87,11 +83,16 @@ appsrv_datasources:
     database_jar_filename: mssql-java-client.jar
     host: 127.0.0.1
     port: 1433
+    min_pool_size: 0
+    max_pool_size: 5
+    prefill: false
+    use_strict_min: false
     database: ejbca
     user: ejbca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
     #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
+    #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
     connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
 
 wildfly_enable_kerberos: true

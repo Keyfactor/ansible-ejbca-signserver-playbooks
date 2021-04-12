@@ -184,15 +184,19 @@
                     <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
-                        <min-pool-size>5</min-pool-size>
-                        <max-pool-size>150</max-pool-size>
-                        <prefill>true</prefill>
+                        <min-pool-size>{{ min_pool_size| default('5')}}</min-pool-size>
+                        <max-pool-size>{{ max_pool_size| default('150') }}</max-pool-size>
+                        <prefill>{{ prefill| default('true') }}</prefill>
+                        <use-strict-min>{{ use_strict_min| default('false') }}</use-strict-min>
+                        <allow-multiple-users>{{ allow_multiple_user| default('false') }}</allow-multiple-users>
                     </pool>
                     <security>
+{% if wildfly_enable_kerberos is sameas true %}
+                        <security-domain>mssqlKerberos</security-domain>
+{% else %}
                         <user-name>{{ item.user }}</user-name>
-
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
-                        <!-- password>{{ item.password }}</password -->
+{% endif %}
                     </security>
                     <validation>
                         <check-valid-connection-sql>select 1;</check-valid-connection-sql>

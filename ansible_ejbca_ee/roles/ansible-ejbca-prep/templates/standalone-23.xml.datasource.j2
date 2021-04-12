@@ -197,10 +197,12 @@
                         <prefill>true</prefill>
                     </pool>
                     <security>
+{% if wildfly_enable_kerberos is sameas true %}
+                        <security-domain>mssqlKerberos</security-domain>
+{% else %}
                         <user-name>{{ item.user }}</user-name>
-
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
-                        <!-- password>{{ item.password }}</password -->
+{% endif %}
                     </security>
                     <validation>
                         <check-valid-connection-sql>select 1;</check-valid-connection-sql>

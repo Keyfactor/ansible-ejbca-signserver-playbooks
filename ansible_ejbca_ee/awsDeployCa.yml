@@ -5,6 +5,7 @@
   become_method: sudo
   pre_tasks:
     - include_vars: deployment_info_info/aws_ca_vars.yml
+    - include_vars: build_option_deploy_mgmt_root_sub_ca_full.yml
   roles:
     - ansible-hostname
     - ansible-role-mariadb

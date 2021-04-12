@@ -8,10 +8,6 @@ countryName: US
 superAdminCn: "IT PKI Administrator"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
-deploy_mgmt_root_sub: true
-deploy_subordinate_ca: false
-deploy_with_configdump: true
-
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
 # create Peer connection, and create an auth key binding
 use_external_va: false

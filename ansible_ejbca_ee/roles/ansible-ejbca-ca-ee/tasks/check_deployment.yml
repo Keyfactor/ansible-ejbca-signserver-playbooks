@@ -3,7 +3,7 @@
 - name: Restart application server if HSM keys were generated
   block:
   - name: Ensure application server is restarted
-    service:
+    systemd:
       state: restarted
       name: wildfly
     when: wildfly_manage_service
