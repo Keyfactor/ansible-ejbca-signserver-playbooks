@@ -12,21 +12,24 @@
   register: file_copy
   when: (ejbca_type == "RA" or ejbca_type == "VA")
 
-- block:
-  - name: Open http port
-    firewalld:
-      service: 'http'
-      permanent: yes
-      immediate: yes
-      state: enabled
+- name: Configure Firewalld
+  block:
+    - name: Open http port
+      firewalld:
+        service: 'http'
+        permanent: yes
+        immediate: yes
+        state: enabled
 
-  - name: Open https port
-    firewalld:
-      service: 'https'
-      permanent: yes
-      immediate: yes
-      state: enabled
+    - name: Open https port
+      firewalld:
+        service: 'https'
+        permanent: yes
+        immediate: yes
+        state: enabled
   tags: reverse-proxy
+  when: enable_firewalld_for_httpd|bool
+
 
 - name: Configure the httpd conf file for CentOS/RHEL 8
   template:

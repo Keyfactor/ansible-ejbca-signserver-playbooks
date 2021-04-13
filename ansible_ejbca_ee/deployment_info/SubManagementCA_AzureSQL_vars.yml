@@ -491,6 +491,7 @@ add_mgmt_ca: false
 
 # Create CRL and AIA folder symbolic links for webserver to host these files
 httpd_create_aia_crl_dir: false
+enable_firewalld_for_httpd: false
 
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
 httpd_identity_info:
@@ -521,6 +522,7 @@ configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump2/certification-authorities"
   - "{{ ejbca_home }}/dump/dump2/end-entity-profiles"
   - "{{ ejbca_home }}/dump/dump2/services"
+  - "{{ ejbca_home }}/dump/dump2/custom-certificate-extensions"
 
 configdump_files:
   - src: 'extended-key-usages.yaml.j2'
@@ -545,3 +547,7 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerMgmtCA.yaml'
   - src: 'cp-tlsServerAuth.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerAuth.yaml'
+  - src: 'ee-AdminInternal.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/AdminInternal.yaml'
+  - src: 'cp-adminMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/adminMgmtCA.yaml'

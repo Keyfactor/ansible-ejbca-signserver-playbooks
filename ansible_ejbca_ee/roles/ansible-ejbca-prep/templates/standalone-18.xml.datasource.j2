@@ -42,6 +42,7 @@
         <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
 {% endif %}
         <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+        <property name="sun.security.spnego.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
 {% endif %}
     </system-properties>
     <management>
@@ -204,13 +205,16 @@
                     <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
-                        <min-pool-size>5</min-pool-size>
-                        <max-pool-size>150</max-pool-size>
-                        <prefill>true</prefill>
+                        <min-pool-size>{{ min_pool_size| default('5')}}</min-pool-size>
+                        <max-pool-size>{{ max_pool_size| default('150') }}</max-pool-size>
+                        <prefill>{{ prefill| default('true') }}</prefill>
+                        <use-strict-min>{{ use_strict_min| default('false') }}</use-strict-min>
+                        <allow-multiple-users>{{ allow_multiple_user| default('false') }}</allow-multiple-users>
                     </pool>
                     <security>
 {% if wildfly_enable_kerberos is sameas true %}
-                        <security-domain>mssqlKerberos</security-domain>
+                        <elytron-enabled>true</elytron-enabled>
+                        <authentication-context>ejbca-ds-context</authentication-context>
 {% else %}
                         <user-name>{{ item.user }}</user-name>
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
@@ -295,6 +299,14 @@
             <log-system-exceptions value="true"/>
         </subsystem>
         <subsystem xmlns="urn:wildfly:elytron:8.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+{% if wildfly_enable_kerberos is sameas true %}
+            <authentication-client>
+                <authentication-configuration name="kerberos-conf" kerberos-security-factory="ejbca-db-krbsf"/>
+                <authentication-context name="ejbca-ds-context">
+                    <match-rule authentication-configuration="kerberos-conf"/>
+                </authentication-context>
+            </authentication-client>
+{% endif %}
             <providers>
                 <aggregate-providers name="combined-providers">
                     <providers name="elytron"/>
@@ -328,6 +340,11 @@
                     <groups-properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
                 </properties-realm>
             </security-realms>
+{% if wildfly_enable_kerberos is sameas true %}
+            <credential-security-factories>
+                <kerberos-security-factory name="ejbca-db-krbsf" principal="{{ wildfly_kerberos_keytab_principal }}" path="{{ wildfly_kerberos_keytab_file }}" server="false" obtain-kerberos-ticket="true" request-lifetime="-1" debug="false"/>
+            </credential-security-factories>
+{% endif %}
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
                     <permission-mapping>
@@ -399,61 +416,8 @@
                 </credential-store>
             </credential-stores>
         </subsystem>
-{% if wildfly_disable_infinispan is sameas false and wildfly_enable_kerberos is sameas false %}
+{% if wildfly_disable_infinispan is sameas false %}
         <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
-            <!-- <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
-                <local-cache name="passivation">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store passivation="true" purge="false"/>
-                </local-cache>
-                <local-cache name="sso">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                </local-cache>
-                <local-cache name="routing"/>
-            </cache-container> -->
-            <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
-                <local-cache name="entity">
-                    <object-memory size="10000"/>
-                    <expiration max-idle="100000"/>
-                </local-cache>
-                <local-cache name="local-query">
-                    <object-memory size="10000"/>
-                    <expiration max-idle="100000"/>
-                </local-cache>
-                <local-cache name="timestamps"/>
-            </cache-container>
-        </subsystem>
-{% elif wildfly_disable_infinispan is sameas true and wildfly_enable_kerberos is sameas true %}
-         <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
-            <cache-container name="security" default-cache="mssqlKerberosTemplate">
-                <local-cache name="mssqlKerberosTemplate">
-                    <!-- <eviction strategy="LRU" max-entries="1000"/> -->
-                    <expiration max-idle="3540000" lifespan="3540000"/>
-                </local-cache>
-            </cache-container>
-        </subsystem>
-{% elif wildfly_disable_infinispan is sameas false and wildfly_enable_kerberos is sameas true %}
-        <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
-            <!-- <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
-                <local-cache name="passivation">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store passivation="true" purge="false"/>
-                </local-cache>
-                <local-cache name="sso">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                </local-cache>
-                <local-cache name="routing"/>
-            </cache-container> -->
-            <cache-container name="security" default-cache="mssqlKerberosTemplate">
-                <local-cache name="mssqlKerberosTemplate">
-                    <!-- <eviction strategy="LRU" max-entries="1000"/> -->
-                    <expiration max-idle="3540000" lifespan="3540000"/>
-                </local-cache>
-            </cache-container>
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
                     <object-memory size="10000"/>

@@ -36,6 +36,7 @@
         <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
 {% endif %}
         <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+        <property name="sun.security.spnego.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
 {% endif %}
     </system-properties>
     <management>
@@ -192,13 +193,16 @@
                     <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
-                        <min-pool-size>5</min-pool-size>
-                        <max-pool-size>150</max-pool-size>
-                        <prefill>true</prefill>
+                        <min-pool-size>{{ min_pool_size| default('5')}}</min-pool-size>
+                        <max-pool-size>{{ max_pool_size| default('150') }}</max-pool-size>
+                        <prefill>{{ prefill| default('true') }}</prefill>
+                        <use-strict-min>{{ use_strict_min| default('false') }}</use-strict-min>
+                        <allow-multiple-users>{{ allow_multiple_user| default('false') }}</allow-multiple-users>
                     </pool>
                     <security>
 {% if wildfly_enable_kerberos is sameas true %}
-                        <security-domain>mssqlKerberos</security-domain>
+                        <elytron-enabled>true</elytron-enabled>
+                        <authentication-context>ejbca-ds-context</authentication-context>
 {% else %}
                         <user-name>{{ item.user }}</user-name>
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
@@ -287,6 +291,14 @@
             <log-system-exceptions value="true"/>
         </subsystem>
         <subsystem xmlns="urn:wildfly:elytron:13.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+{% if wildfly_enable_kerberos is sameas true %}
+            <authentication-client>
+                <authentication-configuration name="kerberos-conf" kerberos-security-factory="ejbca-db-krbsf"/>
+                <authentication-context name="ejbca-ds-context">
+                    <match-rule authentication-configuration="kerberos-conf"/>
+                </authentication-context>
+            </authentication-client>
+{% endif %}
             <providers>
                 <aggregate-providers name="combined-providers">
                     <providers name="elytron"/>
@@ -319,6 +331,11 @@
                     <groups-properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
                 </properties-realm>
             </security-realms>
+{% if wildfly_enable_kerberos is sameas true %}
+            <credential-security-factories>
+                <kerberos-security-factory name="ejbca-db-krbsf" principal="{{ wildfly_kerberos_keytab_principal }}" path="{{ wildfly_kerberos_keytab_file }}" server="false" obtain-kerberos-ticket="true" request-lifetime="-1" debug="false"/>
+            </credential-security-factories>
+{% endif %}
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
                     <permission-mapping>
@@ -396,13 +413,6 @@
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
             </cache-container>
-{% if wildfly_enable_kerberos is sameas true %}
-            <cache-container name="security" default-cache="mssqlKerberosTemplate">
-                <local-cache name="mssqlKerberosTemplate">
-                    <!-- <eviction strategy="LRU" max-entries="1000"/> -->
-                    <expiration max-idle="3540000" lifespan="3540000"/>
-                </local-cache>
-            </cache-container> {% endif %}
             <cache-container name="hibernate" modules="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
                     <heap-memory size="10000"/>
@@ -461,24 +471,6 @@
         <subsystem xmlns="urn:jboss:domain:resource-adapters:6.0"/>
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             <security-domains>
-{% if wildfly_enable_kerberos is sameas true %}
-                <security-domain name="mssqlKerberos" cache-type="infinispan">
-                    <authentication>
-                        <login-module name="Kerberos-Module" code="org.jboss.security.negotiation.KerberosLoginModule" module="org.jboss.security.negotiation" flag="required" >
-                            <module-option name="storeKey" value="false"/>
-                            <module-option name="useKeyTab" value="true"/>
-                            <module-option name="doNotPrompt" value="true"/>
-                            <module-option name="debug" value="true"/>
-                            <module-option name="keyTab" value="{{ wildfly_kerberos_keytab_file }}"/>
-                            <module-option name="principal" value="{{ wildfly_kerberos_keytab_principal }}"/>
-                            <module-option name="isInitiator" value="true"/>
-                            <module-option name="refreshKrb5Config" value="true"/>
-                            <module-option name="addGSSCredential" value="true"/>
-                            <module-option name="wrapGSSCredential" value="true"/>
-                            <module-option name="credentialLifetime" value="-1"/>
-                        </login-module>
-                    </authentication>
-                </security-domain>{%endif%}
                 <security-domain name="other" cache-type="default">
                     <authentication>
                         <login-module code="Remoting" flag="optional">

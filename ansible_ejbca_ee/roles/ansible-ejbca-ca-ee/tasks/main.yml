@@ -4,17 +4,17 @@
 - name: Deploy Management, Root, & Sub CA
   include_tasks: deploy_mgmt_root_sub.yml
   when: 
-    - deploy_mgmt_root_sub|bool
     - deploy_mgmt_root_sub is defined
-
+    - deploy_mgmt_root_sub|bool
+    
 - name: Deploy CA's Subordinated to a Root CA
   include_tasks: deploy_subordinate_ca.yml
   when: 
-    - deploy_subordinate_ca|bool
     - deploy_subordinate_ca is defined
+    - deploy_subordinate_ca|bool
 
 - name: Complete Import of Externally Signed Subordinated CA & Post CA configuration
   include_tasks: deploy_complete_sub_post_config.yml
   when: 
-    - deploy_complete_sub_post_config|bool
     - deploy_complete_sub_post_config is defined
+    - deploy_complete_sub_post_config|bool

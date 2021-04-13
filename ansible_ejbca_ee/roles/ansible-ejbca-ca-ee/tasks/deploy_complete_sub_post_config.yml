@@ -2,7 +2,9 @@
 
 - name: Import signed CA certificate
   include_tasks: add_external_cas.yml
-  when: sub_test_slots[0] is defined
+  loop: "{{ sub_add_certification_authorities }}"
+  when: sub_add_certification_authorities[0] is defined
+  no_log: true
 
 - name: Configdump import cert profiles, end entity profiles, and services
   command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"

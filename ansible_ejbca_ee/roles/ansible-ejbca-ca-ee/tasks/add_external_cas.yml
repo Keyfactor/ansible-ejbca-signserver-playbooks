@@ -10,10 +10,10 @@
     group: "{{ ejbca_group }}"
   no_log: true
 
-- name: Import External CA - {{ item.rootDn }}
+- name: Import External CA - {{ item.caname }}
   command: >
     {{ ejbca_home }}/bin/ejbca.sh ca importcacert
-    --caname {{ item.rootDn }}
+    --caname {{ item.caname }}
     -f {{ item.external_cachain_file }}
   no_log: true
   become: yes
