@@ -1,0 +1,6 @@
+---
+
+deploy_mgmt_root_sub: false
+deploy_subordinate_ca: false
+deploy_with_configdump: false
+deploy_ca_peering_config: true
