@@ -1,0 +1,10 @@
+---
+
+  - hosts: ejbcaCaServers
+    become: yes
+    become_method: sudo
+    pre_tasks:
+      - include_vars: deployment_info/ca_peerig_config_var.yml
+      - include_vars: deployment_info/build_option_ca_peering_config.yml
+    roles:
+      - ansible-ejbca-ca-ee
