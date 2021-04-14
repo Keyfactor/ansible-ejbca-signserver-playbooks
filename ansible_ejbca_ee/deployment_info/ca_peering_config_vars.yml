@@ -1,3 +1,5 @@
+ejbca_version: 7.4.3.3
+sharedVarsLocation: ~/ansible/ansibleCacheDir
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
 # create Peer connection, and create an auth key binding
 use_external_va: true
