@@ -160,7 +160,9 @@ softhsm_gen_hsm_slots:
   - slot_name:  Sub2_Protect_SLOT
     slot_so_pin: "{{ encrypted_sub2_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_sub2_token_pin | default('foo123') }}"
-
+  - slot_name:  KeyBinding_SLOT
+    slot_so_pin: "{{ encrypted_authkeybind_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_authkeybind_token_pin | default('foo123') }}"
 
 # List of HSM slots that should be tested that they are accessible
 mgmt_test_slots:
@@ -174,8 +176,14 @@ policy_test_slots:
     slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
 
 sub_test_slots:
+  - slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ encrypted_subca1_token_pin | default('foo123') }}"
   - slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-    slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca2_token_pin | default('foo123') }}"
+
+authkeybind_test_slots:
+  - slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier_type }}:{ejbca_peer_crypto_token[0].slot_label }}"
+    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
 
 mgmt_generate_hsm_keys:
     # ManagementCA Keys
@@ -245,6 +253,16 @@ sub_generate_hsm_keys:
     key_size: "1024"
     slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ sub_add_certification_authorities[1].tokenpass }}"
+
+authkeybind_generate_hsm_keys:
+  - key_label: "{{ ejbca_peer_crypto_token[0].ocsp_key_label }}"
+    key_size: "{{ ejbca_peer_crypto_token[0].ocsp_key_size }}"
+    slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier}}"
+    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+  - key_label: "{{ ejbca_peer_crypto_token[0].ra_key_label }}"
+    key_size:  "{{ ejbca_peer_crypto_token[0].ra_key_size }}"
+    slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier }}"
+    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
 
 # Super Admin accounts to create
 management_add_end_entities:
@@ -665,6 +683,10 @@ mgmt_configdump_files:
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerMgmtCA.yaml'
   - src: 'cp-tlsServerAuth.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerAuth.yaml'
+  - src: 'ee-AdminInternal.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/AdminInternal.yaml'
+  - src: 'cp-adminMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/adminMgmtCA.yaml'
 
 sub_configdump_dir_structure:
   - "{{ ejbca_home }}/dump/subs/certification-authorities"
@@ -674,3 +696,69 @@ subs_configdump_files:
   - src: 'cp-SubCA-G1.yaml.j2'
     dest: '{{ ejbca_home }}/dump/subs/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
  
+authkeybind_configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/dump3/admin-roles"
+  - "{{ ejbca_home }}/dump/dump3/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump3/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump3/services"
+  - "{{ ejbca_home }}/dump/dump3/publishers"
+  - "{{ ejbca_home }}/dump/dump3/acme-config"
+  - "{{ ejbca_home }}/dump/dump3/est-config"
+  - "{{ ejbca_home }}/dump/dump3/scep-config"
+  - "{{ ejbca_home }}/dump/va/services"
+  - "{{ ejbca_home }}/dump/va/publishers"  
+  - "{{ ejbca_home }}/dump/ra/admin-roles" 
+
+authkeybind_configdump_files:
+  - src: 'ee-tlsServerOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
+  - src: 'ee-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/ocspSigner.yaml'
+  - src: 'ee-domainController.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/domainController.yaml'
+  - src: 'ee-estDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/estDevice.yaml'
+  - src: 'ee-remoteDesktopAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/remoteDesktopAuth.yaml'
+  - src: 'ee-scepDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/scepDevice.yaml'
+  - src: 'ee-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/vpnFirewall.yaml'
+  - src: 'ee-workstations.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/workstations.yaml'
+  - src: 'cp-tlsClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuth.yaml'
+  - src: 'cp-tlsServerClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuth.yaml'
+  - src: 'cp-Authentication-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Authentication-2048.yaml'
+  - src: 'cp-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
+  - src: 'cp-domainController.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/domainController.yaml'
+  - src: 'cp-remoteDesktopAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/remoteDesktopAuth.yaml'
+  - src: 'cp-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/vpnFirewall.yaml'
+  - src: 'cp-workstation.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/workstation.yaml'
+  - src: 'est-device.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/est-config/device.yam'
+  - src: 'est-firewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/est-config/firewall.yaml'
+  - src: 'scep-device.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/scep-config/device.yaml'
+  - src: 'scep-firewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/scep-config/firewall.yaml'
+  - src: 'role-ra-vault.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-vault.yaml'
+    # Files for External VA
+  - src: 'publisher-ocsp.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher.yaml'
+  - src: 'service-oscpService.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/services/oscpService.yaml'
+  - src: 'service-oscp-keyupdate.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/services/oscp-keyupdate.yaml'
+    # Files for External RA
+  - src: 'role-ra-peer-connection.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'

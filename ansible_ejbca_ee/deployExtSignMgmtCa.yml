@@ -16,7 +16,7 @@
     # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
     # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
     deploy_with_configdump: false
-    # Map in the List Dictionaires for the test HSM slots, generate hsm keys, and add CA's. The variable to mapp in 
+    # Map in the List Dictionaires for the test HSM slots, generate hsm keys, and add CA's. The variable to map in 
     # are sourced from the include_vars above.
     test_hsm_slots: "{{ mgmt_test_slots }}"
     generate_hsm_keys: "{{ mgmt_generate_hsm_keys }}"

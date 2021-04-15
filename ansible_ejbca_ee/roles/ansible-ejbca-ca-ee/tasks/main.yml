@@ -26,6 +26,12 @@
     - deploy_complete_sub_post_config is defined
     - deploy_complete_sub_post_config|bool
 
+- name: Post CA configuration
+  include_tasks: deploy_post_ca_config.yml
+  when:
+    - deploy_post_ca_config is defined
+    - deploy_post_ca_config|bool
+
 - name: Configure Peering on CA node
   include_tasks: deploy_ca_peering_config.yml
   when:
