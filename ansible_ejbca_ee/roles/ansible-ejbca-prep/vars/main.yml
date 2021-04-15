@@ -1,13 +1,13 @@
 ---
 # vars file for primekeyprep
 
-
 # List of repository packages that will be installed by this role
 ejbca_packages_8:
   - unzip
   - java-11-openjdk-devel
   - nss-tools
   - wget
+  - python3-libsemanage-2.9-3
   - jq
 
 ejbca_packages_7:

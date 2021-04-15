@@ -21,7 +21,7 @@
     mode: 0750
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
-  loop: "{{ configdump_dir_structure }}"
+  loop: "{{ configdump_directory_structure }}"
 
 - name: Prepare configdump template files for importing
   template:
@@ -30,6 +30,6 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
     mode: 0664
-  loop: "{{ configdump_files }}"
+  loop: "{{ configdump_import_files }}"
   loop_control:
     label: "{{ item.dest }}"

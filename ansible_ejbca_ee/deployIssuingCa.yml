@@ -4,7 +4,7 @@
   become: yes
   become_method: sudo
   pre_tasks:
-    - include_vars: deployment_info/SubManagementCA_AzureSQL_vars.yml
+    - include_vars: deployment_info/internal_ca_subdorinate_vars.yml
   vars:
     # Deploy Management, Root, and Sub CA all on a single EJBCA node. This is the original task setup for this playbook. 
     deploy_mgmt_root_sub: false
@@ -15,10 +15,11 @@
     # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
     # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
     # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
-    deploy_with_configdump: false
+    deploy_with_configdump: true
+    # Map in the List Dictionaires for the test HSM slots, generate hsm keys, and add CA's. The variable to mapp in 
+    # are sourced from the include_vars above.
+    test_hsm_slots: "{{ sub_test_slots }}"
+    generate_hsm_keys: "{{ sub_generate_hsm_keys }}"
+    add_certification_authorities: "{{ sub_add_certification_authorities }}"
   roles:
-    - ansible-hostname
-    - ansible-ejbca-wildfly
-    - ansible-ejbca-pkc11-client
-    - ansible-ejbca-prep
     - ansible-ejbca-ca-ee

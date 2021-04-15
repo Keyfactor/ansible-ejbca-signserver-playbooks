@@ -1,5 +1,0 @@
----
-
-deploy_mgmt_root_sub: true
-deploy_subordinate_ca: false
-deploy_with_configdump: true

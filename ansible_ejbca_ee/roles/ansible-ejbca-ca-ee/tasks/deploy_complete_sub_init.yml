@@ -1,0 +1,14 @@
+---
+
+- name: Import signed CA certificate
+  include_tasks: add_external_signed_ca.yml
+  loop: "{{ add_certification_authorities }}"
+  when: add_certification_authorities[0] is defined
+  no_log: true
+  tags: import_signed_external_ca
+
+- name: Configure CA settings
+  include_tasks: config_ca_extensions.yml
+  loop: "{{ add_certification_authorities }}"
+  no_log: true
+  tags: configure_cas_extentions

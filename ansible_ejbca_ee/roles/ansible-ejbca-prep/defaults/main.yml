@@ -46,6 +46,26 @@ ejbca_databaseprotection:
   token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
   hsm_shared_library: /usr/lib64/libsofthsm2.so
 
+# apply_indexes: If default EJBCA database indexes should be applied. Will always report change if true
+# database_name: Name of EJBCA database
+management_database_indexes:
+  apply_indexes: true
+  database_name: ejbca
+
+ejbca_database_indexes:
+  - index: "--file {{ ejbca_home }}/doc/sql-scripts/create-index-ejbca.sql"
+  - index: "--execute 'ALTER TABLE AuditRecordData row_format=compressed key_block_size=4;'"
+  - index: "--execute 'ALTER TABLE CertReqHistoryData row_format=compressed key_block_size=4;'"
+  - index: "--execute 'ALTER TABLE CRLData row_format=compressed key_block_size=16;'"
+  - index: "--execute 'ALTER TABLE CertificateData row_format=compressed key_block_size=8;'"
+  - index: "--execute 'ALTER TABLE UserData row_format=compressed key_block_size=4;'"
+  #- index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'source {{ ejbca_home }}/doc/sql-scripts/create-index-ejbca.sql'"
+  #- index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE AuditRecordData row_format=compressed key_block_size=4;'"
+  #- index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CertReqHistoryData row_format=compressed key_block_size=4;'"
+  #- index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CRLData row_format=compressed key_block_size=16;'"
+  #- index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CertificateData row_format=compressed key_block_size=8;'"
+  #- index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE UserData row_format=compressed key_block_size=4;'"
+
 # EJBCA CA property files
 ejbca_templated_properties_files:
   - src: cesecore.properties.j2

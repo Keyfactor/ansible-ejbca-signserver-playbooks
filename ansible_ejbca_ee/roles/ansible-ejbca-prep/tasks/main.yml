@@ -9,3 +9,7 @@
 
 - name: Build clientToolBox
   include_tasks: buildclienttoolbox.yml
+
+- name: Create Database tables and indexes
+  include_tasks: create_db_apply_indexes.yml
+  when: management_database_indexes.apply_indexes|bool

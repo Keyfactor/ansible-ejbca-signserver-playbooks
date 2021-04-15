@@ -85,8 +85,11 @@ appsrv_datasources:
     user: ejbca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
+    #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
+    #connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
 
-wildfly_enable_kerberos: true
+wildfly_enable_kerberos: false
 krb_conf_use_os_file: true
 wildfly_kerberos_enable_debug_log: false
 wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
@@ -151,18 +154,72 @@ softhsm_gen_hsm_slots:
   - slot_name:  DB_Protect_SLOT
     slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+  - slot_name:  Sub1_Protect_SLOT
+    slot_so_pin: "{{ encrypted_sub1_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_sub2_token_pin | default('foo123') }}"
+  - slot_name:  Sub2_Protect_SLOT
+    slot_so_pin: "{{ encrypted_sub2_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_sub2_token_pin | default('foo123') }}"
+
 
 # List of HSM slots that should be tested that they are accessible
-sub_test_slots:
-  - slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+mgmt_test_slots:
+  - slot_identifier: "{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
-  - slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
+  - slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ slot_identifier_type.pkcs11_token.slot_label }}"
+    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+
+policy_test_slots:
+  - slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+
+sub_test_slots:
   - slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
 
-sub_generate_hsm_keys:
+mgmt_generate_hsm_keys:
     # ManagementCA Keys
+  - key_label: "{{ mgmt_add_certification_authorities[0].pkcs11_token.signkey_label }}"
+    key_size: "{{ mgmt_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ mgmt_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ mgmt_add_certification_authorities[0].pkcs11_token.defaultkey_label }}"
+    key_size: "{{ mgmt_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ mgmt_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ mgmt_add_certification_authorities[0].pkcs11_token.testkey_label }}"
+    key_size: "1024"
+    slot_identifier: "{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ mgmt_add_certification_authorities[0].tokenpass }}"
+    #Database Protection Keys
+  - key_label: "{{ ejbca_databaseprotection.key_label }}"
+    key_size: "{{ ejbca_databaseprotection.key_size }}"
+    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
+    slot_label: "{{ ejbca_databaseprotection.slot_label }}"
+    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
+  - key_label: "{{ ejbca_databaseprotection.testkey_label }}"
+    key_size: "1024"
+    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
+    slot_lable: "{{ ejbca_databaseprotection.slot_label }}"
+    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
+
+policy_generate_hsm_keys:
+    # Policy CA1 Keys
+  - key_label: "{{ policy_add_certification_authorities[0].pkcs11_token.signkey_label }}"
+    key_size: "{{ policy_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ policy_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ policy_add_certification_authorities[0].pkcs11_token.defaultkey_label }}"
+    key_size: "{{ policy_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ policy_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ policy_add_certification_authorities[0].pkcs11_token.testkey_label }}"
+    key_size: "1024"
+    slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ policy_add_certification_authorities[0].tokenpass }}"
+
+sub_generate_hsm_keys:
+    # Sub CA1 Keys
   - key_label: "{{ sub_add_certification_authorities[0].pkcs11_token.signkey_label }}"
     key_size: "{{ sub_add_certification_authorities[0].keyspec }}"
     slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
@@ -175,7 +232,7 @@ sub_generate_hsm_keys:
     key_size: "1024"
     slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ sub_add_certification_authorities[0].tokenpass }}"
-    # Policy CA1 Keys
+    # Sub CA2 Keys
   - key_label: "{{ sub_add_certification_authorities[1].pkcs11_token.signkey_label }}"
     key_size: "{{ sub_add_certification_authorities[1].keyspec }}"
     slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
@@ -188,17 +245,6 @@ sub_generate_hsm_keys:
     key_size: "1024"
     slot_identifier: "{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ sub_add_certification_authorities[1].tokenpass }}"
-    #Database Protection Keys
-  - key_label: "{{ ejbca_databaseprotection.key_label }}"
-    key_size: "{{ ejbca_databaseprotection.key_size }}"
-    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
-    slot_label: "{{ ejbca_databaseprotection.slot_label }}"
-    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
-  - key_label: "{{ ejbca_databaseprotection.testkey_label }}"
-    key_size: "1024"
-    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
-    slot_lable: "{{ ejbca_databaseprotection.slot_label }}"
-    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
 
 # Super Admin accounts to create
 management_add_end_entities:
@@ -290,27 +336,6 @@ ejbca_peerConnector:
     type: sign
     enabled: "{{ use_external_ss }}" 
 
-# List of certification authorities that should be added using CLI
-# caname: CA name
-# certprofile: Certificate profile
-# dn: CA distinguished name
-# subjectaltname: CA subject alt name
-# validity: Validity time or end date
-# policy: "null" or policy oid
-# keytype: RSA, DSA or ECDSA
-# keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
-# signalg: Signature algorithm
-# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
-# tokenpass: Password for the CA token
-# pkcs11_token: Dict of parameters needed for PKCS11 token
-# slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
-# slot_identifier_value: Slot identifier
-# signkey_label: Signing key label
-# defaultkey_label: Default (encryption) key label
-# testkey_label: Test key label
-# The order must be Management CA and then Root CA
-#management_add_certification_authorities:
-
 
 # List of certification authorities that should be added using CLI
 # caname: CA name
@@ -330,7 +355,7 @@ ejbca_peerConnector:
 # signkey_label: Signing key label
 # defaultkey_label: Default (encryption) key label
 # testkey_label: Test key label
-sub_add_certification_authorities:
+mgmt_add_certification_authorities:
   - caname: "ManagementCA"
     certprofile: "managementCA"
     dn: "CN=ManagementCA,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
@@ -342,7 +367,7 @@ sub_add_certification_authorities:
     policy: "null"
     keytype: "RSA"
     keyspec: "3072"
-    signalg: "SHA384WithRSA"
+    signalg: "SHA256WithRSA"
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
@@ -371,6 +396,7 @@ sub_add_certification_authorities:
     finish_user: true
     ca_healthcheck_enabled: true
     request_processor: null
+    external_caname: IT-Root-CA
     external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     external_root_cachain_file: /var/tmp/rootca.pem
     external_cachain_url:
@@ -384,7 +410,9 @@ sub_add_certification_authorities:
       signkey_label: "signKey00001"
       defaultkey_label: "defaultKey0001"
       testkey_label: "testKey"
-  - caname: "{{ organizationNameShort }}-Policy-CA1"
+
+policy_add_certification_authorities:
+  - caname: "{{ organizationNameShort }}-Policy-CA1-G1"
     certprofile: "PolicyCA1-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "External"
@@ -395,7 +423,7 @@ sub_add_certification_authorities:
     policy: "null"
     keytype: "RSA"
     keyspec: "3072"
-    signalg: "SHA384WithRSA"
+    signalg: "SHA256WithRSA"
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
@@ -424,6 +452,7 @@ sub_add_certification_authorities:
     finish_user: true
     ca_healthcheck_enabled: true
     request_processor: null
+    external_caname: IT-Root-CA
     external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     external_root_cachain_file: /var/tmp/rootca.pem
     external_cachain_url:
@@ -437,6 +466,115 @@ sub_add_certification_authorities:
       signkey_label: "signKey0001"
       defaultkey_label: "defaultKey0001"
       testkey_label: "testKey"
+
+sub_add_certification_authorities:
+  - caname: "{{ organizationNameShort }}-Sub-CA1-G1"
+    certprofile: "SubCA-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Issuing CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    #rootDn: "External"
+    rootDn: "{{ organizationNameShort }}-Policy-CA1-G1"
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: 5y"
+    policy: "null"
+    keytype: "RSA"
+    keyspec: "3072"
+    signalg: "SHA256WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    external_root_cachain_url:
+    external_root_cachain_file:
+    external_cachain_url:
+    external_cachain_file:
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_subca1_token_pin | default('foo123') }}"
+    pkcs11_token:
+      slot_identifier_type: "SLOT_LABEL"
+      slot_identifier_value: "Sub1_Protect_SLOT"
+      signkey_label: "signKey0001"
+      defaultkey_label: "defaultKey0001"
+      testkey_label: "testKey"
+  - caname: "{{ organizationNameShort }}-Sub-CA2-G1"
+    certprofile: "SubCA-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Issuing CA2 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    #rootDn: "External"
+    rootDn: "{{ organizationNameShort }}-Policy-CA1-G1"
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: "5y"
+    policy: "null"
+    keytype: "RSA"
+    keyspec: "3072"
+    signalg: "SHA256WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA2+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA2+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA2+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: false
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    external_root_cachain_url: 
+    external_root_cachain_file:
+    external_cachain_url:
+    external_cachain_file:
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_subca2_token_pin | default('foo123') }}"
+    pkcs11_token:
+      slot_identifier_type: "SLOT_LABEL"
+      slot_identifier_value: "Sub2_Protect_SLOT"
+      signkey_label: "signKey0001"
+      defaultkey_label: "defaultKey0001"
+      testkey_label: "testKey"
+
 
 # CA DN in Web format and filename used to configure cronjob for downloading CRL's and hosting them on webserver
 certification_authorities_crl_files:
@@ -494,16 +632,17 @@ httpd_cert_files:
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
     dest: "/etc/pki/tls/certs/trusted-ca.crt"
 
-configdump_dir_structure:
+mgmt_configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
   - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
   - "{{ ejbca_home }}/dump/dump1/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/custom-certificate-extensions"
   - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
   - "{{ ejbca_home }}/dump/dump2/certification-authorities"
   - "{{ ejbca_home }}/dump/dump2/end-entity-profiles"
   - "{{ ejbca_home }}/dump/dump2/services"
 
-configdump_files:
+mgmt_configdump_files:
   - src: 'extended-key-usages.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
   - src: 'cp-SubCA-G1.yaml.j2'
@@ -526,3 +665,12 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerMgmtCA.yaml'
   - src: 'cp-tlsServerAuth.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerAuth.yaml'
+
+sub_configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/subs/certification-authorities"
+  - "{{ ejbca_home }}/dump/subs/certificate-profiles"
+
+subs_configdump_files:
+  - src: 'cp-SubCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/subs/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+ 

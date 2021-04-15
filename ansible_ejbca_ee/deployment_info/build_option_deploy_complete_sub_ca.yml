@@ -1,6 +1,0 @@
----
-
-deploy_mgmt_root_sub: false
-deploy_subordinate_ca: false
-deploy_with_configdump: false
-deploy_complete_sub_post_config: true

@@ -37,10 +37,6 @@
 - name: Prepare configdump template files
   include_tasks: config_configdump.yml
 
-- name: Apply indexes
-  include_tasks: config_apply_indexes.yml
-  when: management_database_indexes.apply_indexes
-
 - name: Use Configdump to create the Management & Root CA's
   block:
 
@@ -84,7 +80,10 @@
       tags: create_cas
 
     - name: Configure ManagmentCA and Root CA settings
-      include_tasks: config_root_ca_ext.yml
+      include_tasks: config_ca_extensions.yml
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
+      tags: configure_cas_extentions
 
   when: management_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
 
@@ -115,7 +114,7 @@
 
   when: deploy_with_configdump|bool and sub_add_certification_authorities[0] is defined
 
-- name: Use CLI to create the Management & Root CA's
+- name: Use CLI to create the Sub CA's
   block:
 
     - name: Import configdump of profiles and services
@@ -133,8 +132,11 @@
       no_log: true
       tags: create_cas
 
-    - name: Configure Sub CA's
-      include_tasks: config_sub_ca_ext.yml
+    - name: Configure Sub CA's settings
+      include_tasks: config_ca_extensions.yml
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+      tags: configure_cas_extentions
 
   when: sub_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
 
