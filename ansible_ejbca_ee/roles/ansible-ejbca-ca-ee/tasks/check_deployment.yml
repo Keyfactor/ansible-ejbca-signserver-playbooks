@@ -13,7 +13,7 @@
       path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.isdeploying"
       state: present
       delay: 10
-      timeout: 480
+      timeout: 300
     when: wildfly_manage_service
 
   - debug:
@@ -25,6 +25,6 @@
 - name: Ensure EJBCA EAR file is deployed
   wait_for:
     delay: 60
-    timeout: 480
+    timeout: 300
     path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
     state: present

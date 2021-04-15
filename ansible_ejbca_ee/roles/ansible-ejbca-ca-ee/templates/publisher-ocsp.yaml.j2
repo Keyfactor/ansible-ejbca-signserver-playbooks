@@ -1,14 +1,10 @@
-Object Type: Publisher
+ Object Type: Publisher
 Version: 2
-Name: validationAuthorityPeerPub
+Name: validationAuthorityPeerPub-{{ item.name }}
 Type: Validation Authority Peer Publisher
 Settings:
   Store CRL at the Validation Authority: 'true'
-{% for item in ejbca_peerConnector %}
-{% if 'ocsp' == item.type %}
   Peer System: {{ item.name }}
-{% endif %}
-{% endfor %}
   Store Certificate at the Validation Authority: 'true'
   Publish Only Revoked Certificates: 'false'
   Include Database Integrity Information: 'false'

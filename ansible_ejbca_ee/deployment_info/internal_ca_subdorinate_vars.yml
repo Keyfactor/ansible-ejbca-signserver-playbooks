@@ -168,7 +168,7 @@ softhsm_gen_hsm_slots:
 mgmt_test_slots:
   - slot_identifier: "{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ mgmt_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
-  - slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ slot_identifier_type.pkcs11_token.slot_label }}"
+  - slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
     slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
 
 policy_test_slots:
@@ -753,8 +753,6 @@ authkeybind_configdump_files:
   - src: 'role-ra-vault.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-vault.yaml'
     # Files for External VA
-  - src: 'publisher-ocsp.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher.yaml'
   - src: 'service-oscpService.yaml.j2'
     dest: '{{ ejbca_home }}/dump/va/services/oscpService.yaml'
   - src: 'service-oscp-keyupdate.yaml.j2'

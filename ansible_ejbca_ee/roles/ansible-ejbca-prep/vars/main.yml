@@ -7,7 +7,7 @@ ejbca_packages_8:
   - java-11-openjdk-devel
   - nss-tools
   - wget
-  - python3-libsemanage-2.9-3
+  - python3-libsemanage
   - jq
 
 ejbca_packages_7:

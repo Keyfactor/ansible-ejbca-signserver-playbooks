@@ -41,5 +41,9 @@ Available CAs:
 - Any CA 
 {% if use_external_va is sameas true %}
 Publishers:
-- validationAuthorityPeerPub
+{% for item in ejbca_peerConnector %}
+{% if 'ocsp' == item.type %}
+- validationAuthorityPeerPub-{{ item.name }}
+{% endif %}
+{% endfor %}
 {% endif %}

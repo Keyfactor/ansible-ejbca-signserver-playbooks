@@ -32,16 +32,24 @@
     - configdump_directory_structure is defined
     - configdump_import_files is defined
 
-- name: Create external VA services and publisher with configdump
-  command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
-  args:
-    chdir: "{{ ejbca_home }}/dist/configdump"
-  become: yes 
-  become_user: "{{ ejbca_user }}"
-  when: use_external_va|bool
+- name: Add External VA setup to EJBCA
+  block:
 
-- name: Import Approval Profiles
-  include_tasks: add_app_profs.yml
+    - name: Create External VA Publisher template files to import with configdump
+      template:
+        src: 'publisher-ocsp.yaml.j2'
+        dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher-{{ item.name }}.yaml'
+      loop: ejbca_peerConnector
+      when: "ocsp" in item.type
+
+    - name: Create external VA services and publisher with configdump
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+  when: use_external_va|bool
 
 - name: Import configdump of profiles, services, & publishers
   command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump3"

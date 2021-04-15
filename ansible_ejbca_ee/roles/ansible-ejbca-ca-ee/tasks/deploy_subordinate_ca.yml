@@ -21,7 +21,7 @@
 - name: Check deployment
   include_tasks: check_deployment.yml
   tags: check_deployment
-  when: management_database_indexes.apply_indexes or add_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
+  when: add_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
 
 - name: Prepare configdump template files
   include_tasks: config_configdump.yml
@@ -85,6 +85,7 @@
       loop: "{{ add_certification_authorities }}"
       no_log: true
       tags: configure_cas_extentions
+      when: item.rootDn != "External"
   
   when: 
     - add_certification_authorities[0] is defined

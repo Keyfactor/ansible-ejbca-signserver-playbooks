@@ -32,7 +32,7 @@
 - name: Check deployment
   include_tasks: check_deployment.yml
   tags: check_deployment
-  when: management_database_indexes.apply_indexes or management_add_certification_authorities[0] is defined or management_import_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
+  when: management_add_certification_authorities[0] is defined or management_import_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
 
 - name: Prepare configdump template files
   include_tasks: config_configdump.yml
@@ -148,12 +148,23 @@
   include_tasks: add_peer_conn.yml
   when: use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
-- name: Create external VA services and publisher with configdump
-  command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
-  args:
-    chdir: "{{ ejbca_home }}/dist/configdump"
-  become: yes 
-  become_user: "{{ ejbca_user }}"
+- name: Add External VA setup to EJBCA
+  block:
+
+    - name: Create External VA Publisher template files to import with configdump
+      template:
+        src: 'publisher-ocsp.yaml.j2'
+        dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher-{{ item.name }}.yaml'
+      loop: ejbca_peerConnector
+      when: "ocsp" in item.type
+
+    - name: Create external VA services and publisher with configdump
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
   when: use_external_va|bool
 
 - name: Import Approval Profiles
