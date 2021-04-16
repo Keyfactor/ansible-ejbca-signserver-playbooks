@@ -692,7 +692,7 @@ sub_configdump_dir_structure:
   - "{{ ejbca_home }}/dump/subs/certification-authorities"
   - "{{ ejbca_home }}/dump/subs/certificate-profiles"
 
-subs_configdump_files:
+sub_configdump_files:
   - src: 'cp-SubCA-G1.yaml.j2'
     dest: '{{ ejbca_home }}/dump/subs/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
  

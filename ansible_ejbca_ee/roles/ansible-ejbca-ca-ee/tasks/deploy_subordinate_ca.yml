@@ -45,7 +45,7 @@
         group: "{{ ejbca_group }}"
         mode: 0664
       loop: "{{ add_certification_authorities }}"
-      #no_log: true
+      no_log: true
 
     - name: Import External CA's
       include_tasks: add_external_root_ca.yml
