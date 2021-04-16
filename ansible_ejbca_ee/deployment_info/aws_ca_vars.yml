@@ -114,6 +114,10 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # "ANY" can be specified to allow any remote IP.
 jbca_conf_healtcheck_authorizedips: 127.0.0.1
 
+#Enable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: true
+databaseprotection_enableverify_AuditRecordData: true
+
 management_add_end_entities:
   - username: "SuperAdministrator"
     dn: "C={{ countryName }},O={{ organizationName }},OU=Administrators,CN={{ superAdminCn }}"

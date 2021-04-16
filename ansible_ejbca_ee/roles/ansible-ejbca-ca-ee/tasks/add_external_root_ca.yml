@@ -17,8 +17,8 @@
       uri:
         url: "{{ item.external_root_cachain_url }}"
         validate_certs: no
-        dest: "{{ item.external_root_cachain_file }}"
-        creates: "{{ item.external_root_cachain_file }}"
+        dest: "/var/tmp/{{ item.external_root_cachain_file }}"
+        creates: "/var/tmp/{{ item.external_root_cachain_file }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
@@ -27,7 +27,7 @@
       command: >
         {{ ejbca_home }}/bin/ejbca.sh ca importcacert
         --caname {{ item.external_caname }}
-        -f {{ item.external_cachain_file }}
+        -f /var/tmp/{{ item.external_cachain_file }}
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"

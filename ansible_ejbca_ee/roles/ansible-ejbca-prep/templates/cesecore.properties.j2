@@ -6,9 +6,15 @@ allow.external-dynamic.configuration={{ core_allow_external_dynamic_configuratio
 #ca.rngalgorithm={{ core_ca_rngalgorithm| default('SHA1PRNG')}}
 ca.serialnumberoctetsize={{ core_ca_serialnumberoctetsize| default('20') }}
 certificate.validityoffset=-10m
+{% if core_disable_audit_log_to_db is defined and sameas true %}
+securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
+securityeventsaudit.implementation.1=null
+{% else %}
 securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
 securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
 securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
-db.keepjbossserialization={{ pcore_db_keepjbossserialization| default('false') }}
+{% endif %}
+db.keepjbossserialization={{ core_db_keepjbossserialization| default('false') }}
 db.keepinternalcakeystores={{ core_db_keepinternalcakeystores| default('false') }}
 ca.keepocspextendedservice={{ core_ca_keepocspextendedservice| default('false') }}
+

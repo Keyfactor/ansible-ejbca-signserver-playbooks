@@ -100,8 +100,8 @@
       uri:
         url: "{{ item.external_root_cachain_url }}"
         validate_certs: no
-        dest: "{{ item.external_root_cachain_file }}"
-        creates: "{{ item.external_root_cachain_file }}"
+        dest: "/var/tmp/{{ item.external_root_cachain_file }}"
+        creates: "/var/tmp/{{ item.external_root_cachain_file }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
@@ -120,7 +120,7 @@
        --policy "{{ item.policy }}"
        {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
        --signedby "{{ item.rootDn }}"
-       -externalcachain "{{ item.external_root_cachain_file }}"
+       -externalcachain "/var/tmp/{{ item.external_root_cachain_file }}"
       args:
         chdir: "{{ ejbca_home }}"
       no_log: true

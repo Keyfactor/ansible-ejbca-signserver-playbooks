@@ -127,6 +127,9 @@ hsm_shared_library: /usr/lib64/libsofthsm2.so
 ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
 
+#cesecore.properties
+core_disable_audit_log_to_db: true
+
 # EJBCA audit log database protection configurations
 # slot_index: Index of HSM slot used for database integrity protection
 # key_label: Label of key used for database integrity protection
@@ -225,6 +228,7 @@ policy_generate_hsm_keys:
     key_size: "1024"
     slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
     slot_pin: "{{ policy_add_certification_authorities[0].tokenpass }}"
+
 
 sub_generate_hsm_keys:
     # Sub CA1 Keys
@@ -605,6 +609,7 @@ sub_add_certification_authorities:
 
 
 # CA DN in Web format and filename used to configure cronjob for downloading CRL's and hosting them on webserver
+enable_crl_crontab: false
 certification_authorities_crl_files:
   - crlfilename: "{{ organizationNameShort | lower }}-mgmtca.crl"
     cadn: "CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"

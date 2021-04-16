@@ -196,6 +196,7 @@ ejbca_conf_healtcheck_sendservererror: true
 ejbca_conf_healtcheck_customerrormessage: EJBCANOTOK
 
 #cesecore.properties
+core_disable_audit_log_to_db: false
 core_allow_external_dynamic_configuration: true
 core_ca_serialnumberoctetsize: 20
 core_db_keepjbossserialization: false
@@ -204,6 +205,10 @@ core_ca_keepocspextendedservice: false
 
 #database.properties
 ejbca_db_database_useSeparateCertificateTable: true
+
+#Enable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: true
+databaseprotection_enableverify_AuditRecordData: true
 
 #mail.properties
 mail_from: "ejbca-donotreply@{{ organizationDomainName }}" 
