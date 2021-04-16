@@ -27,9 +27,9 @@
         permanent: yes
         immediate: yes
         state: enabled
+
   tags: reverse-proxy
   when: enable_firewalld_for_httpd|bool
-
 
 - name: Configure the httpd conf file for CentOS/RHEL 8
   template:

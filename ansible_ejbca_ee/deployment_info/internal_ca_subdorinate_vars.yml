@@ -493,7 +493,7 @@ sub_add_certification_authorities:
     rootDn: "{{ organizationNameShort }}-Policy-CA1-G1"
     subjectaltname: ""
     validity: "3650"
-    validity_yml: 5y"
+    validity_yml: "5y"
     policy: "null"
     keytype: "RSA"
     keyspec: "3072"
