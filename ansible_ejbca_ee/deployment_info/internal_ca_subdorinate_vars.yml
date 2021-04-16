@@ -182,7 +182,7 @@ sub_test_slots:
     slot_pin: "{{ encrypted_subca2_token_pin | default('foo123') }}"
 
 authkeybind_test_slots:
-  - slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier_type }}:{ejbca_peer_crypto_token[0].slot_label }}"
+  - slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier_type }}:{{ ejbca_peer_crypto_token[0].slot_label }}"
     slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
 
 mgmt_generate_hsm_keys:
@@ -340,6 +340,16 @@ ejbca_keybinding:
 ejbca_peerConnector:
   - name: OCSP-01
     url: "https://ocsp01.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: "{{ ejbca_keybinding[0].name }}"
+    type: ocsp
+    enabled: "{{ use_external_va }}"
+  - name: OCSP-02
+    url: "https://ocsp02.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: "{{ ejbca_keybinding[0].name }}"
+    type: ocsp
+    enabled: "{{ use_external_va }}"
+  - name: OCSP-03
+    url: "https://ocsp03.{{ organizationDomainName }}/ejbca/peer/v1"
     keybinding: "{{ ejbca_keybinding[0].name }}"
     type: ocsp
     enabled: "{{ use_external_va }}"
@@ -702,7 +712,7 @@ authkeybind_configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump3/end-entity-profiles"
   - "{{ ejbca_home }}/dump/dump3/services"
   - "{{ ejbca_home }}/dump/dump3/publishers"
-  - "{{ ejbca_home }}/dump/dump3/acme-config"
+  #- "{{ ejbca_home }}/dump/dump3/acme-config"
   - "{{ ejbca_home }}/dump/dump3/est-config"
   - "{{ ejbca_home }}/dump/dump3/scep-config"
   - "{{ ejbca_home }}/dump/va/services"
@@ -710,53 +720,53 @@ authkeybind_configdump_dir_structure:
   - "{{ ejbca_home }}/dump/ra/admin-roles" 
 
 authkeybind_configdump_files:
-  - src: 'ee-tlsServerOrg.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
-  - src: 'ee-ocspSigner.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/ocspSigner.yaml'
-  - src: 'ee-domainController.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/domainController.yaml'
-  - src: 'ee-estDevice.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/estDevice.yaml'
-  - src: 'ee-remoteDesktopAuth.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/remoteDesktopAuth.yaml'
-  - src: 'ee-scepDevice.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/scepDevice.yaml'
-  - src: 'ee-vpnFirewall.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/vpnFirewall.yaml'
-  - src: 'ee-workstations.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/workstations.yaml'
-  - src: 'cp-tlsClientAuth.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuth.yaml'
-  - src: 'cp-tlsServerClientAuth.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuth.yaml'
-  - src: 'cp-Authentication-2048.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Authentication-2048.yaml'
-  - src: 'cp-ocspSigner.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
-  - src: 'cp-domainController.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/domainController.yaml'
-  - src: 'cp-remoteDesktopAuth.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/remoteDesktopAuth.yaml'
-  - src: 'cp-vpnFirewall.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/vpnFirewall.yaml'
-  - src: 'cp-workstation.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/workstation.yaml'
-  - src: 'est-device.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/est-config/device.yam'
-  - src: 'est-firewall.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/est-config/firewall.yaml'
-  - src: 'scep-device.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/scep-config/device.yaml'
-  - src: 'scep-firewall.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/scep-config/firewall.yaml'
-  - src: 'role-ra-vault.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-vault.yaml'
-    # Files for External VA
+# - src: 'ee-tlsServerOrg.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
+# - src: 'ee-ocspSigner.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/ocspSigner.yaml'
+# - src: 'ee-domainController.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/domainController.yaml'
+# - src: 'ee-estDevice.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/estDevice.yaml'
+# - src: 'ee-remoteDesktopAuth.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/remoteDesktopAuth.yaml'
+# - src: 'ee-scepDevice.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/scepDevice.yaml'
+# - src: 'ee-vpnFirewall.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/vpnFirewall.yaml'
+# - src: 'ee-workstations.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/workstations.yaml'
+# - src: 'cp-tlsClientAuth.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuth.yaml'
+# - src: 'cp-tlsServerClientAuth.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuth.yaml'
+# - src: 'cp-Authentication-2048.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Authentication-2048.yaml'
+# - src: 'cp-ocspSigner.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
+# - src: 'cp-domainController.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/domainController.yaml'
+# - src: 'cp-remoteDesktopAuth.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/remoteDesktopAuth.yaml'
+# - src: 'cp-vpnFirewall.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/vpnFirewall.yaml'
+# - src: 'cp-workstation.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/workstation.yaml'
+# - src: 'est-device.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/est-config/device.yam'
+# - src: 'est-firewall.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/est-config/firewall.yaml'
+# - src: 'scep-device.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/scep-config/device.yaml'
+# - src: 'scep-firewall.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/scep-config/firewall.yaml'
+# - src: 'role-ra-vault.yaml.j2'
+#   dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-vault.yaml'
+#   # Files for External VA
   - src: 'service-oscpService.yaml.j2'
     dest: '{{ ejbca_home }}/dump/va/services/oscpService.yaml'
-  - src: 'service-oscp-keyupdate.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/va/services/oscp-keyupdate.yaml'
+  #- src: 'service-oscp-keyupdate.yaml.j2'
+  #  dest: '{{ ejbca_home }}/dump/va/services/oscp-keyupdate.yaml'
     # Files for External RA
   - src: 'role-ra-peer-connection.yaml.j2'
     dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'

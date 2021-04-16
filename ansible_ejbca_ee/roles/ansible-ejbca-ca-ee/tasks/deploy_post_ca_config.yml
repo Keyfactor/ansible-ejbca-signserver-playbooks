@@ -39,8 +39,8 @@
       template:
         src: 'publisher-ocsp.yaml.j2'
         dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher-{{ item.name }}.yaml'
-      loop: ejbca_peerConnector
-      when: "ocsp" in item.type
+      loop: "{{ ejbca_peerConnector }}"
+      when: ("ocsp" in item.type)
 
     - name: Create external VA services and publisher with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
