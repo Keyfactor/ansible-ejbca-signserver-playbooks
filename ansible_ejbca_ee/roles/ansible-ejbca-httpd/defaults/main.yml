@@ -9,6 +9,8 @@ wildfly_home: "{{ wildfly_install_dir }}/wildfly"
 ejbca_group: wildfly
 ejbca_user: wildfly
 
+enable_firewalld_for_httpd: true
+
 add_mgmt_ca: true
 
 httpd_identity_info:

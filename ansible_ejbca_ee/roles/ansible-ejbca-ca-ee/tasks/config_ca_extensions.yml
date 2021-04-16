@@ -86,7 +86,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: clrPeriod_check.changed
   no_log: true
 
 - name: Configure the CRLIssueInterval for {{ item.caname }}
@@ -95,7 +95,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: crlIssueInterval_check.changed
   no_log: true
 
 - name: Configure the defaultCRLDistPoint for {{ item.caname }}
@@ -104,7 +104,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: defaultCRLDistPoint_check.changed
   no_log: true
 
 - name: Configure the defaultOCSPServiceLocator for {{ item.caname }}
@@ -113,7 +113,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: defaultOCSPServiceLocator_check.changed
   no_log: true
 
 - name: Configure the authorityInformationAccess for {{ item.caname }}
@@ -122,7 +122,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: authorityInformationAccess_check.changed
   no_log: true
 
 - name: Configure the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
@@ -131,7 +131,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: certificateAiaDefaultCaIssuerUri_check.changed
   no_log: true
 
 - name: Configure the useLdapDnOrder for {{ item.caname }}
@@ -140,7 +140,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: useLdapDnOrder_check.changed
   no_log: true
   
 - name: Configure the Enforce Unique Distinguished Name for {{ item.caname }}
@@ -149,7 +149,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: item.changed
+  when: doEnforceUniqueDistinguishedName_check.changed
   no_log: true
 
 #- name: Create the CRL

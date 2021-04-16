@@ -417,8 +417,8 @@ mgmt_add_certification_authorities:
     external_caname: IT-Root-CA
     external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     external_root_cachain_file: /var/tmp/rootca.pem
-    external_cachain_url:
-    external_cachain_file:
+    external_cachain_url: http://172.16.170.133:8080/ejbca/extMgmtCa.pem
+    external_cachain_file: extMgmtCa.pem
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
@@ -473,8 +473,8 @@ policy_add_certification_authorities:
     external_caname: IT-Root-CA
     external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     external_root_cachain_file: /var/tmp/rootca.pem
-    external_cachain_url:
-    external_cachain_file:
+    external_cachain_url: http://172.16.170.133:8080/ejbca/extPolCa1.pem
+    external_cachain_file: extPolCa1.pem
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
@@ -637,9 +637,9 @@ httpd_identity_info:
   id_username: ca_httpd_tls
   id_password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
   id_altname: "dNSName=ca01.{{ organizationDomainName }}, dNSName=ca.{{ organizationDomainName }}, dNSName=sapi.ca.{{ organizationDomainName }}, dNSName=api.ca.{{ organizationDomainName }}"
-  id_certprofile: tlsServerClientAuth
-  id_eeprofile: "tlsServer{{ organizationName }}"
-  id_caname: "{{ organizationName }}-Sub-CA"
+  id_certprofile: tlsServerMgmtCA
+  id_eeprofile: "tlsServerMgmt"
+  id_caname: "ManagementCA"
 
 # List of HTTPD certificate files to configure for HTTPD to use for TLS
 httpd_cert_files:

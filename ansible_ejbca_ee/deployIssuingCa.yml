@@ -21,5 +21,8 @@
     test_hsm_slots: "{{ sub_test_slots }}"
     generate_hsm_keys: "{{ sub_generate_hsm_keys }}"
     add_certification_authorities: "{{ sub_add_certification_authorities }}"
+    # Map in List Dictionaires for the configdump directory structure and configdump files
+    configdump_directory_structure: "{{ sub_configdump_dir_structure }}"
+    configdump_import_files: "{{ sub_configdump_files }}"
   roles:
     - ansible-ejbca-ca-ee
