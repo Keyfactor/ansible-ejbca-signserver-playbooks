@@ -611,6 +611,8 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuthAcme90d.yaml'
   - src: 'cp-ocspSigner.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
+  - src: 'cp-ocspSignerEcc-15d.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSignerEcc-15d.yaml'
   - src: 'cp-intuneClientAuth-1y.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/intuneClientAuth-1y.yaml'
   - src: 'cp-tlsServerAuthApproval.yaml.j2'
