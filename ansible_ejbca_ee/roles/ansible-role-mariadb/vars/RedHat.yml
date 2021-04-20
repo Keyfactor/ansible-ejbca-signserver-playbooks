@@ -12,6 +12,7 @@ rhel_mariadb_packages:
   - rh-mariadb103-mariadb-backup
   - rh-mariadb103-mariadb-common
   - MariaDB-client
+  - MySQL-python
 
 mariadb_packages_8:
   - MariaDB-common

@@ -52,7 +52,7 @@ ejbca_type: RA
 ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
 ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
-ejbca_db_database_name: "{{ appsrv_datasources[0].database_connection_type }}"
+
 # Location to write the CRL files on server
 ejbca_crl_dir_enabled: false
 
@@ -92,9 +92,6 @@ appsrv_datasources:
     user: ejbca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
-ejbca_db_database_name: mysql
-
-
 
 #web.properties
 web_httpserver_external_privhttps: 443
