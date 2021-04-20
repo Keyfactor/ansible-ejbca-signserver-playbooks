@@ -207,6 +207,10 @@
 {% if wildfly_enable_kerberos is sameas true %}
                         <elytron-enabled>true</elytron-enabled>
                         <authentication-context>ejbca-ds-context</authentication-context>
+                    </security>
+                    <timeout>
+                        <idle-timeout-minutes>2</idle-timeout-minutes>
+                    </timeout>         
 {% else %}
                         <user-name>{{ item.user }}</user-name>
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
