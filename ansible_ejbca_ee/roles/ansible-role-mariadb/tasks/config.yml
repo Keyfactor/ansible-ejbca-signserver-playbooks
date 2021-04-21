@@ -40,7 +40,7 @@
     group: mysql
 
 - name: Ensure service is started
-  service:
+  systemd:
     name: "{{ mariadb_service }}"
     state: started
     enabled: true
@@ -50,7 +50,7 @@
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
 
 - name: Ensure service is started for RHEL 7 MariaDB
-  service:
+  systemd:
     name: "{{ rhel_mariadb_service }}"
     state: started
     enabled: true

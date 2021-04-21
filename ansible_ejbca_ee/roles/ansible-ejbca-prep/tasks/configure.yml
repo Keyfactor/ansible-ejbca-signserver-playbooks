@@ -220,7 +220,7 @@
     dest: "{{ wildfly_home }}/standalone/deployments/ejbca.ear"
 
 - name: Restart wildfly when adding a CA node to the cluster
-  service:
+  systemd:
     name: wildfly
     state: restarted
     when: ('ejbcaCaAddNodes' in group_names)

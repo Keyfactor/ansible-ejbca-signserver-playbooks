@@ -2,7 +2,7 @@
 # handlers file for wildfly
 
 - name: restart wildfly
-  service:
+  systemd:
     name: wildfly
     state: restarted
 

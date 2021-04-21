@@ -1,7 +1,7 @@
 ---
 
 - name: Ensure application server is started
-  service:
+  systemd:
     name: wildfly
     state: started
   when: wildfly_manage_service

@@ -111,7 +111,7 @@
 
 - block:
     - name: Enable the wildfly service
-      service:
+      systemd:
         name: wildfly
         state: stopped
         enabled: yes

@@ -16,14 +16,14 @@
   block:
     - name: Open http port
       firewalld:
-        service: 'http'
+        systemd: 'http'
         permanent: yes
         immediate: yes
         state: enabled
 
     - name: Open https port
       firewalld:
-        service: 'https'
+        systemd: 'https'
         permanent: yes
         immediate: yes
         state: enabled
@@ -99,7 +99,7 @@
   tags: reverse-proxy
 
 - name: Ensure service is started
-  service:
+  systemd:
     name: httpd
     state: started
     enabled: true
