@@ -111,11 +111,11 @@ jbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 management_import_certification_authorities:
   - caname: "ManagementCA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ management_ca_id }}&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ management_ca_id }}&format=pem&level=0"
     cert_file_location: /var/tmp/managementca.crt
     superadmincn: "{{ superAdminCn }}"
   - caname: "{{ organizationNameShort }}-Root-CA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ root_ca_1_id }}&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacertn&caid={{ root_ca_1_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
     superadmincn: ""
   - caname: "{{ organizationNameShort }}-Sub-CA"
