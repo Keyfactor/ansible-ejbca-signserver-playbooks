@@ -239,11 +239,11 @@
       when: not wildfly_manage_service
       failed_when: true
 
-  - name: Ensure EJBCA EAR file is deployed
-    wait_for:
-      delay: 60
-      timeout: 240
-      path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
-    state: present
+    - name: Ensure EJBCA EAR file is deployed
+      wait_for:
+        delay: 60
+        timeout: 240
+        path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
+      state: present
 
     when: ('ejbcaCaAddNodes' in group_names)
