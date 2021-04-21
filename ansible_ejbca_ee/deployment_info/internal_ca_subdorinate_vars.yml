@@ -647,11 +647,11 @@ httpd_create_aia_crl_dir: false
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
 httpd_identity_info:
   id_dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
-  id_name: "ca01.{{ organizationDomainName }}"
-  id_full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
-  id_username: ca_httpd_tls
+  id_name: "{{ inventory_hostname }}"
+  id_full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ inventory_hostname }}"
+  id_username: "ca_httpd_tls_{{ inventory_hostname }}"
   id_password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
-  id_altname: "dNSName=ca01.{{ organizationDomainName }}, dNSName=ca.{{ organizationDomainName }}, dNSName=sapi.ca.{{ organizationDomainName }}, dNSName=api.ca.{{ organizationDomainName }}"
+  id_altname: "dNSName={{ inventory_hostname }}, dNSName=ca.{{ organizationDomainName }}, dNSName=sapi.ca.{{ organizationDomainName }}, dNSName=api.ca.{{ organizationDomainName }}"
   id_certprofile: tlsServerMgmtCA
   id_eeprofile: "tlsServerMgmt"
   id_caname: "ManagementCA"

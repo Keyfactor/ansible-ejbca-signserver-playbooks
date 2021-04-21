@@ -177,13 +177,13 @@ management_import_certification_authorities:
 
 identity_info:
   - dn: "OU=Devices,O={{ organizationName }},C={{ countryName }}"
-    name: "ocsp01.{{ organizationDomainName }}"
-    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ocsp01.{{ organizationDomainName }}"
-    username: va_httpd_tls
+    name: "{{ inventory_hostname }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ inventory_hostname }}"
+    username: "va_httpd_tls_{{ inventory_hostname }}"
     password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
-    altname: "dNSName=ocsp01.{{ organizationDomainName }}"
-    certprofile: tlsServerClientAuth
-    eeprofile: "tlsServer{{ organizationNameShort }}"
+    altname: "dNSName={{ inventory_hostname }}"
+    certprofile: tlsServerMgmtCA
+    eeprofile: "tlsServerMgmt"
     caname: "ManagementCA"
     token: PEM
 

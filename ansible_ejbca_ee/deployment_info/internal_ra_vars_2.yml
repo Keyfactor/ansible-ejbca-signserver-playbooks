@@ -155,11 +155,11 @@ management_import_certification_authorities:
 
 identity_info:
   - dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
-    name: "ra01.{{ organizationDomainName }}"
-    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn=ra01.{{ organizationDomainName }}"
-    username: ra_httpd_tls
+    name: "{{ inventory_hostname }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn={{ inventory_hostname }}"
+    username: "ra_httpd_tls_{{ inventory_hostname }}"
     password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
-    altname: "dNSName=ra01.{{ organizationDomainName }}, dNSName=enroll.{{ organizationDomainName }}, dNSName=api.enroll.{{ organizationDomainName }}, dNSName=enrolls.{{ organizationDomainName }}"
+    altname: "dNSName={{ inventory_hostname }}, dNSName=enroll.{{ organizationDomainName }}, dNSName=api.enroll.{{ organizationDomainName }}, dNSName=enrolls.{{ organizationDomainName }}"
     certprofile: tlsServerMgmtCA
     eeprofile: "tlsServerMgmt"
     caname: "ManagementCA"
