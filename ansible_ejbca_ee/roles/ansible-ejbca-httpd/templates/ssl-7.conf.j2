@@ -99,14 +99,13 @@ SSLCryptoDevice builtin
   SSLVerifyDepth  4
   SSLOptions +ExportCertData +StrictRequire +StdEnvVars
   </Location>
-
 {% if use_external_ra is defined and use_external_ra is sameas false and ejbca_type is defined and 'CA' == ejbca_type or ejbca_type is defined and 'RA' == ejbca_type %}
   # Cert Auth for ra
   <Location /ejbca/ra>
 {% if use_external_ra is sameas false %}
-    SSLVerifyClient optional 
+  SSLVerifyClient optional 
 {% else %}
-    SSLVerifyClient require 
+  SSLVerifyClient require 
 {% endif %}
   SSLVerifyDepth  4
   SSLOptions +ExportCertData +StrictRequire +StdEnvVars
@@ -127,13 +126,17 @@ SSLCryptoDevice builtin
   ProxyPassReverse balancer://EJBCACluster/.well-known/est
   </Location>
   {% endif %}
-
   <Location /.well-known/>
   ProxyPass balancer://EJBCACluster/.well-known/
   ProxyPassReverse balancer://EJBCACluster/.well-known/
   </Location> 
-  {% endif %}
-
+{% else %}
+  <Location /ejbca/ra>
+  SSLVerifyClient require 
+  SSLVerifyDepth  4
+  SSLOptions +ExportCertData +StrictRequire +StdEnvVars
+  </Location>
+{% endif %
   # Redirecting traffic to EJBCA public
   <Location /ejbca>
   ProxyPass balancer://EJBCACluster/ejbca
