@@ -251,18 +251,18 @@ mgmt_generate_hsm_keys:
 
 policy_generate_hsm_keys:
     # Policy CA1 Keys
-  - key_label: "{{ policy_add_certification_authorities[1].pkcs11_token.signkey_label }}"
-    key_size: "{{ policy_add_certification_authorities[1].keyspec }}"
-    slot_identifier: "{{ policy_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-    slot_pin: "{{ policy_add_certification_authorities[1].tokenpass }}"
-  - key_label: "{{ policy_add_certification_authorities[1].pkcs11_token.defaultkey_label }}"
-    key_size: "{{ policy_add_certification_authorities[1].keyspec }}"
-    slot_identifier: "{{ policy_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-    slot_pin: "{{ policy_add_certification_authorities[1].tokenpass }}"
-  - key_label: "{{ policy_add_certification_authorities[1].pkcs11_token.testkey_label }}"
+  - key_label: "{{ policy_add_certification_authorities[0].pkcs11_token.signkey_label }}"
+    key_size: "{{ policy_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ policy_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ policy_add_certification_authorities[0].pkcs11_token.defaultkey_label }}"
+    key_size: "{{ policy_add_certification_authorities[0].keyspec }}"
+    slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ policy_add_certification_authorities[0].tokenpass }}"
+  - key_label: "{{ policy_add_certification_authorities[0].pkcs11_token.testkey_label }}"
     key_size: "2048"
-    slot_identifier: "{{ policy_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-    slot_pin: "{{ policy_add_certification_authorities[1].tokenpass }}"
+    slot_identifier: "{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ policy_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
+    slot_pin: "{{ policy_add_certification_authorities[0].tokenpass }}"
 
     # Policy CA2 Keys
   - key_label: "{{ policy_add_certification_authorities[1].pkcs11_token.signkey_label }}"
