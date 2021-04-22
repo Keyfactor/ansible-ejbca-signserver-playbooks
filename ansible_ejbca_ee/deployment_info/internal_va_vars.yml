@@ -8,11 +8,13 @@ countryName: US
 superAdminCn: "02Mar2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
+enable_firewalld_for_httpd: false
+
 management_ca_id: 966011820
 root_ca_1_id: -1905764898
 sub_ca_1_id: -127947408
 
-peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
 #wildfly_version: 20.0.1.Final
 #wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
@@ -63,6 +65,9 @@ ejbca_crl_dir_enabled: false
 web_httpserver_external_privhttps: 443
 web_reqcertindb: false
 
+ant_version: apache-ant-1.10.9-bin.tar.gz
+ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
+
 # EJBCA VA property files
 ejbca_templated_properties_files:
   - src: cesecore.properties.j2
@@ -81,7 +86,7 @@ ejbca_templated_properties_files:
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
-    database_type: mariadb
+    database_connection_type: mariadb
     database_driver_class: org.mariadb.jdbc.Driver
     database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
@@ -90,6 +95,9 @@ appsrv_datasources:
     user: ejbca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
+    #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
+    #connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
 
 # Uncomment to configure Wildfly to send logs to a Syslog server 
 #appsrv_syslogsources:
@@ -117,6 +125,8 @@ ncipher_preload: false
 preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
 hsm_shared_library: /usr/lib64/libsofthsm2.so
+##hsm_shared_library: /usr/lib64/libsofthsm2.so
+hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
 
 ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
@@ -128,7 +138,7 @@ jbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 management_import_certification_authorities:
   - caname: "ManagementCA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ management_ca_id }}&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ management_ca_id }}&format=pem&level=0"
     cert_file_location: /var/tmp/managementca.crt
     superadmincn: "{{ superAdminCn }}"
   - caname: "{{ organizationNameShort }}-Root-CA"
@@ -149,7 +159,7 @@ identity_info:
     altname: "dNSName=ocsp01.{{ organizationDomainName }}"
     certprofile: tlsServerClientAuth
     eeprofile: "tlsServer{{ organizationNameShort }}"
-    caname: "{{ organizationNameShort }}-Sub-CA"
+    caname: "ManagementCA"
     token: PEM
 
 ejbca_va_keybinding:

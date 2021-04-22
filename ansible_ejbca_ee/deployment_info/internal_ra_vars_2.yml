@@ -82,7 +82,6 @@ wildfly_disable_infinispan: true
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
-    #database_type: mariadb
     database_connection_type: mariadb
     database_driver_class: org.mariadb.jdbc.Driver
     database_jar_filename: mariadb-java-client.jar
