@@ -98,7 +98,7 @@ ejbca_build_configdump: false
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
-    database_type: mariadb
+    database_connection_type: mariadb
     database_driver_class: org.mariadb.jdbc.Driver
     database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1

@@ -19,16 +19,18 @@ sub_ca_2_id: -52932916
 sub_ca_3_id: -60692275
 sub_ca_4_id: -68451634
 
-peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
 wildfly_version: 22.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
 wildfly_standalone_file: standalone-22.xml.datasource.j2
-wildfly_use_galleon: true
+wildfly_use_galleon: false
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
 #wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
 wildfly_jboss_client_checksum: sha256:6d41c7f3ba33cbcfb1a5a639eccc1d04c494f855f15324e175736c4ac184336d #WF 23
+wildfly_download_url: "http://192.168.50.12/wildfly-22.0.1.Final.tar.gz"
+wildfly_download_file: "wildfly-22.0.1.Final.tar.gz"
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -60,6 +62,9 @@ ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042
 # Location to write the CRL files on server
 ejbca_crl_dir_enabled: false
 
+ant_version: apache-ant-1.10.9-bin.tar.gz
+ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
+
 #web.properties
 web_httpserver_external_privhttps: 443
 web_reqcertindb: false
@@ -82,7 +87,7 @@ ejbca_templated_properties_files:
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
-    database_type: mariadb
+    database_connection_type: mariadb
     database_driver_class: org.mariadb.jdbc.Driver
     database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
@@ -118,6 +123,7 @@ ncipher_preload: false
 preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
 hsm_shared_library: /usr/lib64/libsofthsm2.so
+#hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
 
 ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
@@ -125,51 +131,41 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # servlet. Use ';' for between multiple IPs.
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
-jbca_conf_healtcheck_authorizedips: 127.0.0.1
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 management_import_certification_authorities:
   - caname: "ManagementCA"
     cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ management_ca_id }}&format=pem&level=0"
     cert_file_location: /var/tmp/managementca.crt
     superadmincn: "{{ superAdminCn }}"
-
-
   - caname: "RootCA1"
     cert_download_url: "http://192.168.50.12/rootPolicy-CA1.pem"
     cert_file_location: "/var/tmp/rootPolicy-CA1.pem"
     superadmincn: "{{ superAdminCn }}"
-
   - caname: "RootCA2"
     cert_download_url: "http://192.168.50.12/rootPolicy-CA2.pem"
     cert_file_location: "/var/tmp/rootPolicy-CA2.pem"
     superadmincn: "{{ superAdminCn }}"
-
   - caname: "{{ organizationNameShort }}-Policy-CA1-G1"
     cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ policy_ca_1_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/extPolCa1.pem"
     superadmincn: "{{ superAdminCn }}"
-
   - caname: "{{ organizationNameShort }}-Policy-CA2-G1"
     cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ policy_ca_2_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/extPolCa2.pem"
     superadmincn: "{{ superAdminCn }}"
-
   - caname: "{{ organizationNameShort }}-Sub-CA1-G1"
     cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_1_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA1.crt"
     superadmincn: "{{ superAdminCn }}"
-
   - caname: "{{ organizationNameShort }}-Sub-CA2-G1"
     cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_2_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA2.crt"
     superadmincn: "{{ superAdminCn }}"
-
-
   - caname: "{{ organizationNameShort }}-Sub-CA3-G1"
     cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_3_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA3.crt"
     superadmincn: "{{ superAdminCn }}"
-
   - caname: "{{ organizationNameShort }}-Sub-CA4-G1"
     cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_4_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA4.crt"
@@ -215,9 +211,9 @@ ejbca_va_keybinding:
     slot_identifier_type: "SLOT_LABEL"
     type: PKCS11CryptoToken
     crypto_token_name: ocspCryptoToken
-    key_size: "prime256v1"
+    key_size: "secp384r1"
     key_label: ocspSubCA3SigningKey0001
-    signature_algorithm: SHA256withECDSA
+    signature_algorithm: SHA384withECDSA
     token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
     slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
     caname: "{{ organizationNameShort }}-Sub-CA3-G1"
@@ -226,9 +222,9 @@ ejbca_va_keybinding:
     slot_identifier_type: "SLOT_LABEL"
     type: PKCS11CryptoToken
     crypto_token_name: ocspCryptoToken
-    key_size: "prime256v1"
+    key_size: "secp384r1"
     key_label: ocspSubCA4SigningKey0001
-    signature_algorithm: SHA256withECDSA
+    signature_algorithm: SHA384withECDSA
     token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
     slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
     caname: "{{ organizationNameShort }}-Sub-CA4-G1"
@@ -248,9 +244,9 @@ ejbca_va_keybinding:
     slot_identifier_type: "SLOT_LABEL"
     type: PKCS11CryptoToken
     crypto_token_name: ocspCryptoToken
-    key_size: "prime256v1"
+    key_size: "secp384r1"
     key_label: ocspPolCA2SigningKey0001
-    signature_algorithm: SHA256withECDSA
+    signature_algorithm: SHA384withECDSA
     token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
     slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
     caname: "{{ organizationNameShort }}-Policy-CA2-G1"
@@ -293,7 +289,7 @@ identity_csr_info:
     full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP SubCA3 Signer"
     username: "{{ ejbca_va_keybinding[2].name }}"
     password: "{{ encrypted_ocspSubKeyBinding_identity_password | default('foo123') }}"
-    certprofile: ocspSignerECC
+    certprofile: ocspSignerEcc-15d
     eeprofile: ocspSigner
     caname: "{{ ejbca_va_keybinding[2].caname }}"
     token: USERGENERATED
@@ -303,7 +299,7 @@ identity_csr_info:
     full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP SubCA4 Signer"
     username: "{{ ejbca_va_keybinding[3].name }}"
     password: "{{ encrypted_ocspSubKeyBinding_identity_password | default('foo123') }}"
-    certprofile: ocspSignerECC
+    certprofile: ocspSignerEcc-15d
     eeprofile: ocspSigner
     caname: "{{ ejbca_va_keybinding[3].caname }}"
     token: USERGENERATED
@@ -324,7 +320,7 @@ identity_csr_info:
     full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP PolicyCA2 Signer"
     username: "{{ ejbca_va_keybinding[5].name }}"
     password: "{{ encrypted_ocspPolCA2KeyBinding_identity_password | default('foo123') }}"
-    certprofile: ocspSignerECC
+    certprofile: ocspSignerEcc-15d
     eeprofile: ocspSigner
     caname: "{{ ejbca_va_keybinding[5].caname }}"
     token: USERGENERATED

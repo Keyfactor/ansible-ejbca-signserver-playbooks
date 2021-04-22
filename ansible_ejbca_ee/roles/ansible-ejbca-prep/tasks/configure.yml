@@ -222,28 +222,28 @@
 - name: Start Wildfly for adding addtional nodes
   block:
     
-    - name: Restart wildfly when adding a CA node to the cluster
-      systemd:
-        name: wildfly
-        state: restarted
+  - name: Restart wildfly when adding a CA node to the cluster
+    systemd:
+      name: wildfly
+      state: restarted
 
-    - name: Wait for EJBCA EAR file to start redeploying
-      wait_for:
-        path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.isdeploying"
-        state: present
-        delay: 10
-        timeout: 60
+  - name: Wait for EJBCA EAR file to start redeploying
+    wait_for:
+      path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.isdeploying"
+      state: present
+      delay: 10
+      timeout: 60
 
-    - debug:
-        msg: "Automatic restart is disabled. Application server must be restarted for generated HSM keys to be available."
-      when: not wildfly_manage_service
-      failed_when: true
+  - debug:
+      msg: "Automatic restart is disabled. Application server must be restarted for generated HSM keys to be available."
+    when: not wildfly_manage_service
+    failed_when: true
 
-    - name: Ensure EJBCA EAR file is deployed
-      wait_for:
-        delay: 60
-        timeout: 240
-        path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
+  - name: Ensure EJBCA EAR file is deployed
+    wait_for:
+      delay: 60
+      timeout: 240
+      path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
       state: present
 
-    when: ('ejbcaCaAddNodes' in group_names)
+  when: ('ejbcaCaAddNodes' in group_names)
