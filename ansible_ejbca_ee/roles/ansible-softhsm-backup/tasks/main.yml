@@ -1,0 +1,5 @@
+---
+# tasks file for ansible-softhsm-backup
+
+- name: Backup SoftHsm keys
+  include_tasks: backup_softhsm_keys.yml

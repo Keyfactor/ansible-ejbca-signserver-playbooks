@@ -42,6 +42,8 @@ mariadb_users:
     password: ejbca
     priv: "ejbca.*:ALL"
     host: "localhost"
+mariadb_datadir: /u/mysql/
+mariadb_socket: /u/mysql/mysql.sock
 
 ejbca_version: 7.4.3.3
 ejbca_software_url: http://192.168.248.136:8080/ejbca/ejbca_ee_7_4_3_3_RA.zip

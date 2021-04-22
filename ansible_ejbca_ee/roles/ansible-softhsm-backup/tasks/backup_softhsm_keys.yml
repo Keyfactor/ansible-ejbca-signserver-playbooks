@@ -1,0 +1,19 @@
+---
+
+- name: Create archive of all SoftHsm keys
+  archive:
+    path: /var/lib/softhsm
+    dest: /var/tmp/softhsmBackup.tar.gz
+    format: gz
+
+- name: Copy SoftHsm archive to Ansible controller
+  become: no
+  fetch:
+    src: /var/tmp/softhsmBackup.tar.gz
+    dest: "{{ softhsm_backup_dir_output }}/softhsmBackup.tar.gz"
+    flat: yes
+
+- name: Remove the SoftHsm archive (Cleanup)
+  file:
+    path: /var/tmp/softhsmBackup.tar.gz
+    state: absent

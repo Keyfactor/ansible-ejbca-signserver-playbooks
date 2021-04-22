@@ -49,6 +49,8 @@ mariadb_users:
     password: ejbca
     priv: "ejbca.*:ALL"
     host: "localhost"
+mariadb_datadir: /u/mysql/
+mariadb_socket: /u/mysql/mysql.sock
 
 ejbca_version: 7.4.3.3
 ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_3_VA.zip
@@ -187,7 +189,7 @@ ejbca_va_keybinding:
   - name: ocspSubCA1SigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
+    type: SoftCryptoToken
     crypto_token_name: ocspCryptoToken
     key_size: "3072"
     key_label: ocspSubCA1SigningKey0001
@@ -198,7 +200,7 @@ ejbca_va_keybinding:
   - name: ocspSubCA2SigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
+    type: SoftCryptoToken
     crypto_token_name: ocspCryptoToken
     key_size: "3072"
     key_label: ocspSubCA2SigningKey0001
@@ -209,7 +211,7 @@ ejbca_va_keybinding:
   - name: ocspSubCA3SigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
+    type: SoftCryptoToken
     crypto_token_name: ocspCryptoToken
     key_size: "secp384r1"
     key_label: ocspSubCA3SigningKey0001
@@ -220,7 +222,7 @@ ejbca_va_keybinding:
   - name: ocspSubCA4SigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
+    type: SoftCryptoToken
     crypto_token_name: ocspCryptoToken
     key_size: "secp384r1"
     key_label: ocspSubCA4SigningKey0001
@@ -231,7 +233,7 @@ ejbca_va_keybinding:
   - name: ocspPolCA1SigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
+    type: SoftCryptoToken
     crypto_token_name: ocspCryptoToken
     key_size: "3072"
     key_label: ocspPolCA1SigningKey0001
@@ -242,7 +244,7 @@ ejbca_va_keybinding:
   - name: ocspPolCA2SigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
+    type: SoftCryptoToken
     crypto_token_name: ocspCryptoToken
     key_size: "secp384r1"
     key_label: ocspPolCA2SigningKey0001
@@ -253,7 +255,7 @@ ejbca_va_keybinding:
   - name: ocspMgmtSigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
+    type: SoftCryptoToken
     crypto_token_name: ocspCryptoToken
     key_size: "3072"
     key_label: ocspMgmtSigningKey0001
