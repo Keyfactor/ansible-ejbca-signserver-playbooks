@@ -4,3 +4,5 @@
 
 [mysqld]
 bind_address={{ mariadb_bind_address }}
+datadir={{ mariadb_datadir| default('/var/lib/mysql') }}
+socket={{ mariadb_socket }}
