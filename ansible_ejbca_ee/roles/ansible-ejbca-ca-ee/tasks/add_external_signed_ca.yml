@@ -5,7 +5,7 @@
     url: "{{ item.external_cachain_url }}"
     validate_certs: no
     dest: "/var/tmp/{{ item.external_cachain_file }}"
-    creates: "{{ item.external_cachain_file }}"
+    creates: "/var/tmp/{{ item.external_cachain_file }}"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
   no_log: true
