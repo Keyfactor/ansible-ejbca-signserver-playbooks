@@ -25,6 +25,8 @@ ejbca_templated_properties_files:
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
   - src: mail.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+# By commenting out the database protection config under ejbca_templated_properties_files, no databaseprotection
+# in this vars file will be run
 #  - src: databaseprotection.properties.j2
 #    dest: "{{ ejbca_home }}/../ejbca-custom/conf/databaseprotection.properties"
   - src: custom.properties.j2
@@ -417,27 +419,31 @@ ejbca_keybinding:
 
 # Peer connectors to configure on the CA for connecting to external VA, RA, & SignServer
 ejbca_peerConnector:
-  - name: "{{ ejbcaVaServers[0].inventory_hostname }}"
-    url: "https://{{ ejbcaVaServers[0].inventory_hostname }}/ejbca/peer/v1"
+  - name: "OCSP {{ groups['ejbcaVaServers'][0] }}"
+    url: "https://{{ groups['ejbcaVaServers'][0] }}/ejbca/peer/v1"
     keybinding: "{{ ejbca_keybinding[0].name }}"
     type: ocsp
     enabled: "{{ use_external_va }}"
-  - name: "{{ ejbcaVaServers[1].inventory_hostname }}"
-    url: "https://{{ ejbcaVaServers[1].inventory_hostname }}/ejbca/peer/v1"
+  - name: "OCSP {{ groups['ejbcaVaServers'][1] }}"
+    url: "https://{{ groups['ejbcaVaServers'][0] }}/ejbca/peer/v1"
+    keybinding: "{{ ejbca_keybinding[0].name }}"
+    type: ocsp
+    enabled: "{{ use_external_va }}"
+  - name: "OCSP {{ groups['ejbcaVaServers'][2 }}"
+    url: "https://{{ groups['ejbcaVaServers'][0] }}/ejbca/peer/v1"
+    keybinding: "{{ ejbca_keybinding[0].name }}"
+    type: ocsp
+    enabled: "{{ use_external_va }}"
+  - name: "RA {{ groups['ejbcaRaServers'][0] }}"
+    url: "https://{{ groups['ejbcaRaServers'][0] }}/ejbca/peer/v1"
     keybinding: "{{ ejbca_keybinding[1].name }}"
-    type: ocsp
-    enabled: "{{ use_external_va }}"
-  - name: "{{ ejbcaVaServers[2].inventory_hostname }}"
-    url: "https://{{ ejbcaVaServers[2].inventory_hostname }}/ejbca/peer/v1"
-    keybinding: "{{ ejbca_keybinding[2].name }}"
-    type: ocsp
-    enabled: "{{ use_external_va }}"
-  - name: "{{ ejbcaRaServers[0].inventory_hostname }}"
-    url: "https://{{ ejbcaRaServers[0].inventory_hostname }}/ejbca/peer/v1"
-    keybinding: "{{ ejbca_keybinding[0].name }}"
     type: ra
     enabled: "{{ use_external_ra }}"
-
+#  - name: "{{ ejbcaSsServers[0].inventory_hostname }}"
+#    url: "https://{{ ejbcaSsServers[0].inventory_hostname }}/signserver/peer/v1"
+#    keybinding: "{{ ejbca_keybinding[0].name }}"
+#    type: sign
+#    enabled: "{{ use_external_ss }}" 
 
 # List of certification authorities that should be added using CLI
 # caname: CA name
@@ -561,7 +567,7 @@ policy_add_certification_authorities:
     external_cachain_file: extPolCa1.pem
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+    tokenpass: "{{ encrypted_policyca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "POLICY1_CA_SLOT"
@@ -615,7 +621,7 @@ policy_add_certification_authorities:
     external_cachain_file: extPolCa2.pem
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+    tokenpass: "{{ encrypted_policyca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "POLICY1_CA_SLOT"
@@ -670,7 +676,7 @@ sub_add_certification_authorities:
     external_cachain_file:
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "POLICY1_CA_SLOT"
@@ -723,7 +729,7 @@ sub_add_certification_authorities:
     external_cachain_file:
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "POLICY1_CA_SLOT"
@@ -732,7 +738,7 @@ sub_add_certification_authorities:
       testkey_label: "testKey"
 
   - caname: "{{ organizationNameShort }}-Sub-CA3-G1"
-    certprofile: "SubCA-{{ organizationNameShort }}-ECDSA"
+    certprofile: "EccSubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA3 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     #rootDn: "External"
     rootDn: "{{ organizationNameShort }}-Policy-CA2-G1"
@@ -777,7 +783,7 @@ sub_add_certification_authorities:
     external_cachain_file:
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "POLICY1_CA_SLOT"
@@ -785,7 +791,7 @@ sub_add_certification_authorities:
       defaultkey_label: "defaultKeySubCA30001"
       testkey_label: "testKey"
   - caname: "{{ organizationNameShort }}-Sub-CA4-G1"
-    certprofile: "SubCA-{{ organizationNameShort }}-ECDSA"
+    certprofile: "EccSubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA4 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     #rootDn: "External"
     rootDn: "{{ organizationNameShort }}-Policy-CA2-G1"
@@ -830,7 +836,7 @@ sub_add_certification_authorities:
     external_cachain_file:
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "POLICY1_CA_SLOT"

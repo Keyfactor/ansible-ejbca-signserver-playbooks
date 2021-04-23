@@ -5,12 +5,12 @@ Type: Validation Authority Peer Publisher
 Settings:
   Store CRL at the Validation Authority: 'true'
   Peer System: {{ item.name }}
-  Store Certificate at the Validation Authority: 'true'
+  Store Certificate at the Validation Authority: 'false'
   Publish Only Revoked Certificates: 'false'
   Include Database Integrity Information: 'false'
   Ignore Newer Entries at Peer: 'false'
   Don't Store Certificate Meta Data Except for CA and OCSP Signing Certificates: 'false'
-Only Use in Queue: false
+Only Use in Queue: true
 Keep Published in Queue: false
 Use Queue for CRLs: true
 Use Queue for Certificates: true {% if ejbca_version >= '7.4' %}  
