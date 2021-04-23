@@ -136,7 +136,7 @@ SSLCryptoDevice builtin
   SSLVerifyDepth  4
   SSLOptions +ExportCertData +StrictRequire +StdEnvVars
   </Location>
-{% endif %
+{% endif %}
   # Redirecting traffic to EJBCA public
   <Location /ejbca>
   ProxyPass balancer://EJBCACluster/ejbca
