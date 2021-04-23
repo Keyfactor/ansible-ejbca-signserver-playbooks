@@ -175,17 +175,28 @@ management_import_certification_authorities:
 
 identity_info:
   - dn: "OU=Devices,O={{ organizationName }},C={{ countryName }}"
-    name: "{{ inventory_hostname }}"
-    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ inventory_hostname }}"
-    username: "va_httpd_tls_{{ inventory_hostname }}"
+    name: "{{ groups['ejbcaVaServers'][0] }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ groups['ejbcaVaServers'][0] }}"
+    username: "va_httpd_tls_{{ groups['ejbcaVaServers'][0] }}"
     password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
-    altname: "dNSName={{ inventory_hostname }}"
+    altname: "dNSName={{ groups['ejbcaVaServers'][0] }}"
     certprofile: tlsServerMgmtCA
     eeprofile: "tlsServerMgmt"
     caname: "ManagementCA"
     token: PEM
 
 ejbca_va_keybinding:
+  - name: "{{ inventory_hostname }}"
+    slot_label: OCSP_KeyBinding_SLOT
+    slot_identifier_type: "SLOT_LABEL"
+    type: SoftCryptoToken
+    crypto_token_name: ocspCryptoToken
+    key_size: "3072"
+    key_label: ocspMgmtSigningKey0001
+    signature_algorithm: SHA256WithRSA
+    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
+    caname: "ManagementCA" 
   - name: ocspSubCA1SigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
