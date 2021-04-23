@@ -59,6 +59,7 @@
   register: certificateAiaDefaultCaIssuerUri_check
   changed_when: item.certificateAiaDefaultCaIssuerUri|string not in certificateAiaDefaultCaIssuerUri_check.stdout
   no_log: true
+  when: item.certificateAiaDefaultCaIssuerUri is defined
 
 - name: Check the useLdapDnOrder for {{ item.caname }}
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} useLdapDnOrder"
@@ -131,7 +132,9 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: certificateAiaDefaultCaIssuerUri_check.changed
+  when: 
+    - item.certificateAiaDefaultCaIssuerUri is defined
+    - certificateAiaDefaultCaIssuerUri_check.changed
   no_log: true
 
 - name: Configure the useLdapDnOrder for {{ item.caname }}

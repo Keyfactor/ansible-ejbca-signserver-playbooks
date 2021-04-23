@@ -155,8 +155,13 @@
       template:
         src: 'publisher-ocsp.yaml.j2'
         dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher-{{ item.name }}.yaml'
-      loop: ejbca_peerConnector
-      when: "ocsp" in item.type
+      loop: "{{ ejbca_peerConnector }}"
+      when: ("ocsp" in item.type)
+
+    - name: Create OCSP Service template files to import with configdump
+      template:
+        src: 'service-oscpService.yaml.j2'
+        dest: '{{ ejbca_home }}/dump/va/services/ocspPublisher-{{ item.name }}.yaml'
 
     - name: Create external VA services and publisher with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
@@ -165,7 +170,9 @@
       become: yes 
       become_user: "{{ ejbca_user }}"
 
-  when: use_external_va|bool
+  when:
+    - use_external_va is defined
+    - use_external_va|bool
 
 - name: Import Approval Profiles
   include_tasks: add_app_profs.yml

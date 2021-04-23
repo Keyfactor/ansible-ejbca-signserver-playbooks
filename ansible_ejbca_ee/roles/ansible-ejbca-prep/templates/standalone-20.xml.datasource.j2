@@ -205,7 +205,6 @@
                         <use-strict-min>{{ use_strict_min| default('false') }}</use-strict-min>
                         <allow-multiple-users>{{ allow_multiple_user| default('false') }}</allow-multiple-users>
                     </pool>
-                    <security>
 {% if wildfly_enable_kerberos is sameas true %}
                     <security>
                         <elytron-enabled>true</elytron-enabled>
@@ -220,7 +219,6 @@
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
                     </security> 
 {% endif %}
-                    </security>
                     <validation>
                         <check-valid-connection-sql>select 1;</check-valid-connection-sql>
                         <validate-on-match>true</validate-on-match>

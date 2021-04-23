@@ -24,9 +24,9 @@ use_external_ss: false
 #wildfly_version: 21.0.2.Final
 #wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
 #wildfly_standalone_file: standalone-21.xml.datasource.j2
-wildfly_version: 22.0.1.Final
+wildfly_version: 23.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-22.xml.datasource.j2
+wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1

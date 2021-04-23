@@ -16,14 +16,14 @@
   block:
     - name: Open http port
       firewalld:
-        systemd: 'http'
+        service: 'http'
         permanent: yes
         immediate: yes
         state: enabled
 
     - name: Open https port
       firewalld:
-        systemd: 'https'
+        service: 'https'
         permanent: yes
         immediate: yes
         state: enabled

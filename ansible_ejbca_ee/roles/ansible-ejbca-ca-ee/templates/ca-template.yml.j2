@@ -40,6 +40,9 @@ CRL Expiration Period: {{ item.crlPeriod_yml }}
 CRL Issue Interval: {{ item.crlIssueInterval_yml }}
 CRL Overlap Time: {{ item.crl_overlap_time }}
 Delta CRL Period: {{ item.delta_crl_period }}
+{% if ejbca_version >= '7.5' %}
+Generate CRL Upon Revocation: {{ item.generate_crl_upon_revocation | default('false') }}
+{% endif %}
 Default CRL Distribution Point: {{ item.defaultCRLDP }}
 OCSP Service Default URI: {{ item.defaultOCSPServiceLocator }}
 AIA CA Issuer URIs:

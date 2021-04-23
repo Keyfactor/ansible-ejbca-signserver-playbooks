@@ -654,12 +654,10 @@ configdump_files:
   - src: 'role-ra-vault.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-vault.yaml'
     # Files for External VA
-  - src: 'publisher-ocsp.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher.yaml'
   - src: 'service-oscpService.yaml.j2'
     dest: '{{ ejbca_home }}/dump/va/services/oscpService.yaml'
-  - src: 'service-oscp-keyupdate.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/va/services/oscp-keyupdate.yaml'
+  #- src: 'service-oscp-keyupdate.yaml.j2'
+  #  dest: '{{ ejbca_home }}/dump/va/services/oscp-keyupdate.yaml'
     # Files for External RA
   - src: 'role-ra-peer-connection.yaml.j2'
     dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'
