@@ -186,7 +186,7 @@ identity_info:
     token: PEM
 
 ejbca_va_keybinding:
-  - name: "{{ inventory_hostname }}"
+  - name: ocspMgmtSigningKey
     slot_label: OCSP_KeyBinding_SLOT
     slot_identifier_type: "SLOT_LABEL"
     type: SoftCryptoToken
@@ -263,18 +263,6 @@ ejbca_va_keybinding:
     token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
     slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
     caname: "{{ organizationNameShort }}-Policy-CA2-G1"
-  - name: ocspMgmtSigningKey
-    slot_label: OCSP_KeyBinding_SLOT
-    slot_identifier_type: "SLOT_LABEL"
-    type: SoftCryptoToken
-    crypto_token_name: ocspCryptoToken
-    key_size: "3072"
-    key_label: ocspMgmtSigningKey0001
-    signature_algorithm: SHA256WithRSA
-    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
-    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
-    caname: "ManagementCA" 
-
 
 identity_csr_info:
   - dn: "OU=OCSP Signers,O={{ organizationName }},C={{ countryName }}"

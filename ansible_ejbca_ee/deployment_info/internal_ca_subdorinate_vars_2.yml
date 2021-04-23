@@ -419,22 +419,22 @@ ejbca_keybinding:
 
 # Peer connectors to configure on the CA for connecting to external VA, RA, & SignServer
 ejbca_peerConnector:
-  - name: "OCSP {{ groups['ejbcaVaServers'][0] }}"
+  - name: "OCSP - {{ groups['ejbcaVaServers'][0] }}"
     url: "https://{{ groups['ejbcaVaServers'][0] }}/ejbca/peer/v1"
     keybinding: "{{ ejbca_keybinding[0].name }}"
     type: ocsp
     enabled: "{{ use_external_va }}"
-  - name: "OCSP {{ groups['ejbcaVaServers'][1] }}"
-    url: "https://{{ groups['ejbcaVaServers'][0] }}/ejbca/peer/v1"
+  - name: "OCSP - {{ groups['ejbcaVaServers'][1] }}"
+    url: "https://{{ groups['ejbcaVaServers'][1] }}/ejbca/peer/v1"
     keybinding: "{{ ejbca_keybinding[0].name }}"
     type: ocsp
     enabled: "{{ use_external_va }}"
-  - name: "OCSP {{ groups['ejbcaVaServers'][2 }}"
-    url: "https://{{ groups['ejbcaVaServers'][0] }}/ejbca/peer/v1"
+  - name: "OCSP - {{ groups['ejbcaVaServers'][2] }}"
+    url: "https://{{ groups['ejbcaVaServers'][2] }}/ejbca/peer/v1"
     keybinding: "{{ ejbca_keybinding[0].name }}"
     type: ocsp
     enabled: "{{ use_external_va }}"
-  - name: "RA {{ groups['ejbcaRaServers'][0] }}"
+  - name: "RA - {{ groups['ejbcaRaServers'][0] }}"
     url: "https://{{ groups['ejbcaRaServers'][0] }}/ejbca/peer/v1"
     keybinding: "{{ ejbca_keybinding[1].name }}"
     type: ra
