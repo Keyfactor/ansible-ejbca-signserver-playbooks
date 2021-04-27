@@ -1,0 +1,13 @@
+# MariaDB Server configuration
+#
+# {{ ansible_managed }}
+
+[mariadb]
+{% for key, value in mariadb_server_cnf.items() %}
+{% if value is defined and value %}
+{{ key }} = {{ value }}
+{% else %}
+{{ key }}
+{% endif %}
+{% endfor %}
+

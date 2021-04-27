@@ -1,0 +1,35 @@
+# {{ ansible_managed | comment }}
+# Configuration of XMLSigner WORKERGENID{{ item.id }}.
+# Sample configuration of an .
+#
+
+## General properties
+WORKERGENID{{ item.id }}.TYPE=PROCESSABLE
+WORKERGENID{{ item.id }}.IMPLEMENTATION_CLASS=org.signserver.module.xmlsigner.XMLSigner
+WORKERGENID{{ item.id }}.NAME={{ item.name }}
+
+# Authentication. One of NOAUTH, CLIENTCERT, org.signserver.server.UsernamePasswordAuthorizer, org.signserver.server.UsernameAuthorizer
+WORKERGENID{{ item.id }}.AUTHTYPE={{ item.AuthType }}
+
+# Crypto token: CryptoTokenP12, CryptoTokenP11, CryptoTokenP11NG1, CryptoTokenP11NG1KeyWrapping
+WORKERGENID{{ item.id }}.CRYPTOTOKEN={{ item.CryptoToken }}
+
+# Using key from sample keystore
+WORKERGENID{{ item.id }}.DEFAULTKEY={{ item.DefaultKey }}
+# Key using ECDSA
+#WORKERGENID{{ item.id }}.DEFAULTKEY=signer00002
+
+# Allow peering with EJBCA
+WORKERGENID{{ item.id }}.PEERS_VISIBLE={{ item.peer_enable |default('true') }}
+
+# Signature algorithm
+# Default: SHA256 with RSA, DSA or ECDSA depending on key
+# Values: SHA256withRSA, SHA256withDSA, SHA256withECDSA
+WORKERGENID{{ item.id }}.SIGNATUREALGORITHM={{ item.SignatureAlgorithm }}
+
+# Digest algorithm
+# Default: depends on signature algorithm. Ex: SHA256 for SHA256withRSA/SHA256withECDSA & SHA512 for SHA512withRSA/SHA512withECDSA
+WORKERGENID{{ item.id }}.DIGESTALGORITHM={{ item.DigestAlgorithm }}
+
+# If the key usage counter is disabled
+WORKERGENID{{ item.id }}.DISABLEKEYUSAGECOUNTER={{ item.DisableKeyUsageCounter }}

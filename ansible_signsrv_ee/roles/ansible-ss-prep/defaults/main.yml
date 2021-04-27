@@ -1,0 +1,104 @@
+---
+# defaults file for ansible-ss-prep
+
+signsvr_root_dir: /opt
+signsvr_home: "{{ signsvr_root_dir }}/signsrv"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+wildfly_manage_service: true
+
+signsvr_src_link_dir: "{{  signsvr_root_dir }}/signsrv"
+
+wildfly_standalone_file: standalone-19.xml.datasource.j2
+systemd_dir: /usr/lib/systemd/system
+
+signsvr_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.5.4/mariadb-java-client-2.5.4.jar
+signsvr_jdbc_gen_name: mariadb-java-client.jar
+
+signsvr_manage_user: true
+signsrv_group: wildfly
+signsrv_user: wildfly
+signsrv_user_profile: "/home/{{ signsrv_user }}"
+
+signsvr_softhsm:
+  - dir: /opt/softhsm
+    src: /usr/lib64/libsofthsm2.so
+    dest: /opt/softhsm/hsm_pkcs11.so
+
+hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
+
+# SignServer audit log database protection configurations
+# slot_index: Index of HSM slot used for database integrity protection
+# key_label: Label of key used for database integrity protection
+# signature_algorithm: Algorithm used to sign database rows
+# token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
+#ejbca_databaseprotection:
+#  slot_label: DB_Protect_SLOT
+#  key_label: dbProtect00001
+#  signature_algorithm: SHA256WithRSA
+#  token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+#  hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
+signsrv_databaseprotection:
+  slot_label: DB_Protect_SLOT
+  key_label: dbProtect00001
+  signature_algorithm: SHA256WithRSA
+  token_pin: "{{ encrypted_signsrv_databaseprotection_token_pin | default('foo123') }}"
+  hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
+
+signsrv_gen_hsm_slots:
+  - slot_name: SignServer_SLOT
+    slot_so_pin: "{{ encrypted_signsrv_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_signsrv_token_pin | default('foo123') }}"
+  - slot_name: " {{ signsrv_databaseprotection.slot_label }}"
+    slot_so_pin: "{{ encrypted_signsrv_so_databaseprotection_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_signsrv_databaseprotection_token_pin | default('foo123') }}"
+
+# SignServer property files
+signsrv_templated_properties_files:
+  - src: signserver_deploy.properties.j2
+    dest: "{{ signsvr_home }}/../signserver-custom/conf/signserver_deploy.properties"
+  - src: cesecore.properties.j2
+    dest: "{{ signsvr_home }}/../signserver-custom/conf/cesecore.properties"
+  #- src: databaseprotection.properties.j2
+  #  dest: "{{ signsvr_home }}/../signserver-custom/conf/databaseprotection.properties"
+
+appsrv_datasources:
+  - jndi_name: "java:/SignServerDS"
+    pool_name: SignServerDS
+    host: 127.0.0.1
+    port: 3306
+    database: signsrv
+    user: signsrv-usr
+    password: "{{ encrypted_database_signsrvusr_password | default('ejbca') }}"
+
+signsrv_xalan_xml_files:
+  - src: "{{ signsvr_home }}/lib/ext/xalan-2.7.2.jar"
+    dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
+  - src: "{{ signsvr_home }}/lib/ext/serializer-2.7.2.jar"
+    dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
+
+#signserver_deploy.properties
+
+web_httpserver_external_privhttps: 443
+webdoc_enabled: true
+web_admingui_dist_enabled: false
+web_clientcli_dist_enabled: false
+
+maskedworkerproperties_enabled: true
+maskedworkerproperties_values: "PIN,KEYSTOREPASSWORD,KEYDATA"
+
+# Settings for SignServer TimeMonitor configuration
+enable_timemonitor_service: true
+timeserver_ntpdatecommand: /usr/sbin/ntpdate
+timeserver_ntpqcommand: /usr/bin/ntpq
+signserver_managedconfig: true
+timemonitor_stateweb_enabled: true
+timemonitor_stateweb_bindaddress: 127.0.0.1
+timemonitor_stateweb_port: 8980
+timemonitor_stateweb_threads: 5
+timemonitor_stateweb_backlog: 0
+
+signserver_process_url: http://localhost/signserver/process
+signserver_statuspropertiesworker_name: TimeMonitorManager
+signserver_statusproperty_name: TIMESOURCE0_INSYNC
+signserver_leapstatusproperty_name: LEAPSECOND

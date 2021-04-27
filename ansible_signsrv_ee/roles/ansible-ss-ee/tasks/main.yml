@@ -1,0 +1,25 @@
+---
+# tasks file for roles/ansible-ss-ee
+
+- name: Deploy SignServer
+  include_tasks: deploy_ss.yml
+  
+- name: Add PKCS11 
+  include_tasks: add_p11.yml
+  when: p11_crypto_tokens[0] is defined
+
+- name: Generate keys in PKCS11
+  include_tasks: add_gen_signer_keys.yml
+  when: create_p11_slot.changed
+
+- name: Add Time Monitor
+  include_tasks: add_time_monitor.yml
+  when: time_monitor_workers_enabled|bool
+
+- name: Configure SignServer Admins
+  include_tasks: config_admins.yml
+  when: signsrv_admins[0] is defined
+
+- name: Configure Peering with CA
+  include_tasks: config_peering.yml
+  when: peering_enable|bool

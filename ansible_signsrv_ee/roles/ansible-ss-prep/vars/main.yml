@@ -1,0 +1,26 @@
+---
+# vars file for ansible-ss-prep
+
+# List of repository packages that will be installed by this role
+signsvr_packages_8:
+  - unzip
+  - java-1.8.0-openjdk-devel.x86_64
+  - ant.noarch
+  - nss-tools
+  - http://repo.okay.com.mx/centos/8/x86_64/release/softhsm-2.4.0-2.el8.x86_64.rpm
+  - wget
+  - jq
+  - vim
+  - firewalld
+
+# List of repository packages that will be installed by this role
+signsvr_packages_7:
+  - unzip
+  - java-1.8.0-openjdk-devel.x86_64
+  - ant.noarch
+  - nss-tools
+  - softhsm
+  - wget
+  - jq
+  - vim 
+  - firewalld

@@ -1,0 +1,56 @@
+---
+
+- name: Obtain CA Certificate
+  uri:
+    url: "{{ item.cert_download_url }}"
+    validate_certs: no
+    dest: "{{ item.cert_file_location }}"
+    creates: "{{ item.cert_file_location }}"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+  loop: "{{ management_import_certification_authorities }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  no_log: true
+
+- name: Copy certificate files from Controller
+  copy:
+    src: "{{ ejbca_csr_dir_output }}/{{ item.name }}.crt"
+    dest: "{{ identity_batch_output_dir }}/{{ item.name }}.crt"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+  loop: "{{ p11_generate }}"
+  loop_control:
+    label: "{{ item.name }}.crt"
+  register: file_copy
+  #no_log: true
+
+- name: Add CA certs to the signed cert file
+  shell: "cat /var/tmp/{{ organizationNameShort }}-Sub-CA-chain.crt >> {{ identity_batch_output_dir }}/{{ item.name }}.crt"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  loop: "{{ p11_generate }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Import signed signer certificates to SignServer
+  command: "{{ signsvr_home }}/bin/signserver uploadsignercertificatechain {{ item.name }} GLOB {{ identity_batch_output_dir }}/{{ item.name }}.crt"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  loop: "{{ p11_generate }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Reload SignServer
+  command: "{{ signsvr_home }}/bin/signserver reload {{ p11_crypto_tokens[0].name }}"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+

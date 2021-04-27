@@ -1,0 +1,36 @@
+---
+
+- name: Prepare Microsoft code timestamp signer properties file for SignServer
+  template:
+    src: xmlsigner.properties.j2
+    dest: "{{ signsvr_home }}/conf/xmlsigner-{{ item.id }}.properties"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+    mode: 0640
+  loop: "{{ xml_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Add Microsoft code timestamp signer to SignServer
+  command: "{{ signsvr_home }}/bin/signserver setproperties {{ signsvr_home }}/conf/xmlsigner-{{ item.id }}.properties"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  loop: "{{ xml_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Reload SignServer
+  command: "{{ signsvr_home }}/bin/signserver reload {{ item.name }}"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  loop: "{{ xml_signers }}"
+  loop_control:
+    label: "{{ item.name }}"

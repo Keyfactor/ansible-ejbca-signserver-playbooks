@@ -1,0 +1,50 @@
+---
+
+- name: Query Peering globally
+  command: "{{ signsvr_home }}/bin/signserver getproperty global PEERS_INCOMING_ENABLED"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: query_peering_res
+  changed_when: peering_enable|string not in query_peering_res.stdout
+
+- name: Enable Peering globally
+  command: "{{ signsvr_home }}/bin/signserver setproperty global PEERS_INCOMING_ENABLED {{ peering_enable }}"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: enable_peering
+  when: query_peering_res.changed
+
+- name: Reload SignServer
+  command: "{{ signsvr_home }}/bin/signserver reload all"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: enable_peering_reload
+  when: query_peering_res.changed
+
+- name: Allow EJBCA Peer to connect to SignServer
+  command: "{{ signsvr_home }}/bin/signserver wspeersystems -add -certserialno {{ item.serial }} -issuerdn '{{ peer_ca_issuerdn }}'"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  loop: "{{ peer_ca_cert_serial_numbers }}"
+  loop_control:
+    label: "{{ item.type }}"
+  when: item.type == "sign"
+  register: add_peering_systems
+  failed_when: add_peering_systems.rc >= 2
+  changed_when: add_peering_systems.rc == 0

@@ -1,0 +1,41 @@
+---
+
+- name: Install OpenJDK Development, unzip, & Ant CentOS/RHEL 8
+  dnf:
+    name: "{{ signsvr_packages_8 }}"
+    state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+
+- name: Install OpenJDK Development, unzip, & Ant CentOS/RHEL 7
+  yum:
+    name: "{{ signsvr_packages_7 }}"
+    state: present
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+
+- name: Check if signsrv directory exists
+  stat:
+    path: "{{ signsvr_root_dir }}/{{ signsrv_src_dir_name }}"
+  register: signsrv_src_dir
+
+- name: Download and unpack SignServer EE archive
+  unarchive:
+    src: "{{ signsrv_software_url }}"
+    dest: /opt
+    remote_src: yes
+  when: not signsrv_src_dir.stat.exists
+  register: unpacked_signsrv
+
+- name: Create symlink to installed version
+  file:
+    state: link
+    src: "{{ signsvr_root_dir }}/{{ signsrv_src_dir_name }}"
+    dest: "{{ signsvr_home }}"
+
+- name: Download the JDBC Driver
+  get_url:
+    url: "{{ signsvr_jdbc_driver }}"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+    dest: "{{ wildfly_home }}/standalone/deployments/{{ signsvr_jdbc_gen_name }}"

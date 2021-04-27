@@ -1,0 +1,19 @@
+---
+
+- name: Deploy SignServer ear file
+  command: "ant -q deploy"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: built_ss_ear
+
+- name: Ensure SignServer EAR file is deployed
+  wait_for:
+    delay: 30
+    #timeout: 335
+    path: "{{ wildfly_home }}/standalone/deployments/signserver.ear.deployed"
+    state: present
+  register: deployed_ss_ear

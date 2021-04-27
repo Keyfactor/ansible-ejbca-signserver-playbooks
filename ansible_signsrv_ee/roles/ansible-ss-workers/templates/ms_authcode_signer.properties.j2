@@ -1,0 +1,124 @@
+# {{ ansible_managed | comment }}
+# Configuration of MSAuthCodeSigner WORKERGENID{{ item.id }}.
+#
+
+## General properties
+
+WORKERGENID{{ item.id }}.TYPE=PROCESSABLE
+WORKERGENID{{ item.id }}.IMPLEMENTATION_CLASS=org.signserver.module.msauthcode.signer.MSAuthCodeSigner
+
+WORKERGENID{{ item.id }}.NAME={{ item.name }}
+# Authentication. One of NOAUTH, CLIENTCERT, org.signserver.server.UsernamePasswordAuthorizer, org.signserver.server.UsernameAuthorizer
+WORKERGENID{{ item.id }}.AUTHTYPE={{ item.AuthType }}
+
+# Crypto token: CryptoTokenP12, CryptoTokenP11, CryptoTokenP11NG1, CryptoTokenP11NG1KeyWrapping
+WORKERGENID{{ item.id }}.CRYPTOTOKEN={{ item.CryptoToken }}
+
+
+# Using key from sample keystore
+WORKERGENID{{ item.id }}.DEFAULTKEY={{ item.DefaultKey }}
+# Key using ECDSA
+#WORKERGENID{{ item.id }}.DEFAULTKEY=code00002
+
+# Allow peering with EJBCA
+WORKERGENID{{ item.id }}.PEERS_VISIBLE={{ item.peer_enable |default('true') }}
+
+# Program name to embed in the signature
+# Default: none
+#WORKERGENID{{ item.id }}.PROGRAM_NAME=My Application
+### if  item.Program_Name is defined and item.Program_Name|length ### 
+{% if  item.Program_Name is defined %}
+WORKERGENID{{ item.id }}.PROGRAM_NAME={{ item.Program_Name }}
+{% endif %}
+
+# If the requester should be able to override the program name
+# Default: false
+#WORKERGENID{{ item.id }}.ALLOW_PROGRAM_NAME_OVERRIDE=false
+### if  item.Allow_Program_Name_Override is defined and item.Allow_Program_Name_Override|length ### 
+{% if  item.Allow_Program_Name_Override is defined %}
+WORKERGENID{{ item.id }}.ALLOW_PROGRAM_NAME_OVERRIDE={{ item.Allow_Program_Name_Override }}
+{% endif %}
+
+# Program URL to embed in the signature
+# Default: none
+#WORKERGENID{{ item.id }}.PROGRAM_URL=https://example.com/my-application.html
+### if  item.Program_Url is defined and item.Program_Url|length ### 
+{% if  item.Program_Url is defined %}
+WORKERGENID{{ item.id }}.PROGRAM_URL={{ item.Program_Url }}
+{% endif %}
+
+# If the requester should be able to override the program URL
+# Default: false
+#WORKERGENID{{ item.id }}.ALLOW_PROGRAM_URL_OVERRIDE=false
+### if  item.Allow_Program_Url_Override is defined and item.Allow_Program_Url_Override|length ### 
+{% if  item.Allow_Program_Url_Override is defined %}
+WORKERGENID{{ item.id }}.ALLOW_PROGRAM_URL_OVERRIDE={{ item.Allow_Program_Url_Override }}
+{% endif %}
+
+# Signature algorithm
+# Default: SHA256 with RSA, DSA or ECDSA depending on key, value: SIGNATUREALGORITHM=SHA256withRSA, SHA256withDSA, SHA256withECDSA
+WORKERGENID{{ item.id }}.SIGNATUREALGORITHM={{ item.SignatureAlgorithm |default('SHA256WithRSA') }}
+
+# Algorithm for the digest of the binary
+# Default: SHA256
+#Values: SHA-1, SHA-256
+WORKERGENID{{ item.id }}.DIGESTALGORITHM={{ item.DigestAlgorithm |default('SHA256') }}
+
+# Worker ID or name of internal timestamp signer in the same SignServer
+# Default: none
+#WORKERGENID{{ item.id }}.TSA_WORKER=MSAuthCodeTimeStampSigner
+### if  item.Tsa_Worker is defined and item.Tsa_Worker|length ### 
+{% if  item.Tsa_Worker is defined %}
+WORKERGENID{{ item.id }}.TSA_WORKER={{ item.Tsa_Worker }}
+{% endif %}
+
+# URL of external timestamp authority
+# Default: none
+#WORKERGENID{{ item.id }}.TSA_URL=http://tsa.example.com/TimeStampSigner
+### if  item.Tsa_Url is defined and item.Tsa_Url|length ### 
+{% if  item.Tsa_Url is defined %}
+WORKERGENID{{ item.id }}.TSA_URL={{ item.Tsa_Url }}
+{% endif %}
+
+# Username for authentication with the TSA
+# Default: none
+WORKERGENID{{ item.id }}.TSA_USERNAME=
+
+# Password for authentication with the TSA
+# Default: none
+WORKERGENID{{ item.id }}.TSA_PASSWORD=
+
+# Time-stamping policy OID to request from the TSA
+# Default: none
+### if  item.TsaPolicyOid is defined and item.TsaPolicyOid|length ### 
+{% if  item.TsaPolicyOid is defined %}
+WORKERGENID{{ item.id }}.TSA_POLICYOID={{ item.TsaPolicyOid }}
+{% endif %}
+
+# The timestamp format to use
+# It should correspond to the type of timestamp worker being used
+# (Microsoft Authenticode format, or RFC 3161-compliant format).
+# Default: AUTHENTICODE
+# Values: AUTHENTICODE, RFC3161
+WORKERGENID{{ item.id }}.TIMESTAMP_FORMAT={{ item.Timestamp_Format |default('AUTHENTICODE') }}
+
+# If a digest of the request should be computed and logged
+# Default: true
+# Values: true, false
+WORKERGENID{{ item.id }}.DO_LOGREQUEST_DIGEST={{ item.Do_LogRequest_Digest |default('true') }}
+
+# The digest algorithm to use for the request in the log
+# Default: SHA256
+WORKERGENID{{ item.id }}.LOGREQUEST_DIGESTALGORITHM={{ item.LogRequest_DefaultAlgorithm |default('SHA256') }}
+
+# If a digest of the response should be computed and logged
+# Default: true
+# Values: true, false
+WORKERGENID{{ item.id }}.DO_LOGRESPONSE_DIGEST={{ item.Do_LogResponse_Digest |default('true') }}
+
+# The digest algorithm to use for the request in the log
+# Default: SHA256
+WORKERGENID{{ item.id }}.LOGRESPONSE_DIGESTALGORITHM={{ item.LogResponse_DigestAlgorithm |default('SHA256') }}
+
+# If the key usage counter is disabled
+WORKERGENID{{ item.id }}.DISABLEKEYUSAGECOUNTER={{ item.DisableKeyUsageCounter |default('true') }}

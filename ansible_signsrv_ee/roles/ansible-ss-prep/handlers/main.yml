@@ -1,0 +1,17 @@
+---
+# handlers file for ansible-ss-prep
+
+- name: restart wildfly
+  systemd:
+    name: wildfly
+    state: restarted
+
+- name: stop wildfly
+  systemd:
+    name: wildfly
+    state: stopped
+
+- name: start wildfly
+  systemd:
+    name: wildfly
+    state: started

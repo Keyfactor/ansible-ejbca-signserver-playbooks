@@ -1,0 +1,16 @@
+
+---
+
+- name: Add admins to SignServer
+  command: "{{ signsvr_home }}/bin/signserver wsadmins -add -certserialno {{ item.serial }} -issuerdn '{{ item.issuerdn }}'"
+  args:
+    chdir: "{{ signsvr_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: add_admins_to_ss
+  loop: "{{ signsrv_admins }}"
+  loop_control:
+    label: "{{ item.name }}"
+ 

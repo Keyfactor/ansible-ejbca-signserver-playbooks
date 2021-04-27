@@ -1,0 +1,34 @@
+---
+# tasks file for ansible-ss-workers
+
+- name: Add Timestamp Authority
+  include_tasks: add_tsa_signer.yml
+  when: tsa_signers_enabled|bool
+
+- name: Add Microsoft Code Timestamp Signer
+  include_tasks: add_ms_code_timestamp_signer.yml
+  when: ms_tsa_signers_enabled|bool
+
+- name: Add Plain Signer
+  include_tasks: add_plain_signer.yml
+  when: plain_signers_enabled|bool
+
+- name: Add PDF Signer
+  include_tasks: add_pdf_signer.yml
+  when: pdf_signers_enabled|bool
+
+- name: Add Java Archive Signer
+  include_tasks: add_java_signer.yml
+  when: java_signers_enabled|bool
+
+- name: Add Microsoft Code Signer
+  include_tasks: add_ms_auth_code_signer.yml
+  when: ms_code_signers_enabled|bool
+
+- name: Add XML Signer
+  include_tasks: add_xml_signer.yml
+  when: xml_signers_enabled|bool
+
+- name: Upload signed signer certificates & import
+  include_tasks: add_upload_signer_certs.yml
+  when: p11_generate[0] is defined
