@@ -3,7 +3,7 @@
 - name: Restart application server if HSM keys were generated
   block:
   - name: Ensure application server is restarted
-    service:
+    systemd:
       state: restarted
       name: wildfly
     when: wildfly_manage_service
@@ -23,7 +23,7 @@
   when: checking_existing_keys is defined and checking_existing_keys.changed
 
 - name: Ensure application server is started
-  service:
+  systemd:
     name: wildfly
     state: started
   when: wildfly_manage_service

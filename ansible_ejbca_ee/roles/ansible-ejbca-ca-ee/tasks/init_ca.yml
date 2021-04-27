@@ -1,0 +1,151 @@
+---
+
+- name: Copy {{ item.caname }} Token properties file is copied over
+  template:
+    src: "catoken_template.properties.j2"
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  when: item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken"
+  no_log: true
+
+#- name: Query CA ID for Root CA 
+#  command: /opt/ejbca/bin/ejbca.sh ca info --caname {{ item.caname }}
+#  register: root_ca_id
+#  become: yes
+#  become_user: "{{ ejbca_user }}"
+#  no_log: true
+
+- name: Init Root or Self Signed Issuing CA
+  block:
+    - name: Create {{ item.caname }}
+      command: >
+       "{{ ejbca_home }}/bin/ejbca.sh" ca init
+       --caname "{{ item.caname }}"
+       --dn "{{ item.dn }}"
+       --tokenType "{{ item.tokentype }}"
+       --tokenPass "{{ item.tokenpass }}"
+       {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}--tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"{% endif %}
+       --keyspec "{{ item.keyspec }}"
+       --keytype "{{ item.keytype }}" -s "{{ item.signalg }}"
+       -v "{{ item.validity }}"
+       --policy "{{ item.policy }}"
+       {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
+       -certprofile "{{ item.certprofile }}"
+      no_log: true
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: initializing_management_ca
+      failed_when: initializing_management_ca.rc >= 2
+      changed_when: initializing_management_ca.rc == 0
+
+    - debug:
+        msg: "Initializing CA failed with message: {{ initializing_management_ca.stdout }}"
+      when: initializing_management_ca.rc == 1
+
+  when:
+    - item.rootDn is not defined 
+
+- name: Init Policy or Sub CA with local Root CA
+  block:
+
+    - name: Query CA ID of Root CA for {{ item.caname }}
+      command: "{{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh CaIdGenerator '{{ item.rootDn }}'"
+      args:
+        chdir: "{{ ejbca_home }}/../clientToolBox"
+      register: root_ca_id
+      no_log: true
+      become: yes
+      become_user: "{{ ejbca_user }}"
+
+    #- debug:
+    #    var: root_ca_id.results
+    # --signedby "{{ item.stdout_lines[2].split(' ')[2] }}"
+
+    - name: Create {{ item.caname }}
+      command: >
+       "{{ ejbca_home }}/bin/ejbca.sh" ca init
+       --caname "{{ item.caname }}"
+       --dn "{{ item.dn }}"
+       --tokenType "{{ item.tokentype }}"
+       --tokenPass "{{ item.tokenpass }}"
+       {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}--tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"{% endif %}
+       --keyspec "{{ item.keyspec }}"
+       --keytype "{{ item.keytype }}" -s "{{ item.signalg }}"
+       -v "{{ item.validity }}"
+       --policy "{{ item.policy }}"
+       {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
+       -certprofile "{{ item.certprofile }}"
+       --signedby "{{ root_ca_id.stdout }}"
+      no_log: true
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: initializing_sub_ca
+      failed_when: initializing_sub_ca.rc >= 2
+      changed_when: initializing_sub_ca.rc == 0
+
+    - debug:
+        msg: "Initializing Sub CA failed with message: {{ initializing_sub_ca.stdout }}"
+      when: 
+        - initializing_sub_ca.rc == 1 
+      ignore_errors: yes
+
+  when: 
+    - item.rootDn is defined
+    - item.rootDn != "External"
+
+- name: Init CA to create a CSR to sign with an external Root CA
+  block:
+    - name: Download external CA chain for creating an External CA {{ item.caname }}
+      uri:
+        url: "{{ item.external_root_cachain_url }}"
+        validate_certs: no
+        dest: "/var/tmp/{{ item.external_root_cachain_file }}"
+        creates: "/var/tmp/{{ item.external_root_cachain_file }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+      no_log: true
+
+    - name: Create a CA CSR to be signed by an external CA for {{ item.caname }}
+      command: >
+       "{{ ejbca_home }}/bin/ejbca.sh" ca init
+       --caname "{{ item.caname }}"
+       --dn "{{ item.dn }}"
+       --tokenType "{{ item.tokentype }}"
+       --tokenPass "{{ item.tokenpass }}"
+       {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}--tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"{% endif %}
+       --keyspec "{{ item.keyspec }}"
+       --keytype "{{ item.keytype }}" -s "{{ item.signalg }}"
+       -v "{{ item.validity }}"
+       --policy "{{ item.policy }}"
+       {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
+       --signedby "{{ item.rootDn }}"
+       -externalcachain "/var/tmp/{{ item.external_root_cachain_file }}"
+      args:
+        chdir: "{{ ejbca_home }}"
+      no_log: true
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: initializing_sub_ca_csr
+      failed_when: initializing_sub_ca_csr.rc >= 2
+      changed_when: initializing_sub_ca_csr.rc == 0
+      
+    - debug:
+        msg: "Initializing Sub CA generate CSR failed with message: {{ initializing_sub_ca_csr.stdout }}"
+      when: initializing_sub_ca_csr.rc == 1
+      ignore_errors: yes
+
+  when: 
+    - item.rootDn is defined
+    - item.rootDn == "External"
+
+
+- name: Enable Auto Activate for {{ item.caname }} Crypto Token
+  command: "{{ ejbca_home }}/bin/ejbca.sh cryptotoken setpin --token {{ item.caname }} {{ item.tokenpass }} {{ item.tokenpass }}"
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: auto_activate_token_management
+  failed_when: auto_activate_token_management.rc >= 2
+  changed_when: auto_activate_token_management.rc == 0
+  when: item.cryptotoken_enable_auto_activate|bool

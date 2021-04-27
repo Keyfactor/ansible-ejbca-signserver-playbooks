@@ -32,6 +32,15 @@
         <property name="org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH" value="true"/>
         <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT" value="2048"/>
         <property name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH" value="true"/>
+{% if wildfly_enable_kerberos is sameas true %}
+{% if krb_conf_use_os_file is sameas true %}
+        <property name="java.security.krb5.conf" value="/etc/krb5.conf"/>        
+{% else %}
+        <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
+{% endif %}
+        <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+        <property name="sun.security.spnego.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+{% endif %}
     </system-properties>
     <management>
         <security-realms>
@@ -152,9 +161,22 @@
             <logger category="org.jboss.security">
                 <level name="INFO"/>
             </logger>
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+            <syslog-handler name="{{ item.name }}" enabled="{{ item.enabled }}">
+                <level name="{{ log_level }}"/>
+                <hostname value="{{ syslog_host }}"/>
+                <app-name value="{{ syslog_app_name }}"/>
+                <server-address value={{ syslog_server_address }}/>
+                <port value="{{ syslog_server_port }}"/>
+                <facility value="{{ syslog_facility }}"/>
+            </syslog-handler>
+{% endfor %}{% endif %}
             <root-logger>
                 <level name="INFO"/>
                 <handlers>
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+                    <handler name="{{ item.name }}"/>
+{% endfor %}{% endif %}
                     <handler name="FILE"/>
                 </handlers>
             </root-logger>
@@ -170,21 +192,31 @@
             <datasources>
 {% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}
                 <datasource jndi-name="{{ item.jndi_name }}" pool-name="{{ item.pool_name }}" use-ccm="true">
-                    <connection-url>jdbc:mariadb://{{ item.host }}:{{ item.port }}/{{ item.database }}</connection-url>
-                    <driver-class>org.mariadb.jdbc.Driver</driver-class>
-                    <driver>mariadb-java-client.jar</driver>
+                    <connection-url>jdbc:{{ item.database_connection_type| default('mariadb') }}://{{ item.host }}:{{ item.port }}{% if item.database_connection_type == "mariadb" %}/{{ item.database }}{% elif item.database_connection_type == "sqlserver" %};DatabaseName={{ item.database }}{{ item.connection_parameters }}{% endif %}</connection-url>
+                    <driver-class>{{ item.database_driver_class| default('org.mariadb.jdbc.Driver') }}</driver-class>
+                    <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
-                        <min-pool-size>5</min-pool-size>
-                        <max-pool-size>150</max-pool-size>
-                        <prefill>true</prefill>
+                        <min-pool-size>{{ min_pool_size| default('5')}}</min-pool-size>
+                        <max-pool-size>{{ max_pool_size| default('150') }}</max-pool-size>
+                        <prefill>{{ prefill| default('true') }}</prefill>
+                        <use-strict-min>{{ use_strict_min| default('false') }}</use-strict-min>
+                        <allow-multiple-users>{{ allow_multiple_user| default('false') }}</allow-multiple-users>
                     </pool>
+{% if wildfly_enable_kerberos is sameas true %}
+                    <security>
+                        <elytron-enabled>true</elytron-enabled>
+                        <authentication-context>ejbca-ds-context</authentication-context>
+                    </security>
+                    <timeout>
+                        <idle-timeout-minutes>2</idle-timeout-minutes>
+                    </timeout>         
+{% else %}
                     <security>
                         <user-name>{{ item.user }}</user-name>
-
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
-                        <!-- password>{{ item.password }}</password -->
-                    </security>
+                    </security> 
+{% endif %}
                     <validation>
                         <check-valid-connection-sql>select 1;</check-valid-connection-sql>
                         <validate-on-match>true</validate-on-match>
@@ -260,6 +292,14 @@
             <log-system-exceptions value="true"/>
         </subsystem>
         <subsystem xmlns="urn:wildfly:elytron:11.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+{% if wildfly_enable_kerberos is sameas true %}
+            <authentication-client>
+                <authentication-configuration name="kerberos-conf" kerberos-security-factory="ejbca-db-krbsf"/>
+                <authentication-context name="ejbca-ds-context">
+                    <match-rule authentication-configuration="kerberos-conf"/>
+                </authentication-context>
+            </authentication-client>
+{% endif %}
             <providers>
                 <aggregate-providers name="combined-providers">
                     <providers name="elytron"/>
@@ -292,6 +332,11 @@
                     <groups-properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
                 </properties-realm>
             </security-realms>
+{% if wildfly_enable_kerberos is sameas true %}
+            <credential-security-factories>
+                <kerberos-security-factory name="ejbca-db-krbsf" principal="{{ wildfly_kerberos_keytab_principal }}" path="{{ wildfly_kerberos_keytab_file }}" server="false" obtain-kerberos-ticket="true" request-lifetime="-1" debug="false"/>
+            </credential-security-factories>
+{% endif %}
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
                     <permission-mapping>

@@ -1,6 +1,6 @@
 ---
 
-- name: Query Peer Connectors 
+- name: Query Peer Connectors
   command: "{{ ejbca_home }}/bin/ejbca.sh peer list"
   no_log: true
   become: yes
@@ -10,40 +10,42 @@
   changed_when: list_peer_connectors.rc == 0
 
 - name: Create Peer Connectors
-  command: "{{ ejbca_home }}/bin/ejbca.sh peer create --name {{ item.name }} --state ENABLED --url {{ item.url }} --akb {{ item.keybinding }} "
-  no_log: true
+  command: "{{ ejbca_home }}/bin/ejbca.sh peer create --name '{{ item.name }}' --state ENABLED --url {{ item.url }} --akb '{{ item.keybinding }}' "
+  no_log: false
   become: yes
   become_user: "{{ ejbca_user }}"
   register: create_peer_connectors
   loop: "{{ ejbca_peerConnector }}"
   when: ( item.name not in list_peer_connectors.stdout ) and ( item.enabled|bool )
 
-#- debug: 
+#- debug:
 #    var: create_peer_connectors
 
 - name: Create a fact for peer_connection_info
-  set_fact: 
+  set_fact:
     cacheable: yes
     peer_connection_info: |
       [
       {% for line in create_peer_connectors.results %}
+      {% if line.stdout is defined %}
       {{ '{' }}  'id':'{{ line.stdout.split(' ')[4] }}', 'name':'{{ line.item.name }}', 'type': '{{ line.item.type }}' {{ '}' }},
+      {% endif %}
       {% endfor %}
       ]
   when: create_peer_connectors is defined
   ignore_errors: yes
 
 #- name: Create a fact for peer_connection_info
-#  set_fact: 
+#  set_fact:
 #    cacheable: yes
-#    peer_connection_info: 
+#    peer_connection_info:
 #      - id: "{{ line.stdout.split(' ')[4] }}"
 #        name: "{{ line.item.name }}"
 #        type: "{{ line.item.type }}"
 #  when: create_peer_connectors is defined
 #  ignore_errors: yes
 
-- name: Write Peer Info to file for use with EJBCA playbooks 
+- name: Write Peer Info to file for use with EJBCA playbooks
   become: no
   copy:
     dest: "{{ ejbca_csr_dir_output }}/ca_peer_info.yml"
@@ -55,7 +57,7 @@
 - name: Query Peer Connection with SQL hack EJBCA <= 7.3.1.4
   command: /usr/bin/mysql -u root --password="{{ mariadb_root_password }}" "{{ management_database_indexes.database_name }}" -s -e 'SELECT data FROM PeerData WHERE id = "{{ item.id }}";'
   loop: "{{ peer_connection_info }}"
-  when: ( "ra" in item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )  
+  when: ( "ra" in item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
   register: peer_sql_hack_check
   no_log: true
 
@@ -72,7 +74,7 @@
   loop: "{{ peer_sql_hack_check.results }}"
   loop_control:
     label: "{{ item.item.id }}"
-  when: ( "ra" in item.item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') ) 
+  when: ( "ra" in item.item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
   register: peer_sql_hack
   no_log: true
 
@@ -85,7 +87,7 @@
   become: yes
   become_user: "{{ ejbca_user }}"
   loop: "{{ peer_connection_info }}"
-  #when: ( '"ra" in item.type' ) and ( ejbca_version is version('7.4.0', '>=') ) 
+  #when: ( '"ra" in item.type' ) and ( ejbca_version is version('7.4.0', '>=') )
   when: ('ra' in item.type) and (ejbca_version is version('7.4.0', '>='))
   register: peer_con_ra_res
   #no_log: true

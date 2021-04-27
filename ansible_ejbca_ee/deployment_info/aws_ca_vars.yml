@@ -24,13 +24,14 @@ use_external_ss: false
 #wildfly_version: 21.0.2.Final
 #wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
 #wildfly_standalone_file: standalone-21.xml.datasource.j2
-wildfly_version: 22.0.1.Final
+wildfly_version: 23.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-22.xml.datasource.j2
+wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboos_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
+#wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
+wildfly_jboss_client_checksum: sha256:6d41c7f3ba33cbcfb1a5a639eccc1d04c494f855f15324e175736c4ac184336d #WF 23
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -54,8 +55,10 @@ ejbca_version: 7.4.3.2
 ejbca_software_url: http://172.31.2.113:8080/ejbca_ee_7_4_3_2.zip
 ejbca_src_dir_name: ejbca_ee_7_4_3_2
 ejbca_type: CA
-ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
-ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+#ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
+#ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 # Location to write the CRL files on server
 ejbca_crl_dir_enabled: true
 ejbca_crl_dir:
@@ -69,6 +72,9 @@ web_reqcertindb: true
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
+    database_connection_type: mariadb
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
     port: 3306
     database: ejbca
@@ -76,8 +82,41 @@ appsrv_datasources:
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
 
-ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
-ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+
+
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+jbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+#Enable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: true
+databaseprotection_enableverify_AuditRecordData: true
 
 management_add_end_entities:
   - username: "SuperAdministrator"
@@ -194,16 +233,35 @@ management_add_certification_authorities:
     keytype: "RSA"
     keyspec: "3072"
     signalg: "SHA384WithRSA"
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
     defaultCRLDP: "http://{{ organizationNameShort| lower}}-crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer={{ certification_authorities_crl_files[0].cadn }}"
     #defaultCRLDP: "http://{{ organizationNameShort| lower}}-crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-mgmtca.crl"
     defaultOCSPServiceLocator: "http://{{ organizationNameShort| lower}}-ocsp.{{ organizationDomainName }}/ocsp"
     authorityInformationAccess: "http://{{ organizationNameShort| lower}}-aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationNameShort }}-mgmtca.p7b"
     certificateAiaDefaultCaIssuerUri: "http://{{ organizationNameShort| lower}}-aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationNameShort }}-mgmtca.p7b"
     crlPeriod: 259200000
+    crlPeriod_yml: 3d
     crlIssueInterval: 86400000
+    crlIssueInterval_yml: 1d
+    crl_overlap_time: 10m
+    delta_crl_period: 0m
     useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "Management_CA_SLOT"
@@ -220,16 +278,35 @@ management_add_certification_authorities:
     keytype: "RSA"
     keyspec: "4096"
     signalg: "SHA512WithRSA"
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
     defaultCRLDP: "http://{{ organizationNameShort| lower}}-crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer={{ certification_authorities_crl_files[1].cadn }}"
     #defaultCRLDP: "http://{{ organizationNameShort| lower}}-crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
     defaultOCSPServiceLocator: "http://{{ organizationNameShort| lower}}-ocsp.{{ organizationDomainName }}/ocsp"
     authorityInformationAccess: "http://{{ organizationNameShort| lower}}-aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
     certificateAiaDefaultCaIssuerUri: "http://{{ organizationNameShort| lower}}-aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
     crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
     crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 10m
+    delta_crl_period: 0m
     useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "Root_CA_SLOT"
@@ -259,7 +336,8 @@ sub_add_certification_authorities:
   - caname: "{{ organizationNameShort}}-Sub-CA"
     certprofile: "SubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    rootDn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    #rootDn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    rootDn: "{{ organizationNameShort }}-Root-CA"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -267,17 +345,35 @@ sub_add_certification_authorities:
     keytype: "RSA"
     keyspec: "3072"
     signalg: "SHA384WithRSA"
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
     defaultCRLDP: "http://{{ organizationNameShort| lower}}-crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer={{ certification_authorities_crl_files[2].cadn }}"
     #defaultCRLDP: "http://{{ organizationNameShort| lower}}-crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
     defaultOCSPServiceLocator: "http://{{ organizationNameShort| lower}}-ocsp.{{ organizationDomainName }}/ocsp"
     authorityInformationAccess: "http://{{ organizationNameShort| lower}}-aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
     certificateAiaDefaultCaIssuerUri: "http://{{ organizationNameShort| lower}}-aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
     crlPeriod: 259200000
+    crlPeriod_yml: 3d
     crlIssueInterval: 86400000
+    crlIssueInterval_yml: 1d
+    crl_overlap_time: 10m
+    delta_crl_period: 0m
     useLdapDnOrder: false
-    doEnforceUniqueDistinguishedName: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     pkcs11_token:
       slot_identifier_type: "SLOT_LABEL"
       slot_identifier_value: "Sub_CA_SLOT"

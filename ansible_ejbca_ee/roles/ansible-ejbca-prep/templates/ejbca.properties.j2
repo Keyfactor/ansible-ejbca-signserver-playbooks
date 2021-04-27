@@ -1,13 +1,23 @@
 #
 # $Id: ejbca.properties.sample 33474 2019-10-02 10:31:32Z jeklund $
 #
-{{ ansible_managed | comment }}
+#{{ ansible_managed | comment }}
 
 appserver.home={{ ejbca_appserver_home| default('/opt/wildfly') }}
-ejbca.productionmode={{ ejbca_productionmode| default('true') }}
-allow.external-dynamic.configuration={{ ejbca_allow_external_dynamic_configuration| default('true') }}
-ca.cmskeystorepass={{ ejbca_ca_cmskeystorepass| default('changeit') }}
-approval.defaultrequestvalidity={{ ejbca_approval_defaultrequestvalidity| default('259200') }}
-approval.defaultapprovalvalidity={{ ejbca_approval_defaultapprovalvalidity| default('259200') }}
-ejbca.cli.defaultusername={{ ejbca_cli_defaultusername| default('ejbca') }}
-ejbca.cli.defaultpassword={{ ejbca_cli_defaultpassword| default('ejbca') }}
+ejbca.productionmode={{ ejbca_conf_productionmode| default('true') }}
+allow.external-dynamic.configuration={{ ejbca_conf_allow_external_dynamic_configuration| default('true') }}
+ca.cmskeystorepass={{ ejbca_conf_ca_cmskeystorepass| default('changeit') }}
+approval.defaultrequestvalidity={{ ejbca_conf_approval_default_request_validity| default('259200') }}
+approval.defaultapprovalvalidity={{ ejbca_conf_approval_default_approval_validity| default('259200') }}
+ejbca.cli.defaultusername={{ ejbca_conf_cli_default_username| default('ejbca') }}
+ejbca.cli.defaultpassword={{ ejbca_conf_cli_default_password| default('ejbca') }}
+healthcheck.amountfreemem={{ ejbca_conf_healtcheck_amountfreemem| default('1') }}
+healthcheck.dbquery={{ ejbca_conf_healtcheck_dbquery| default("Select 1 From CertificateData where fingerprint='XX'") }}
+healthcheck.authorizedips={{ ejbca_conf_healtcheck_authorizedips| default('127.0.0.1') }}
+healthcheck.catokensigntest={{ ejbca_conf_healtcheck_catokensigntest| default('false') }}
+healthcheck.publisherconnections={{ ejbca_conf_healtcheck_publisherconnections| default('false') }}
+healthcheck.maintenancefile={{ ejbca_conf_healtcheck_maintenancefile| default('') }}
+healthcheck.maintenancepropertyname={{ ejbca_conf_healtcheck_maintenancepropertyname| default('DOWN_FOR_MAINTENANCE') }}
+healthcheck.okmessage={{ ejbca_conf_healtcheck_okmessage| default('ALLOK') }}
+healthcheck.sendservererror={{ ejbca_conf_healtcheck_sendservererror| default('true') }}
+healthcheck.customerrormessage={{ ejbca_conf_healtcheck_customerrormessage| default('EJBCANOTOK') }}

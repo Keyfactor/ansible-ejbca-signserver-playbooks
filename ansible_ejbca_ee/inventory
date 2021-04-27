@@ -6,6 +6,8 @@ ejbcara01.solitude.skyrim ansible_host=172.16.170.6
 [ejbcaCaServers]
 ejbca01.solitude.skyrim ansible_host=172.16.170.5
 
+[ejbcaCaAddNodes]
+
 [ejbcaVaServers]
 ejbcava01.solitude.skyrim ansible_host=172.16.170.7
 

@@ -20,20 +20,6 @@ superAdminCn: "27May2020 Skyrim Super Administrator"
 # location to copy p12 to locally
 superadmin_local_dir: ~/Desktop
 
-# apply_indexes: If default EJBCA database indexes should be applied. Will always report change if true
-# database_name: Name of EJBCA database
-management_database_indexes:
-  apply_indexes: true
-  database_name: ejbca
-
-ejbca_database_indexes:
-  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'source {{ ejbca_home }}/doc/sql-scripts/create-index-ejbca.sql'"
-  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE AuditRecordData row_format=compressed key_block_size=4;'"
-  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CertReqHistoryData row_format=compressed key_block_size=4;'"
-  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CRLData row_format=compressed key_block_size=16;'"
-  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE CertificateData row_format=compressed key_block_size=8;'"
-  - index: "/usr/bin/mysql -u root --password={{ mariadb_root_password }} {{ management_database_indexes.database_name }} -s -e 'ALTER TABLE UserData row_format=compressed key_block_size=4;'"
-
 # If true, allows running application server service via preload
 ncipher_preload: false
 # Path to the preload executable
@@ -46,7 +32,6 @@ ejbca_va_test_slots:
   - slot_identifier: "{{ ejbca_va_keybinding[0].slot_identifier }}"
     slot_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
 
-
 # EJBCA audit log database protection configurations
 # slot_index: Index of HSM slot used for database integrity protection
 # key_label: Label of key used for database integrity protection
@@ -56,7 +41,7 @@ ejbca_databaseprotection:
   slot_label: DB_Protect_SLOT
   slot_identifier_type: "SLOT_LABEL"
   slot_index: 0
-  key_label: dbProtect00001
+  key_label: dbProtect0001
   signature_algorithm: SHA256WithRSA
   token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
   testkey_label: "testKey"
@@ -106,11 +91,11 @@ ejbca_va_keybinding:
 # cert_download_url: URL to download the CA certificate in PEM format from
 management_import_certification_authorities:
   - caname: "ManagementCA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=966011820&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid=966011820&format=pem&level=0"
     cert_file_location: /var/tmp/managementca.crt
     superadmincn: "{{ superAdminCn }}"
   - caname: "{{ organizationNameShort }}-Root-CA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1905764898&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid=-1905764898&format=pem&level=0"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
     superadmincn: ""
   - caname: "{{ organizationNameShort }}-Sub-CA"

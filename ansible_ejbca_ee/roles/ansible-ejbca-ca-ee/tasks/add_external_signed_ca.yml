@@ -1,0 +1,27 @@
+---
+
+- name: Download external CA chain for creating {{ item.caname }}
+  uri:
+    url: "{{ item.external_cachain_url }}"
+    validate_certs: no
+    dest: "/var/tmp/{{ item.external_cachain_file }}"
+    creates: "/var/tmp/{{ item.external_cachain_file }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  no_log: true
+
+- name: Import External CA - {{ item.caname }}
+  command: >
+    {{ ejbca_home }}/bin/ejbca.sh ca importcacert
+    --caname {{ item.caname }}
+    -f /var/tmp/{{ item.external_cachain_file }}
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: import_external_ca
+  failed_when: import_external_ca.rc >= 2
+  changed_when: import_external_ca.rc == 0
+
+- debug:
+    msg: "Initializing CA failed with message: {{ import_external_ca.stdout }}"
+  when: import_external_ca.rc == 1

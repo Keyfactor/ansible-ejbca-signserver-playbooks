@@ -1,98 +1,39 @@
 ---
 # tasks file for ansible-ejbca-ca-ee
 
-- name: Test that HSM slots are available
-  include_tasks: hsm_test.yml
-  tags: hsm_test
-  when: management_test_slots[0] is defined
+- name: Deploy Management, Root, & Sub CA
+  include_tasks: deploy_mgmt_root_sub.yml
+  when:
+    - deploy_mgmt_root_sub is defined
+    - deploy_mgmt_root_sub|bool
 
-- name: Generate HSM keys
-  include_tasks: clienttoolbox_key_generation.yml
-  tags: clienttoolbox_key_generation
-  when: management_generate_hsm_keys[0] is defined
+- name: Deploy CA's Subordinated to a Root CA
+  include_tasks: deploy_subordinate_ca.yml
+  when:
+    - deploy_subordinate_ca is defined
+    - deploy_subordinate_ca|bool
 
-- name: Check deployment
-  include_tasks: check_deployment.yml
-  tags: check_deployment
-  when: management_database_indexes.apply_indexes or management_add_certification_authorities[0] is defined or management_import_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
 
-- name: Import configdump of Root CA templates and EKU's 
-  include_tasks: config_dump_1.yml
+- name: Complete Import of Externally Signed Subordinated CA
+  include_tasks: deploy_complete_sub_init.yml
+  when:
+    - deploy_complete_sub_init is defined
+    - deploy_complete_sub_init|bool
 
-- name: Apply indexes
-  include_tasks: config_apply_indexes.yml
-  when: management_database_indexes.apply_indexes
+- name: Complete Import of Externally Signed Subordinated CA & Post CA configuration
+  include_tasks: deploy_complete_sub_post_config.yml
+  when:
+    - deploy_complete_sub_post_config is defined
+    - deploy_complete_sub_post_config|bool
 
-- name: Setup configured CAs with CLI commands
-  include_tasks: deploy_mgmt_ca.yml
-  tags: create_cas
-  when: management_add_certification_authorities[0] is defined
+- name: Post CA configuration
+  include_tasks: deploy_post_ca_config.yml
+  when:
+    - deploy_post_ca_config is defined
+    - deploy_post_ca_config|bool
 
-- name: Import configdump of profiles and services
-  include_tasks: config_dump_2.yml
-
-- name: Configure ManagmentCA and Root CA settings
-  include_tasks: config_root_ca_ext.yml
-
-- name: Initialize Sub CA's
-  include_tasks: deploy_sub_ca.yml
-
-- name: Configure Sub CA's
-  include_tasks: config_sub_ca_ext.yml
-
-- name: Create Key Binding 
-  include_tasks: add_keybinding_ca.yml
-  when: use_external_va|bool or use_external_ra|bool or use_external_ss|bool
-
-- name: Create Peer Connector
-  include_tasks: add_peer_conn.yml
-  when: use_external_va|bool or use_external_ra|bool or use_external_ss|bool
-
-- name: Create external VA services and publisher
-  include_tasks: config_dump_va.yml
-  when: use_external_va|bool
-
-- name: Import Approval Profiles
-  include_tasks: add_app_profs.yml
-
-- name: Import configdump of profiles, services, & publishers
-  include_tasks: config_dump_3.yml
-
-- name: Create external RA role
-  include_tasks: config_dump_ra.yml
-  when: use_external_ra|bool
-
-- name: Configure EJBCA Enrollment protocols
-  include_tasks: config_ejbca_services.yaml
-
-- name: Add end entities
-  include_tasks: add_end_entities.yml
-  tags: add_end_entities
-  when: management_add_end_entities[0] is defined
-
-- name: Add administrators
-  include_tasks: add_administrators.yml
-  tags: add_administrators
-  when: management_add_administrators[0] is defined
-
-- name: Create a Crontab to download CRL's for hosting on webserver
-  include_tasks: config_crontab.yml
-  when: enable_crl_crontab|bool
-
-- name: Setup SCP publishing
-  include_tasks: setup_scp_publishing.yml
-  tags: setup_scp_publishing
-  when: management_known_hosts[0] is defined
-
-- name: Setup localhost SCP publishing receiving users
-  include_tasks: setup_localhost_scp_users.yml
-  tags: setup_localhost_scp_users
-  when: management_scp_localhost_receiving_users[0] is defined
-
-- name: Setup localhost SCP publishing archive directories
-  include_tasks: setup_localhost_scp_archives.yml
-  tags: setup_localhost_scp_archives
-  when: management_scp_localhost_archive_dirs[0] is defined
-
-- name: Copy the superadmin p12 to the desktop
-  include_tasks: copy_certs_local.yml
+- name: Configure Peering on CA node
+  include_tasks: deploy_ca_peering_config.yml
+  when:
+    - deploy_ca_peering_config is defined
+    - deploy_ca_peering_config|bool

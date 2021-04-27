@@ -1,0 +1,175 @@
+---
+
+organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"
+organizationNameCRL: "{{ organizationName }}"
+organizationDomainName: solitude.skyrim
+countryName: US
+superAdminCn: "31Mar2021-Skyrim-SA"
+sharedVarsLocation: ~/ansible/ansibleCacheDir
+
+management_ca_id: 966011820
+#root_ca_1_id:
+policy_ca_1_id: 1644225965
+#policy_ca_2_id:
+#policy_ca_3_id:
+#policy_ca_4_id:
+#policy_ca_5_id:
+#policy_ca_6_id:
+sub_ca_1_id: -45173557
+sub_ca_2_id: -52932916
+#sub_ca_3_id:
+#sub_ca_4_id:
+#sub_ca_5_id:
+#sub_ca_6_id:
+#sub_ca_7_id:
+#sub_ca_8_id:
+
+peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+
+mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
+mariadb_binlog_formatt: ROW
+mariadb_databases:
+  - name: ejbca
+    collation: "utf8_general_ci"
+    encoding: "utf8"
+mariadb_users:
+  - name: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    priv: "ejbca.*:ALL"
+    host: "%"
+  - name: ejbca-usr
+    password: ejbca
+    priv: "ejbca.*:ALL"
+    host: "localhost"
+mariadb_datadir: /u/mysql/
+mariadb_socket: /u/mysql/mysql.sock
+
+ejbca_version: 7.4.3.3
+ejbca_software_url: http://192.168.248.136:8080/ejbca/ejbca_ee_7_4_3_3_RA.zip
+ejbca_src_dir_name: ejbca_ee_7_4_3_3_RA
+ejbca_type: RA
+#ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
+#ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
+
+# Location to write the CRL files on server
+ejbca_crl_dir_enabled: false
+
+ant_version: apache-ant-1.10.9-bin.tar.gz
+ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
+
+#wildfly_version: 20.0.1.Final
+#wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
+#wildfly_standalone_file: standalone-20.xml.datasource.j2
+#wildfly_version: 21.0.2.Final
+#wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
+#wildfly_standalone_file: standalone-21.xml.datasource.j2
+wildfly_version: 23.0.0.Final
+wildfly_checksum: sha256:08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01 #tar.gz file
+#wildfly_checksum: sha256:0ec1c475212258bca43c5351197a4b5b3d050b2b4d53f3f331e530ea424aa819 #zip file
+wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_use_galleon: true
+wildfly_galleon_version: 4.2.6
+wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
+#wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
+wildfly_jboss_client_checksum: sha256:6d41c7f3ba33cbcfb1a5a639eccc1d04c494f855f15324e175736c4ac184336d #WF 23
+wildfly_download_url: "http://192.168.248.136:8080/ejbca/wildfly-22.0.1.Final.tar.gz"
+wildfly_download_file: "{{ wildfly_name }}.tar.gz"
+# Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
+wildfly_disable_infinispan: true
+
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    database_connection_type: mariadb
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
+    host: 127.0.0.1
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+
+#web.properties
+web_httpserver_external_privhttps: 443
+web_reqcertindb: false
+
+# EJBCA RA property files
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+
+
+# Uncomment to configure Wildfly to send logs to a Syslog server
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+jbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# Add additional CAs if needed
+management_import_certification_authorities:
+  - caname: "ManagementCA"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ management_ca_id }}&format=pem&level=0"
+    cert_file_location: "/var/tmp/managementca.crt"
+    superadmincn: "{{ superAdminCn }}"
+  - caname: "{{ organizationNameShort }}-Policy-CA1-G1"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ policy_ca_1_id }}&format=pem&level=0"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Policy-CA1-G1.crt"
+    superadmincn: ""
+  #- caname: "{{ organizationNameShort }}-Root-CA"
+  #  cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ root_ca_1_id }}&format=pem"
+  #  cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
+  #  superadmincn: ""
+  - caname: "{{ organizationNameShort }}-Sub-CA1-G1"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_1_id }}&format=pem&level=0"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA1-G1.crt"
+    superadmincn: ""
+  - caname: "{{ organizationNameShort }}-Sub-CA2-G1"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_2_id }}&format=pem&level=0"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA2-G1.crt"
+    superadmincn: ""
+
+identity_info:
+  - dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
+    name: "{{ inventory_hostname }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn={{ inventory_hostname }}"
+    username: "ra_httpd_tls_{{ inventory_hostname }}"
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName={{ inventory_hostname }}, dNSName=enroll.{{ organizationDomainName }}, dNSName=api.enroll.{{ organizationDomainName }}, dNSName=enrolls.{{ organizationDomainName }}"
+    certprofile: tlsServerMgmtCA
+    eeprofile: "tlsServerMgmt"
+    caname: "ManagementCA"
+    token: PEM
+    useType: ra
+
+# Add the management CA to HTTP trust chain file.
+add_mgmt_ca: true
+httpd_create_aia_crl_dir: false
+httpd_identity_info:
+  id_name: "{{ identity_info[0].name }}"
+  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"

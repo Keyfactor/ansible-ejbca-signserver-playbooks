@@ -1,4 +1,4 @@
-{{ ansible_managed | comment }}
+#{{ ansible_managed | comment }}
 # Properties in file:
 #
 # databaseprotection.keyid.0 = (keyid)
@@ -19,8 +19,8 @@
 # Most of the times it's the same but not always. See all mappings in modules/ejbca-entity/resources/orm-ejbca-mysql.xml
 #databaseprotection.enablesign = false
 #databaseprotection.enableverify = false
-databaseprotection.enablesign.AuditRecordData = true
-databaseprotection.enableverify.AuditRecordData = true
+databaseprotection.enablesign.AuditRecordData = {{ databaseprotection_enablesign_AuditRecordData| default('false') }}
+databaseprotection.enableverify.AuditRecordData = {{ databaseprotection_enableverify_AuditRecordData| default('false') }}
 #databaseprotection.enablesign = true
 #databaseprotection.enableverify = true
 #databaseprotection.enablesign.GlobalConfigurationData = false

@@ -26,7 +26,8 @@ wildfly_standalone_file: standalone-22.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboos_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
+#wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
+wildfly_jboss_client_checksum: sha256:6d41c7f3ba33cbcfb1a5a639eccc1d04c494f855f15324e175736c4ac184336d #WF 23
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -50,8 +51,12 @@ ejbca_version: 7.4.3.3
 ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_3_RA.zip
 ejbca_src_dir_name: ejbca_ee_7_4_3_3_RA
 ejbca_type: RA
-ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
-ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+#ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
+#ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
+ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
+
 # Location to write the CRL files on server
 ejbca_crl_dir_enabled: false
 
@@ -75,6 +80,9 @@ ejbca_templated_properties_files:
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
     pool_name: ejbcads
+    database_connection_type: mariadb
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
     port: 3306
     database: ejbca
@@ -82,16 +90,32 @@ appsrv_datasources:
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
 
-ejbca_cli_defaultpassword: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
-ejbca_ca_cmskeystorepass: "{{ encrypted_ejbca_ca_cmskeystorepass | default('ejbca') }}"
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+jbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 management_import_certification_authorities:
   - caname: "ManagementCA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ management_ca_id }}&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ management_ca_id }}&format=pem&level=0"
     cert_file_location: /var/tmp/managementca.crt
     superadmincn: "{{ superAdminCn }}"
   - caname: "{{ organizationNameShort }}-Root-CA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ root_ca_1_id }}&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacertn&caid={{ root_ca_1_id }}&format=pem&level=0"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
     superadmincn: ""
   - caname: "{{ organizationNameShort }}-Sub-CA"

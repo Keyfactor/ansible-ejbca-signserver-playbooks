@@ -5,10 +5,16 @@
   become_method: sudo
   pre_tasks:
     - include_vars: deployment_info_info/aws_ca_vars.yml
+    - include_vars: build_option_deploy_mgmt_root_sub_ca_full.yml
+  vars:
+    # Map in List Dictionaires for the configdump directory structure and configdump files
+    configdump_directory_structure: "{{ configdump_dir_structure }}"
+    configdump_import_files: "{{ configdump_files }}"
   roles:
     - ansible-hostname
     - ansible-role-mariadb
     - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
     - ansible-ejbca-prep
     - ansible-ejbca-ca-ee
     - ansible-ejbca-httpd

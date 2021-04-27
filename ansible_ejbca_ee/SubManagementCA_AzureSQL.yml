@@ -1,0 +1,24 @@
+---
+
+- hosts: ejbcaCaServers
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/SubManagementCA_AzureSQL_vars.yml
+  vars:
+    # Deploy Management, Root, and Sub CA all on a single EJBCA node. This is the original task setup for this playbook. 
+    deploy_mgmt_root_sub: false
+    # Deploy a CA that is subordinated to a Root CA that could be external or on the same EJBCA node.
+    # The current outcome is to manually sign the CSR.
+    deploy_subordinate_ca: true
+    # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+    # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+    # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+    # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+    deploy_with_configdump: false
+  roles:
+    - ansible-hostname
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ejbca-prep
+    - ansible-ejbca-ca-ee

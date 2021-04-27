@@ -1,0 +1,4 @@
+---
+# defaults file for ansible-softhsm-backup
+
+softhsm_backup_dir_output: "{{ playbook_dir }}/ejbcaCSR"

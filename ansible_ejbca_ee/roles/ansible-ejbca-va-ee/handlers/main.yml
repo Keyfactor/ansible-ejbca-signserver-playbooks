@@ -2,16 +2,16 @@
 # handlers file for primekey
 
 - name: restart wildfly
-  service:
+  systemd:
     name: wildfly
     state: restarted
 
 - name: stop wildfly
-  service:
+  systemd:
     name: wildfly
     state: stopped
 
 - name: start wildfly
-  service:
+  systemd:
     name: wildfly
     state: started

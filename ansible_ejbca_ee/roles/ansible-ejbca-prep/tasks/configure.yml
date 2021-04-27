@@ -22,14 +22,21 @@
         group: "{{ ejbca_group }}"
       when: ejbca_user not in primekey_owns_it.stat.pw_name
 
-    - name: Ensure ejbca-custom/conf directory exists
-      file:
-        path: "{{ ejbca_home }}/../ejbca-custom/conf"
-        state: directory
-        owner: "{{ ejbca_user }}"
-        group: "{{ ejbca_group }}"
-
   when: ejbca_manage_user
+
+- name: Create ejbca-custom/conf directory
+  file:
+    path: "{{ ejbca_home }}/../ejbca-custom/conf"
+    state: directory
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+
+- name: Create ejbca-custom/p12 directory
+  file:
+    path: "{{ ejbca_home }}/../ejbca-custom/p12"
+    state: directory
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
 
 - name: Ensure statedump package is unpacked if statedump is being built
   unarchive:
@@ -51,45 +58,17 @@
   loop: "{{ ejbca_crl_dir }}"
   when: ejbca_crl_dir_enabled|bool
 
-- block:
-  - name: Set permissions on softhsm lib directory
-    file:
-      path: /var/lib/softhsm
-      state: directory
-      recurse: yes
-      mode: 0750
-      owner: "{{ ejbca_user }}"
-      group: "{{ ejbca_group }}"
-    when: ejbca_softhsm_enable|bool
-
-  - name: Check SoftHSM Slots
-    shell: "softhsm2-util --show-slots | grep {{ item.slot_name }}"
-    register: show_hsm_slots
-    loop: "{{ ejbca_gen_hsm_slots }}"
-    changed_when: show_hsm_slots.rc != 0
-    failed_when: false
-    no_log: true
-    when: ejbca_softhsm_enable|bool
-
-  - name: Create SoftHSM slots
-    command: "softhsm2-util --init-token --free --label {{ item.item.slot_name }} --so-pin {{ item.item.slot_so_pin }} --pin {{ item.item.slot_pin }}"
-    become: yes  
-    become_user: "{{ ejbca_user }}" 
-    loop: "{{ show_hsm_slots.results }}"
-    no_log: true
-    register: create_hsm_slots
-    when: item.changed
-  when: ejbca_softhsm_enable|bool
-
 - name: Check if Elytron Credential store pass exists
   stat:
     path: "{{ wildfly_elytron_pass_file }}"
   register: elytron_pass_file_exists
+  changed_when: false
 
 - name: Check if Elytron Credential store file exists
   stat:
     path: "{{ wildfly_home }}/standalone/configuration/credentials"
   register: elytron_store_file_exists
+  changed_when: false
 
 - name: Elytron Credential store configuration
   block:
@@ -132,6 +111,28 @@
   when: 
     - not elytron_pass_file_exists.stat.exists
     - not elytron_store_file_exists.stat.exists
+
+- name: Configure Wildfly Kerberos 
+  block:
+    - name: Configure Wildfly Kerberos config file
+      template:
+        src: krb5.conf.j2
+        dest: "{{ wildfly_kerberos_file_path }}"
+        owner: root
+        group: root
+        mode: 0644
+      when: not krb_conf_use_os_file|bool
+
+    - name: Download kerberbos keytab file for Wildfly
+      get_url:
+        url: "{{ wildfly_kerberos_keytab_file_url }}"
+        dest: "{{ wildfly_kerberos_keytab_file }}"
+        checksum: "{{ wildfly_kerberos_keytab_file_url_checksum }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0640
+
+  when: wildfly_enable_kerberos|bool
 
 - name: Deploy Wildfly standalone.xml
   template:
@@ -195,6 +196,7 @@
   stat:
     path: "{{ wildfly_home }}"
   register: found_appsrv_home
+  changed_when: false
 
 - name: Build EJBCA EAR file when application server exists
   command: >
@@ -219,3 +221,32 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
     dest: "{{ wildfly_home }}/standalone/deployments/ejbca.ear"
+
+- name: Start Wildfly for adding addtional nodes
+  block:
+    
+  - name: Restart wildfly when adding a CA node to the cluster
+    systemd:
+      name: wildfly
+      state: restarted
+
+  - name: Wait for EJBCA EAR file to start redeploying
+    wait_for:
+      path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.isdeploying"
+      state: present
+      delay: 10
+      timeout: 60
+
+  - debug:
+      msg: "Automatic restart is disabled. Application server must be restarted for generated HSM keys to be available."
+    when: not wildfly_manage_service
+    failed_when: true
+
+  - name: Ensure EJBCA EAR file is deployed
+    wait_for:
+      delay: 60
+      timeout: 240
+      path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
+      state: present
+
+  when: ('ejbcaCaAddNodes' in group_names)

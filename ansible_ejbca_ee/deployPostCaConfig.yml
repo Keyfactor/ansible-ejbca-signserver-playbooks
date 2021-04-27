@@ -1,0 +1,20 @@
+---
+
+- hosts: ejbcaCaServers
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/internal_ca_subdorinate_vars.yml
+  vars:
+    # Use this option to generate keys for the Authkey Bindings, configure the AuthKey Binding, configure Peering.
+    # Import certificate profiles, end entity profiles, publishers, and roles for the RA peer and other roles wantes
+    deploy_post_ca_config: true
+    # Map in the List Dictionaires for the test HSM slots, and generate hsm keys The variable to map in 
+    # are sourced from the include_vars above.
+    test_hsm_slots: "{{ authkeybind_test_slots }}"
+    generate_hsm_keys: "{{ authkeybind_generate_hsm_keys }}"
+    # Map in List Dictionaires for the configdump directory structure and configdump files
+    configdump_directory_structure: "{{ authkeybind_configdump_dir_structure }}"
+    configdump_import_files: "{{ authkeybind_configdump_files }}"
+  roles:
+    - ansible-ejbca-ca-ee

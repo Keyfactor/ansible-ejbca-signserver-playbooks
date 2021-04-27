@@ -35,6 +35,15 @@
         <property name="org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH" value="true"/>
         <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT" value="2048"/>
         <property name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH" value="true"/>
+{% if wildfly_enable_kerberos is sameas true %}
+{% if krb_conf_use_os_file is sameas true %}
+        <property name="java.security.krb5.conf" value="/etc/krb5.conf"/>        
+{% else %}
+        <property name="java.security.krb5.conf" value="{{ wildfly_kerberos_file_path }}"/>
+{% endif %}
+        <property name="sun.security.krb5.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+        <property name="sun.security.spnego.debug" value="{{ wildfly_kerberos_enable_debug_log }}"/>
+{% endif %}
     </system-properties>
     <management>
         <security-realms>
@@ -160,9 +169,22 @@
                     <handler name="AUDIT"/>
                 </handlers>
             </logger>
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+            <syslog-handler name="{{ item.name }}" enabled="{{ item.enabled }}">
+                <level name="{{ log_level }}"/>
+                <hostname value="{{ syslog_host }}"/>
+                <app-name value="{{ syslog_app_name }}"/>
+                <server-address value={{ syslog_server_address }}/>
+                <port value="{{ syslog_server_port }}"/>
+                <facility value="{{ syslog_facility }}"/>
+            </syslog-handler>
+{% endfor %}{% endif %}
             <root-logger>
                 <level name="INFO"/>
                 <handlers>
+{% if appsrv_syslogsources[0] is defined %}{% for item in appsrv_syslogsources %}
+                    <handler name="{{ item.name }}"/>
+{% endfor %}{% endif %}
                     <handler name="FILE"/>
                 </handlers>
             </root-logger>
@@ -178,20 +200,31 @@
             <datasources>
  {% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}
                 <datasource jndi-name="{{ item.jndi_name }}" pool-name="{{ item.pool_name }}" use-ccm="true">
-                    <connection-url>jdbc:mariadb://{{ item.host }}:{{ item.port }}/{{ item.database }}</connection-url>
-                    <driver-class>org.mariadb.jdbc.Driver</driver-class>
-                    <driver>mariadb-java-client.jar</driver>
+                    <connection-url>jdbc:{{ item.database_connection_type| default('mariadb') }}://{{ item.host }}:{{ item.port }}{% if item.database_connection_type == "mariadb" %}/{{ item.database }}{% elif item.database_connection_type == "sqlserver" %};DatabaseName={{ item.database }}{{ item.connection_parameters }}{% endif %}</connection-url>
+                    <driver-class>{{ item.database_driver_class| default('org.mariadb.jdbc.Driver') }}</driver-class>
+                    <driver>{{ item.database_jar_filename| default('mariadb-java-client.jar') }}</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
-                        <min-pool-size>5</min-pool-size>
-                        <max-pool-size>150</max-pool-size>
-                        <prefill>true</prefill>
+                        <min-pool-size>{{ min_pool_size| default('5')}}</min-pool-size>
+                        <max-pool-size>{{ max_pool_size| default('150') }}</max-pool-size>
+                        <prefill>{{ prefill| default('true') }}</prefill>
+                        <use-strict-min>{{ use_strict_min| default('false') }}</use-strict-min>
+                        <allow-multiple-users>{{ allow_multiple_user| default('false') }}</allow-multiple-users>
                     </pool>
+{% if wildfly_enable_kerberos is sameas true %}
+                    <security>
+                        <elytron-enabled>true</elytron-enabled>
+                        <authentication-context>ejbca-ds-context</authentication-context>
+                    </security>
+                    <timeout>
+                        <idle-timeout-minutes>2</idle-timeout-minutes>
+                    </timeout>         
+{% else %}
                     <security>
                         <user-name>{{ item.user }}</user-name>
                         <credential-reference store="defaultCS" alias="{{ item.credential_ref }}"/>
-                        <!-- password>{{ item.password }}</password -->
-                    </security>
+                    </security> 
+{% endif %}
                     <validation>
                         <check-valid-connection-sql>select 1;</check-valid-connection-sql>
                         <validate-on-match>true</validate-on-match>
@@ -271,6 +304,14 @@
             <log-system-exceptions value="true"/>
         </subsystem>
         <subsystem xmlns="urn:wildfly:elytron:8.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+{% if wildfly_enable_kerberos is sameas true %}
+            <authentication-client>
+                <authentication-configuration name="kerberos-conf" kerberos-security-factory="ejbca-db-krbsf"/>
+                <authentication-context name="ejbca-ds-context">
+                    <match-rule authentication-configuration="kerberos-conf"/>
+                </authentication-context>
+            </authentication-client>
+{% endif %}
             <providers>
                 <aggregate-providers name="combined-providers">
                     <providers name="elytron"/>
@@ -304,6 +345,11 @@
                     <groups-properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
                 </properties-realm>
             </security-realms>
+{% if wildfly_enable_kerberos is sameas true %}
+            <credential-security-factories>
+                <kerberos-security-factory name="ejbca-db-krbsf" principal="{{ wildfly_kerberos_keytab_principal }}" path="{{ wildfly_kerberos_keytab_file }}" server="false" obtain-kerberos-ticket="true" request-lifetime="-1" debug="false"/>
+            </credential-security-factories>
+{% endif %}
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
                     <permission-mapping>
@@ -377,18 +423,6 @@
         </subsystem>
 {% if wildfly_disable_infinispan is sameas false %}
         <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
-            <!-- <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
-                <local-cache name="passivation">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store passivation="true" purge="false"/>
-                </local-cache>
-                <local-cache name="sso">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                </local-cache>
-                <local-cache name="routing"/>
-            </cache-container> -->
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
                     <object-memory size="10000"/>
@@ -400,7 +434,7 @@
                 </local-cache>
                 <local-cache name="timestamps"/>
             </cache-container>
-        </subsystem> 
+        </subsystem>
 {% endif %}
         <subsystem xmlns="urn:jboss:domain:io:3.0">
             <worker name="default" io-threads="100" task-core-threads="25" task-max-threads="100"/>
@@ -445,6 +479,24 @@
         <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0"/>
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             <security-domains>
+{% if wildfly_enable_kerberos is sameas true %}
+                <security-domain name="mssqlKerberos" cache-type="infinispan">
+                    <authentication>
+                        <login-module name="Kerberos-Module" code="org.jboss.security.negotiation.KerberosLoginModule" module="org.jboss.security.negotiation" flag="required" >
+                            <module-option name="storeKey" value="false"/>
+                            <module-option name="useKeyTab" value="true"/>
+                            <module-option name="doNotPrompt" value="true"/>
+                            <module-option name="debug" value="true"/>
+                            <module-option name="keyTab" value="{{ wildfly_kerberos_keytab_file }}"/>
+                            <module-option name="principal" value="{{ wildfly_kerberos_keytab_principal }}"/>
+                            <module-option name="isInitiator" value="true"/>
+                            <module-option name="refreshKrb5Config" value="true"/>
+                            <module-option name="addGSSCredential" value="true"/>
+                            <module-option name="wrapGSSCredential" value="true"/>
+                            <module-option name="credentialLifetime" value="-1"/>
+                        </login-module>
+                    </authentication>
+                </security-domain>{%endif%}
                 <security-domain name="other" cache-type="default">
                     <authentication>
                         <login-module code="Remoting" flag="optional">

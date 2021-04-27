@@ -1,6 +1,9 @@
 # roles/mariadb/defaults/main.yml
 ---
 
+mariadb_owner: mysql
+mariadb_group: mysql
+
 mariadb_databases: []
 mariadb_users: []
 mariadb_root_password: ''
@@ -14,6 +17,7 @@ mariadb_swappiness: '10'
 # Network configuration (network.cnf)
 
 mariadb_service: mariadb
+rhel_mariadb_service: rh-mariadb103-mariadb
 mariadb_bind_address: '127.0.0.1'
 
 # Server configuration

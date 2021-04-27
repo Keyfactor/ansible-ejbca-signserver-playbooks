@@ -1,5 +1,9 @@
 Object Type: EST Configuration
+{% if ejbca_version >= '7.5' %}
+Version: 2
+{% else %}
 Version: 1
+{% endif %}
 Name: device
 RA Name Generation Scheme: DN
 RA Name Generation DN Fields: CN

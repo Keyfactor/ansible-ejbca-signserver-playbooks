@@ -1,0 +1,171 @@
+---
+
+- name: Check the CRLPeriod for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLPeriod"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: clrPeriod_check
+  changed_when: item.crlPeriod|string not in clrPeriod_check.stdout
+  no_log: true
+
+- name: Check the CRLIssueInterval for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLIssueInterval"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: crlIssueInterval_check
+  changed_when: item.crlIssueInterval|string not in crlIssueInterval_check.stdout
+  no_log: true
+
+- name: Check the defaultCRLDistPoint for {{ item.caname }} 
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultCRLDistPoint"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: defaultCRLDistPoint_check
+  changed_when: item.defaultCRLDP|string not in defaultCRLDistPoint_check.stdout
+  no_log: true
+
+- name: Check the defaultOCSPServiceLocator for {{ item.caname }} 
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultOCSPServiceLocator"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: defaultOCSPServiceLocator_check
+  changed_when: item.defaultOCSPServiceLocator|string not in defaultOCSPServiceLocator_check.stdout
+  no_log: true
+
+- name: Check the authorityInformationAccess for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} authorityInformationAccess"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: authorityInformationAccess_check
+  changed_when: item.authorityInformationAccess|string not in authorityInformationAccess_check.stdout
+  no_log: true
+
+- name: Check the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} certificateAiaDefaultCaIssuerUri"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: certificateAiaDefaultCaIssuerUri_check
+  changed_when: item.certificateAiaDefaultCaIssuerUri|string not in certificateAiaDefaultCaIssuerUri_check.stdout
+  no_log: true
+  when: item.certificateAiaDefaultCaIssuerUri is defined
+
+- name: Check the useLdapDnOrder for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} useLdapDnOrder"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: useLdapDnOrder_check
+  changed_when: item.useLdapDnOrder|string not in useLdapDnOrder_check.stdout
+  no_log: true
+
+- name: Check the Enforce Unique Distinguished Name for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} doEnforceUniqueDistinguishedName"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: doEnforceUniqueDistinguishedName_check
+  changed_when: item.enforce_unique_dn|string not in doEnforceUniqueDistinguishedName_check.stdout
+  no_log: true
+
+- name: Configure the CRLPeriod for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLPeriod {{ item.crlPeriod }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: clrPeriod_check.changed
+  no_log: true
+
+- name: Configure the CRLIssueInterval for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLIssueInterval {{ item.crlIssueInterval }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: crlIssueInterval_check.changed
+  no_log: true
+
+- name: Configure the defaultCRLDistPoint for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultCRLDistPoint {{ item.defaultCRLDP }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: defaultCRLDistPoint_check.changed
+  no_log: true
+
+- name: Configure the defaultOCSPServiceLocator for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultOCSPServiceLocator {{ item.defaultOCSPServiceLocator }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: defaultOCSPServiceLocator_check.changed
+  no_log: true
+
+- name: Configure the authorityInformationAccess for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} authorityInformationAccess {{ item.authorityInformationAccess }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: authorityInformationAccess_check.changed
+  no_log: true
+
+- name: Configure the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} certificateAiaDefaultCaIssuerUri {{ item.certificateAiaDefaultCaIssuerUri }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: 
+    - item.certificateAiaDefaultCaIssuerUri is defined
+    - certificateAiaDefaultCaIssuerUri_check.changed
+  no_log: true
+
+- name: Configure the useLdapDnOrder for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} useLdapDnOrder {{ item.useLdapDnOrder| default('false') }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: useLdapDnOrder_check.changed
+  no_log: true
+  
+- name: Configure the Enforce Unique Distinguished Name for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} doEnforceUniqueDistinguishedName {{ item.enforce_unique_dn| default('true') }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: doEnforceUniqueDistinguishedName_check.changed
+  no_log: true
+
+#- name: Create the CRL
+#  command: "{{ ejbca_sh }} ca createcrl --caname {{ item.caname }}"
+#  args:
+#    chdir: "{{ ejbca_home }}"
+#  become_user: "{{ ejbca_user }}"
+#  become: yes
+
+#- name: Export the CRL
+#  command: "{{ ejbca_sh }} ca getcrl --caname {{ item.caname }} -f /opt/web/CRLs/{{ primekey_mgmtCA_ca_crl_name }}"
+#  args:
+#    chdir: "{{ ejbca_home }}"
+#  become_user: "{{ ejbca_user }}"
+#  become: yes
+#  register: getcrl

@@ -3,7 +3,7 @@
 - name: Restart application server if HSM keys were generated
   block:
   - name: Ensure application server is restarted
-    service:
+    systemd:
       state: restarted
       name: wildfly
     when: wildfly_manage_service
@@ -13,7 +13,7 @@
       path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.isdeploying"
       state: present
       delay: 10
-      timeout: 480
+      timeout: 180
     when: wildfly_manage_service
 
   - debug:
@@ -22,15 +22,10 @@
     failed_when: true
   when: checking_existing_keys is defined and checking_existing_keys.changed
 
-- name: Ensure application server is started
-  service:
-    name: wildfly
-    state: started
-  when: wildfly_manage_service
-
 - name: Ensure EJBCA EAR file is deployed
   wait_for:
-    delay: 100
-    timeout: 480
+    delay: 30
+    timeout: 180
     path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
     state: present
+  when: checking_existing_keys is defined and checking_existing_keys.changed
