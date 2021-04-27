@@ -49,7 +49,7 @@ mariadb_users:
     password: ejbca
     priv: "ejbca.*:ALL"
     host: "localhost"
-mariadb_datadir: /u/mysql/
+mariadb_datadir: /u/mysql
 mariadb_socket: /u/mysql/mysql.sock
 
 ejbca_version: 7.4.3.3

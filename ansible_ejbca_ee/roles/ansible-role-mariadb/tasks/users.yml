@@ -7,7 +7,7 @@
     host_all: true
     login_user: root
     login_password: "{{ mariadb_root_password }}"
-    login_unix_socket: "{{ mariadb_socket }}"
+    login_unix_socket: "{{ mariadb_srv_socket }}"
     state: absent
   tags: mariadb
   no_log: true
@@ -21,7 +21,7 @@
     append_privs: "{{ item.append_privs|default('no') }}"
     login_user: root
     login_password: "{{ mariadb_root_password }}"
-    login_unix_socket: "{{ mariadb_socket }}"
+    login_unix_socket: "{{ mariadb_srv_socket }}"
     state: present
   loop: "{{ mariadb_users }}"
   tags: mariadb
