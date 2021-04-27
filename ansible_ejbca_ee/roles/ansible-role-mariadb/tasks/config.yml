@@ -39,13 +39,43 @@
     owner: root
     group: mysql
 
-- name: Move database directory when specified
+- name: Move database directory when specified for RHEL/CentOS 8 & CentOS 7
   block:
+
     - name: Check if the new db directory location exists
       stat:
         path: "{{ mariadb_datadir }}"
       register: mariadb_dir_check
       changed_when: false
+
+    - name: Check if the new db directory location exists
+      stat:
+        path: "/var/lib/mysql"
+      register: mariadb_dir_default_check
+      changed_when: false
+
+    - name: Check SELinux status
+      command: getenforce
+      register: selinux_status
+      changed_when: false
+
+    - name: Stop the MariaDB service to move the db directory
+      systemd:
+        name: "{{ mariadb_service }}"
+        state: stopped
+        enabled: true
+      tags: mariadb
+      when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+            (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+            (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+
+    - name: Stop the MariaDB service to move the db director for RHEL 7 MariaDB
+      systemd:
+        name: "{{ rhel_mariadb_service }}"
+        state: stopped
+        enabled: true
+      tags: mariadb
+      when: (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7")
 
     - name: Create new db directory location
       file:
@@ -62,21 +92,66 @@
         owner: "{{ mariadb_owner }}"
         group: "{{ mariadb_group }}"
         remote_src: true
+      when: 
+        - not mariadb_dir_check.stat.exists
+        - mariadb_dir_default_check.stat.exists
 
-    - name: Check SELinux status
-      command: getenforce
-      register: selinux_status
-      changed_when: false
+    - name: Create initial MariaDB database for service to start
+      command: >
+        mysql_install_db --user={{ mariadb_owner }} --datadir={{ mariadb_datadir }}
+      when: 
+        - not mariadb_dir_check.stat.exists
+        - not mariadb_dir_default_check.stat.exists
+
+    #- name: Configure SELinux for {{ mariadb_datadir }}
+    #  sefcontext:
+    #    target: "{{ mariadb_datadir }}(/.*)?"
+    #    setype: mysqld_db_t
+    #    state: present
+    #    ftype: a
+    #    reload: yes
+    #  register: apply_selinux_mariadb
+    #  when: ('Enforcing' in selinux_status.stdout)
 
     - name: Configure SELinux for {{ mariadb_datadir }}
-      sefcontext:
-        target: "{{ mariadb_datadir }}(/.*)?"
-        setype: mysqld_db_t
-        state: present
-        ftype: a
-        reload: yes
-      when: ('Enforcing' in selinux_status.stdout)
-    
+      command: >
+        semanage fcontext -a -t mysqld_db_t "{{ mariadb_datadir }}(/.*)?"
+      register: apply_selinux_mariadb
+      when: 
+        - ('Enforcing' in selinux_status.stdout)
+        - not mariadb_dir_check.stat.exists
+
+    #- name: debug selinux
+    #  debug:
+    #    var: apply_selinux_mariadb
+    #  when: not mariadb_dir_check.stat.exists
+
+    #- name: List contents {{ mariadb_datadir }}
+    #  command: ls -alZ "{{ mariadb_datadir }}/"
+    #  register: list_selinux_mariadb
+    #  when: 
+    #    - ('Enforcing' in selinux_status.stdout)
+    #    - not mariadb_dir_check.stat.exists
+
+    #- name: debug selinux
+    #  debug:
+    #    var: list_selinux_mariadb
+    #  when: not mariadb_dir_check.stat.exists
+
+    - name: Restore SELinux permissions
+      command: "restorecon -irv {{ mariadb_datadir }}"
+      register: restore_selinux_perms
+      when: 
+        - ('Enforcing' in selinux_status.stdout)
+        - not mariadb_dir_check.stat.exists
+
+    #- name: debug selinux
+    #  debug:
+    #    var: restore_selinux_perms
+    #  when: 
+    #    - ('Enforcing' in selinux_status.stdout)
+    #    - not mariadb_dir_check.stat.exists
+
   when: mariadb_datadir is defined
 
 - name: Ensure service is started

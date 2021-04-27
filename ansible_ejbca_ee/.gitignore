@@ -6,3 +6,4 @@ peerCertSerialNums/*
 ejbcaCSR/*
 devsec*
 *AzureTest*
+deployment_info/custom*
