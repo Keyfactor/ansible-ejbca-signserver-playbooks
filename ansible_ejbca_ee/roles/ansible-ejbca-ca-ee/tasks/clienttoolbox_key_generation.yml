@@ -2,11 +2,11 @@
 
 - name: Check if HSM keys exist for {{ item.slot_identifier }}
   command: >
-    {% if ncipher_preload %}"{{ preload_path }}" {% endif %}"{{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh"
+    {% if ncipher_preload %}"{{ preload_path }}"{% endif %}" {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh"
     PKCS11HSMKeyTool test
     "{{ hsm_shared_library }}"
     "{{ item.slot_identifier }}"
-    -password {{ item.slot_pin }}
+    -password "{{ item.slot_pin }}"
   args:
     chdir: "{{ ejbca_home }}/../clientToolBox"
   become: yes
@@ -27,7 +27,7 @@
     "{{ item.key_size }}"
     "{{ item.key_label }}"
     {% if item.slot_conf is not defined %}"{{ item.slot_identifier }}"{% endif %}
-    -password {{ item.slot_pin }}
+    -password "{{ item.slot_pin }}"
   args:
     chdir: "{{ ejbca_home }}/../clientToolBox"
   become: yes

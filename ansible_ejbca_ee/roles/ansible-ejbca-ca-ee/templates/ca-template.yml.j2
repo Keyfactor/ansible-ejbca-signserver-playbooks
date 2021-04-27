@@ -34,7 +34,7 @@ LDAP DN Order: {{ item.useLdapDnOrder | default('false') }}
 Authority Key Id Used: true
 CRL Number Used: true
 CA Issuer URI:
-- {{ item.certificateAiaDefaultCaIssuerUri }}
+- {{ item.certificateAiaDefaultCaIssuerUri | default('') }}
 Partitioned CRL Used: {{ item.partitioned_crl_used | default('false') }}
 CRL Expiration Period: {{ item.crlPeriod_yml }}
 CRL Issue Interval: {{ item.crlIssueInterval_yml }}

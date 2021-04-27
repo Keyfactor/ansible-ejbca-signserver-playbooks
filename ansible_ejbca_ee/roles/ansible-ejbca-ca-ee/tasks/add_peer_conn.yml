@@ -10,7 +10,7 @@
   changed_when: list_peer_connectors.rc == 0
 
 - name: Create Peer Connectors
-  command: "{{ ejbca_home }}/bin/ejbca.sh peer create --name {{ item.name }} --state ENABLED --url {{ item.url }} --akb {{ item.keybinding }} "
+  command: "{{ ejbca_home }}/bin/ejbca.sh peer create --name '{{ item.name }}' --state ENABLED --url {{ item.url }} --akb '{{ item.keybinding }}' "
   no_log: false
   become: yes
   become_user: "{{ ejbca_user }}"

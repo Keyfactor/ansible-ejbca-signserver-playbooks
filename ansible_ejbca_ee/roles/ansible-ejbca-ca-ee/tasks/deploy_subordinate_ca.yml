@@ -8,6 +8,7 @@
   no_log: true
   tags: hsm_test
   when: test_hsm_slots[0] is defined
+
 - name: Generate HSM keys
   include_tasks: clienttoolbox_key_generation.yml
   loop: "{{ generate_hsm_keys }}"
@@ -16,6 +17,7 @@
   no_log: true
   tags: clienttoolbox_key_generation
   when: generate_hsm_keys[0] is defined
+  
 - name: Check deployment
   include_tasks: check_deployment.yml
   tags: check_deployment

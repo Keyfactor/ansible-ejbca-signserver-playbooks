@@ -26,5 +26,5 @@
   no_log: true
   become_user: "{{ ejbca_user }}"
   become_method: sudo
-  register: create_ejbca_database
+  register: import_approvals
   ignore_errors: yes
