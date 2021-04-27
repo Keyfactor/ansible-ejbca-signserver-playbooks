@@ -62,11 +62,13 @@
   stat:
     path: "{{ wildfly_elytron_pass_file }}"
   register: elytron_pass_file_exists
+  changed_when: false
 
 - name: Check if Elytron Credential store file exists
   stat:
     path: "{{ wildfly_home }}/standalone/configuration/credentials"
   register: elytron_store_file_exists
+  changed_when: false
 
 - name: Elytron Credential store configuration
   block:
@@ -194,6 +196,7 @@
   stat:
     path: "{{ wildfly_home }}"
   register: found_appsrv_home
+  changed_when: false
 
 - name: Build EJBCA EAR file when application server exists
   command: >

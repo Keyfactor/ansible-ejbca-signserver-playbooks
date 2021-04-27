@@ -39,6 +39,46 @@
     owner: root
     group: mysql
 
+- name: Move database directory when specified
+  block:
+    - name: Check if the new db directory location exists
+      stat:
+        path: "{{ mariadb_datadir }}"
+      register: mariadb_dir_check
+      changed_when: false
+
+    - name: Create new db directory location
+      file:
+        path: "{{ mariadb_datadir }}"
+        state: directory
+        owner: "{{ mariadb_owner }}"
+        group: "{{ mariadb_group }}"
+      when: not mariadb_dir_check.stat.exists
+
+    - name: Copy the contents of db datadir to {{ mariadb_datadir }}
+      copy:
+        src: /var/lib/mysql/
+        dest: "{{ mariadb_datadir }}/"
+        owner: "{{ mariadb_owner }}"
+        group: "{{ mariadb_group }}"
+        remote_src: true
+
+    - name: Check SELinux status
+      command: getenforce
+      register: selinux_status
+      changed_when: false
+
+    - name: Configure SELinux for {{ mariadb_datadir }}
+      sefcontext:
+        target: "{{ mariadb_datadir }}(/.*)?"
+        setype: mysqld_db_t
+        state: present
+        ftype: a
+        reload: yes
+      when: ('Enforcing' in selinux_status.stdout)
+    
+  when: mariadb_datadir is defined
+
 - name: Ensure service is started
   systemd:
     name: "{{ mariadb_service }}"

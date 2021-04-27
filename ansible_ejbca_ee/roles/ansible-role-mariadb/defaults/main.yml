@@ -1,6 +1,9 @@
 # roles/mariadb/defaults/main.yml
 ---
 
+mariadb_owner: mysql
+mariadb_group: mysql
+
 mariadb_databases: []
 mariadb_users: []
 mariadb_root_password: ''

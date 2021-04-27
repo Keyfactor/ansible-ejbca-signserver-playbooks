@@ -6,3 +6,7 @@
 bind_address={{ mariadb_bind_address }}
 datadir={{ mariadb_datadir| default('/var/lib/mysql') }}
 socket={{ mariadb_socket }}
+
+[client]
+port={{ mariadb_netwokr_port | default('3306') }}
+socket={{ mariadb_socket }}

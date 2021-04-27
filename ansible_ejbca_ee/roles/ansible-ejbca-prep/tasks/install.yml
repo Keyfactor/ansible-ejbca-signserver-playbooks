@@ -32,6 +32,7 @@
   stat:
     path: /opt/apache-ant
   register: ant_dir_check
+  changed_when: false
 
 - name: Download ant with check (sha256)
   get_url:
@@ -73,6 +74,7 @@
   stat:
     path: "{{ ejbca_root_dir }}/{{ ejbca_src_dir_name }}"
   register: ejbca_src_dir
+  changed_when: false
 
 - name: Download and unpack EJBCA EE archive
   unarchive:
