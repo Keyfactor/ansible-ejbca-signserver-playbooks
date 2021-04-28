@@ -4,12 +4,12 @@
   become: yes
   become_method: sudo
   pre_tasks:
-    - include_vars: customer_info/internal_vars.yml
+    - include_vars: deployment_info/internal_vars.yml
   roles:
-    - ansible-role-hostname
-    - ansible-role-mariadb
-    - ansible-ejbca-wildfly
-    - ansible-ejbca-pkc11-client
+    #- ansible-hostname
+    #- ansible-role-mariadb
+    #- ansible-ejbca-wildfly
+    #- ansible-ejbca-pkc11-client
     - ansible-ss-prep
     - ansible-ss-ee
 
@@ -18,7 +18,7 @@
   become_method: sudo
   gather_facts: false
   pre_tasks:
-    - include_vars: customer_info/internal_vars.yml
+    - include_vars: deployment_info/internal_vars.yml
   roles:
     - ansible-ejbca-certreq-cli
 
@@ -26,7 +26,7 @@
   become: yes
   become_method: sudo
   pre_tasks:
-    - include_vars: customer_info/internal_vars.yml
+    - include_vars: deployment_info/internal_vars.yml
   roles:
     - ansible-ss-workers
     - ansible-ss-httpd

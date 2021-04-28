@@ -5,7 +5,7 @@
 - name: Prepare timestamp signer properties file for SignServer
   template:
     src: timestamp.properties.j2
-    dest: "{{ signsvr_home }}/conf/tsa-{{ item.id }}.properties"
+    dest: "{{ signsrv_home }}/conf/tsa-{{ item.id }}.properties"
     owner: "{{ signsrv_user }}"
     group: "{{ signsrv_group }}"
     mode: 0640
@@ -14,9 +14,9 @@
     label: "{{ item.name }}"
 
 - name: Add timestamp signer to SignServer
-  command: "{{ signsvr_home }}/bin/signserver setproperties {{ signsvr_home }}/conf/tsa-{{ item.id }}.properties"
+  command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/tsa-{{ item.id }}.properties"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
@@ -26,9 +26,9 @@
     label: "{{ item.name }}"
 
 - name: Reload SignServer
-  command: "{{ signsvr_home }}/bin/signserver reload {{ item.name }}"
+  command: "{{ signsrv_home }}/bin/signserver reload {{ item.name }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes

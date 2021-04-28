@@ -352,10 +352,10 @@ web.clientcli.dist.enabled={{ web_clientcli_dist_enabled| default('false') }}
 #cryptotoken.p11.lib.72.file=/usr/lib64/libnethsm64.so
 #cryptotoken.p11.lib.114.name=AWS CloudHSM
 #cryptotoken.p11.lib.114.file=/opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so
-{% if signsvr_softhsm[0] is defined %}
+{% if signsrv_softhsm[0] is defined %}
 cryptotoken.p11.lib.80.name=SoftHSM
 #cryptotoken.p11.lib.80.file=/usr/local/lib/softhsm/libsofthsm2.so
-cryptotoken.p11.lib.80.file={{ signsvr_softhsm[0].src }}
+cryptotoken.p11.lib.80.file={{ signsrv_softhsm[0].src }}
 {% endif %}
 
 # ------------ Peer Connector settings (Enterprise Edition only) --------------

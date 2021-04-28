@@ -1,21 +1,22 @@
 ---
 # defaults file for ansible-ss-prep
 
-signsvr_root_dir: /opt
-signsvr_home: "{{ signsvr_root_dir }}/signsrv"
+signsrv_root_dir: /opt
+signsrv_home: "{{ signsrv_root_dir }}/signsrv"
 wildfly_install_dir: /opt
 wildfly_home: "{{ wildfly_install_dir }}/wildfly"
 wildfly_manage_service: true
 
-signsvr_src_link_dir: "{{  signsvr_root_dir }}/signsrv"
+signsrv_src_link_dir: "{{  signsrv_root_dir }}/signsrv"
 
 wildfly_standalone_file: standalone-19.xml.datasource.j2
 systemd_dir: /usr/lib/systemd/system
 
-signsvr_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.5.4/mariadb-java-client-2.5.4.jar
-signsvr_jdbc_gen_name: mariadb-java-client.jar
+signsrv_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+signsrv_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+signsrv_jdbc_gen_name: mariadb-java-client.jar
 
-signsvr_manage_user: true
+signsrv_manage_user: true
 signsrv_group: wildfly
 signsrv_user: wildfly
 signsrv_user_profile: "/home/{{ signsrv_user }}"
@@ -23,11 +24,6 @@ signsrv_user_profile: "/home/{{ signsrv_user }}"
 ant_version: apache-ant-1.10.9-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
 ant_checksum: sha256:5f8a85ddee6effe79163aa54c7bef6b60305e37200dedc1986437fb5c072a9f3
-
-signsvr_softhsm:
-  - dir: /opt/softhsm
-    src: /usr/lib64/libsofthsm2.so
-    dest: /opt/softhsm/hsm_pkcs11.so
 
 hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
 
@@ -52,11 +48,11 @@ signsrv_databaseprotection:
 # SignServer property files
 signsrv_templated_properties_files:
   - src: signserver_deploy.properties.j2
-    dest: "{{ signsvr_home }}/../signserver-custom/conf/signserver_deploy.properties"
+    dest: "{{ signsrv_home }}/../signserver-custom/conf/signserver_deploy.properties"
   - src: cesecore.properties.j2
-    dest: "{{ signsvr_home }}/../signserver-custom/conf/cesecore.properties"
+    dest: "{{ signsrv_home }}/../signserver-custom/conf/cesecore.properties"
   #- src: databaseprotection.properties.j2
-  #  dest: "{{ signsvr_home }}/../signserver-custom/conf/databaseprotection.properties"
+  #  dest: "{{ signsrv_home }}/../signserver-custom/conf/databaseprotection.properties"
 
 appsrv_datasources:
   - jndi_name: "java:/SignServerDS"
@@ -89,9 +85,9 @@ krb_conf_realms:
     admin_server:
 
 signsrv_xalan_xml_files:
-  - src: "{{ signsvr_home }}/lib/ext/xalan-2.7.2.jar"
+  - src: "{{ signsrv_home }}/lib/ext/xalan-2.7.2.jar"
     dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
-  - src: "{{ signsvr_home }}/lib/ext/serializer-2.7.2.jar"
+  - src: "{{ signsrv_home }}/lib/ext/serializer-2.7.2.jar"
     dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
 
 

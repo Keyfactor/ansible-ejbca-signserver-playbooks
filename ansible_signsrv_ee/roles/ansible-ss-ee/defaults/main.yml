@@ -4,21 +4,21 @@ organizationName: Solitude
 organizationDomainName: solitude.skyrim
 countryName: US
 
-signsvr_root_dir: /opt
-signsvr_home: "{{ signsvr_root_dir }}/signsrv"
+signsrv_root_dir: /opt
+signsrv_home: "{{ signsrv_root_dir }}/signsrv"
 wildfly_install_dir: /opt
 wildfly_home: "{{ wildfly_install_dir }}/wildfly"
 ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
 wildfly_manage_service: true
 
-signsvr_src_link_dir: "{{  signsvr_root_dir }}/signsrv"
+signsrv_src_link_dir: "{{  signsrv_root_dir }}/signsrv"
 
 wildfly_standalone_file: standalone-19.xml.datasource.j2
 
-signsvr_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.5.4/mariadb-java-client-2.5.4.jar
-signsvr_jdbc_gen_name: mariadb-java-client.jar
+signsrv_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.5.4/mariadb-java-client-2.5.4.jar
+signsrv_jdbc_gen_name: mariadb-java-client.jar
 
-signsvr_manage_user: true
+signsrv_manage_user: true
 signsrv_group: wildfly
 signsrv_user: wildfly
 signsrv_user_profile: "/home/{{ signsrv_user }}"

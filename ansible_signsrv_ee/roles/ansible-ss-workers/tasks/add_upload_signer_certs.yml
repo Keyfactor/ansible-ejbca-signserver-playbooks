@@ -34,9 +34,9 @@
     label: "{{ item.name }}"
 
 - name: Import signed signer certificates to SignServer
-  command: "{{ signsvr_home }}/bin/signserver uploadsignercertificatechain {{ item.name }} GLOB {{ identity_batch_output_dir }}/{{ item.name }}.crt"
+  command: "{{ signsrv_home }}/bin/signserver uploadsignercertificatechain {{ item.name }} GLOB {{ identity_batch_output_dir }}/{{ item.name }}.crt"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
@@ -46,9 +46,9 @@
     label: "{{ item.name }}"
 
 - name: Reload SignServer
-  command: "{{ signsvr_home }}/bin/signserver reload {{ p11_crypto_tokens[0].name }}"
+  command: "{{ signsrv_home }}/bin/signserver reload {{ p11_crypto_tokens[0].name }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes

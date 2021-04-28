@@ -2,9 +2,9 @@
 ---
 
 - name: Add admins to SignServer
-  command: "{{ signsvr_home }}/bin/signserver wsadmins -add -certserialno {{ item.serial }} -issuerdn '{{ item.issuerdn }}'"
+  command: "{{ signsrv_home }}/bin/signserver wsadmins -add -certserialno {{ item.serial }} -issuerdn '{{ item.issuerdn }}'"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes

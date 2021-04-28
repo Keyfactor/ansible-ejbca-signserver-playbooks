@@ -3,7 +3,7 @@
 - name: Prepare time monitor conf file for SignServer
   template:
     src: timemonitor.properties.j2
-    dest: "{{ signsvr_home }}/conf/timemonitor-{{ item.id }}.properties"
+    dest: "{{ signsrv_home }}/conf/timemonitor-{{ item.id }}.properties"
     owner: "{{ signsrv_user }}"
     group: "{{ signsrv_group }}"
     mode: 0640
@@ -12,9 +12,9 @@
     label: "{{ item.name }}"
 
 - name: Add time monitor for SignServer
-  command: "{{ signsvr_home }}/bin/signserver setproperties {{ signsvr_home }}/conf/timemonitor-{{ item.id }}.properties"
+  command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/timemonitor-{{ item.id }}.properties"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
@@ -25,9 +25,9 @@
     label: "{{ item.name }}"
 
 - name: Reload SignServer
-  command: "{{ signsvr_home }}/bin/signserver reload {{ item.id }}"
+  command: "{{ signsrv_home }}/bin/signserver reload {{ item.id }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes

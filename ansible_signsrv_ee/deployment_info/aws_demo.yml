@@ -10,8 +10,8 @@ management_ca_id: 1607258206
 root_ca_1_id: 1475221416
 sub_ca_1_id: 1337912670
 
-signsvr_root_dir: /opt
-signsvr_home: "{{ signsvr_root_dir }}/signsrv"
+signsrv_root_dir: /opt
+signsrv_home: "{{ signsrv_root_dir }}/signsrv"
 
 mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
 mariadb_binlog_formatt: ROW

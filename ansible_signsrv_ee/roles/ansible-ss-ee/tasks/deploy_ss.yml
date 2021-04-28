@@ -3,7 +3,7 @@
 - name: Deploy SignServer ear file
   command: "ant -q deploy"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes

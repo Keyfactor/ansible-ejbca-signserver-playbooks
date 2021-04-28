@@ -3,7 +3,7 @@
 - name: Prepare PKCS11 Slot conf file for SignServer
   template:
     src: pkcs11-crypto.properties.j2
-    dest: "{{ signsvr_home }}/conf/p11-{{ item.id }}.properties"
+    dest: "{{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
     owner: "{{ signsrv_user }}"
     group: "{{ signsrv_group }}"
     mode: 0640
@@ -11,9 +11,9 @@
   no_log: true
 
 - name: Add PKCS11 Slot for SignServer
-  command: "{{ signsvr_home }}/bin/signserver setproperties {{ signsvr_home }}/conf/p11-{{ item.id }}.properties"
+  command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
@@ -26,7 +26,7 @@
 
 - name: Remove the PKCS11 Slot conf file
   lineinfile:
-    path: "{{ signsvr_home }}/conf/p11-{{ item.id }}.properties"
+    path: "{{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
     state: absent
     regexp: 'WORKERGENID[0-9]*\.PIN*?'
   loop: "{{ p11_crypto_tokens }}"
@@ -35,9 +35,9 @@
   #no_log: true
 
 - name: Reload SignServer
-  command: "{{ signsvr_home }}/bin/signserver reload {{ item.id }}"
+  command: "{{ signsrv_home }}/bin/signserver reload {{ item.id }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
@@ -47,9 +47,9 @@
     label: "{{ item.name }}"
 
 - name: Activate the crypto tokens
-  command: "{{ signsvr_home }}/bin/signserver activatecryptotoken {{ item.id }} {{ encrypted_signsrv_token_pin | default('foo123') }}"
+  command: "{{ signsrv_home }}/bin/signserver activatecryptotoken {{ item.id }} {{ encrypted_signsrv_token_pin | default('foo123') }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
@@ -61,9 +61,9 @@
   failed_when: false
 
 - name: Create a test key on the crypto tokens
-  command: "{{ signsvr_home }}/bin/signserver generatekey {{ item.id }} -alias {{ item.testkey_alias }} -keyalg {{ item.testkey_keyalg }} -keyspec {{ item.testkey_keyspec }}"
+  command: "{{ signsrv_home }}/bin/signserver generatekey {{ item.id }} -alias {{ item.testkey_alias }} -keyalg {{ item.testkey_keyalg }} -keyspec {{ item.testkey_keyspec }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes

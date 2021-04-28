@@ -5,8 +5,8 @@ organizationName: Solitude
 organizationDomainName: solitude.skyrim
 countryName: US
 
-signsvr_root_dir: /opt
-signsvr_home: "{{ signsvr_root_dir }}/signsrv"
+signsrv_root_dir: /opt
+signsrv_home: "{{ signsrv_root_dir }}/signsrv"
 wildfly_install_dir: /opt
 wildfly_home: "{{ wildfly_install_dir }}/wildfly"
 ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"

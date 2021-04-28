@@ -2,9 +2,9 @@
 
 
 - name: Generate private key for signer in PKCS11
-  command: "{{ signsvr_home }}/bin/signserver generatekey {{ item.workerid }} -keyalg {{ item.keyalg }} -keyspec {{ item.keysize }} -alias {{ item.keyalias }}"
+  command: "{{ signsrv_home }}/bin/signserver generatekey {{ item.workerid }} -keyalg {{ item.keyalg }} -keyspec {{ item.keysize }} -alias {{ item.keyalias }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
@@ -15,9 +15,9 @@
     label: "{{ item.name }}"
 
 - name: Genrate CSR for signer from PKCS11 private key
-  command: "{{ signsvr_home }}/bin/signserver generatecertreq  {{ item.workerid }} '{{ item.dn }}' {{ item.sig_alg }} /var/tmp/{{ item.name }} -alias {{ item.keyalias }}"
+  command: "{{ signsrv_home }}/bin/signserver generatecertreq  {{ item.workerid }} '{{ item.dn }}' {{ item.sig_alg }} /var/tmp/{{ item.name }} -alias {{ item.keyalias }}"
   args:
-    chdir: "{{ signsvr_home }}"
+    chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes

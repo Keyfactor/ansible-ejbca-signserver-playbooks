@@ -2,7 +2,7 @@
 # vars file for ansible-ss-prep
 
 # List of repository packages that will be installed by this role
-signsvr_packages_8:
+signsrv_packages_8:
   - unzip
   - java-11-openjdk-devel
   - nss-tools
@@ -13,7 +13,7 @@ signsvr_packages_8:
   - python3-libsemanage
 
 # List of repository packages that will be installed by this role
-signsvr_packages_7:
+signsrv_packages_7:
   - unzip
   - java-11-openjdk-devel
   - nss-tools
