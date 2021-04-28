@@ -6,7 +6,7 @@
     PKCS11HSMKeyTool test
     "{{ hsm_shared_library }}"
     "{{ item.slot_identifier }}"
-    -password {{ item.token_pin}}
+    -password {{ item.token_pin }}
   args:
     chdir: "{{ ejbca_home }}/../clientToolBox"
   become: yes
