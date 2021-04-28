@@ -16,6 +16,8 @@
     # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
     # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
     deploy_with_configdump: true
+    configdump_directory_structure: "{{ configdump_dir_structure }}"
+    configdump_import_files: "{{ configdump_files }}"
   roles:
     - ansible-hostname
     - ansible-role-mariadb

@@ -156,11 +156,11 @@ management_import_certification_authorities:
 
 identity_info:
   - dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
-    name: "{{ inventory_hostname }}"
-    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn={{ inventory_hostname }}"
-    username: "ra_httpd_tls_{{ inventory_hostname }}"
+    name: "{{ groups['ejbcaRaServers'][0] }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn={{ groups['ejbcaRaServers'][0] }}"
+    username: "ra_httpd_tls_{{ groups['ejbcaRaServers'][0] }}"
     password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
-    altname: "dNSName={{ inventory_hostname }}, dNSName=enroll.{{ organizationDomainName }}, dNSName=api.enroll.{{ organizationDomainName }}, dNSName=enrolls.{{ organizationDomainName }}"
+    altname: "dNSName={{ groups['ejbcaRaServers'][0] }}, dNSName=enroll.{{ organizationDomainName }}, dNSName=api.enroll.{{ organizationDomainName }}, dNSName=enrolls.{{ organizationDomainName }}"
     certprofile: tlsServerMgmtCA
     eeprofile: "tlsServerMgmt"
     caname: "ManagementCA"
