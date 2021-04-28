@@ -34,11 +34,11 @@ LDAP DN Order: {{ item.useLdapDnOrder | default('false') }}
 Authority Key Id Used: true
 CRL Number Used: true
 CA Issuer URI:
-- {{ item.certificateAiaDefaultCaIssuerUri | default('') }}
+- {{ item.authorityInformationAccess | default('') }}
 Partitioned CRL Used: {{ item.partitioned_crl_used | default('false') }}
 CRL Expiration Period: {{ item.crlPeriod_yml }}
 CRL Issue Interval: {{ item.crlIssueInterval_yml }}
-CRL Overlap Time: {{ item.crl_overlap_time }}
+CRL Overlap Time: {{ item.crl_overlap_time_yml }}
 Delta CRL Period: {{ item.delta_crl_period }}
 {% if ejbca_version >= '7.5' %}
 Generate CRL Upon Revocation: {{ item.generate_crl_upon_revocation | default('false') }}
@@ -46,7 +46,7 @@ Generate CRL Upon Revocation: {{ item.generate_crl_upon_revocation | default('fa
 Default CRL Distribution Point: {{ item.defaultCRLDP }}
 OCSP Service Default URI: {{ item.defaultOCSPServiceLocator }}
 AIA CA Issuer URIs:
-- {{ item.authorityInformationAccess }}
+- {{ item.certificateAiaDefaultCaIssuerUri }}
 Finish User: {{ item.finish_user  | default('true') }}
 CA Healthcheck Enabled: {{ item.ca_healthcheck_enabled  | default('true') }}
 Request Processor: {{ item.request_processor  | default('null') }}

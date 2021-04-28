@@ -380,7 +380,8 @@ sub_add_certification_authorities:
     crlPeriod_yml: 6mo
     crlIssueInterval: 0
     crlIssueInterval_yml: 0m
-    crl_overlap_time: 10m
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
     delta_crl_period: 0m
     useLdapDnOrder: false
     enforce_unique_public_keys: true
