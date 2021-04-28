@@ -125,8 +125,7 @@ ncipher_preload: false
 preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
 hsm_shared_library: /usr/lib64/libsofthsm2.so
-##hsm_shared_library: /usr/lib64/libsofthsm2.so
-hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+#hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
 
 ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
@@ -159,7 +158,7 @@ identity_info:
     altname: "dNSName=ocsp01.{{ organizationDomainName }}"
     certprofile: tlsServerClientAuth
     eeprofile: "tlsServer{{ organizationNameShort }}"
-    caname: "ManagementCA"
+    caname: "{{ organizationNameShort }}-Sub-CA"
     token: PEM
 
 ejbca_va_keybinding:
