@@ -7,7 +7,21 @@
   become_user: "{{ ejbca_user }}"
   become: yes
   register: clrPeriod_check
-  changed_when: item.crlPeriod|string not in clrPeriod_check.stdout
+  changed_when: item.crlPeriod|int != clrPeriod_check.stdout.split("'")[1]|int
+  when: 
+    - item.crlPeriod is defined
+  no_log: true
+
+- name: Check the CRLOverlapTime for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLOverlapTime"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: crlOverlapTime_check
+  changed_when: item.crl_overlap_time|int != crlOverlapTime_check.stdout.split("'")[1]|int
+  when:
+    - item.crl_overlap_time is defined
   no_log: true
 
 - name: Check the CRLIssueInterval for {{ item.caname }}
@@ -17,7 +31,9 @@
   become_user: "{{ ejbca_user }}"
   become: yes
   register: crlIssueInterval_check
-  changed_when: item.crlIssueInterval|string not in crlIssueInterval_check.stdout
+  changed_when: item.crlIssueInterval|int != crlIssueInterval_check.stdout.split("'")[1]|int
+  when: 
+    - item.crlIssueInterval is defined
   no_log: true
 
 - name: Check the defaultCRLDistPoint for {{ item.caname }} 
@@ -28,6 +44,8 @@
   become: yes
   register: defaultCRLDistPoint_check
   changed_when: item.defaultCRLDP|string not in defaultCRLDistPoint_check.stdout
+  when:
+    - item.defaultCRLDP is defined
   no_log: true
 
 - name: Check the defaultOCSPServiceLocator for {{ item.caname }} 
@@ -38,6 +56,8 @@
   become: yes
   register: defaultOCSPServiceLocator_check
   changed_when: item.defaultOCSPServiceLocator|string not in defaultOCSPServiceLocator_check.stdout
+  when:
+    - item.defaultOCSPServiceLocator is defined
   no_log: true
 
 - name: Check the authorityInformationAccess for {{ item.caname }}
@@ -49,6 +69,8 @@
   register: authorityInformationAccess_check
   changed_when: item.authorityInformationAccess|string not in authorityInformationAccess_check.stdout
   no_log: true
+  when: 
+    - item.authorityInformationAccess is defined
 
 - name: Check the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} certificateAiaDefaultCaIssuerUri"
@@ -59,7 +81,8 @@
   register: certificateAiaDefaultCaIssuerUri_check
   changed_when: item.certificateAiaDefaultCaIssuerUri|string not in certificateAiaDefaultCaIssuerUri_check.stdout
   no_log: true
-  when: item.certificateAiaDefaultCaIssuerUri is defined
+  when: 
+    - item.certificateAiaDefaultCaIssuerUri is defined
 
 - name: Check the useLdapDnOrder for {{ item.caname }}
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} useLdapDnOrder"
@@ -68,7 +91,9 @@
   become_user: "{{ ejbca_user }}"
   become: yes
   register: useLdapDnOrder_check
-  changed_when: item.useLdapDnOrder|string not in useLdapDnOrder_check.stdout
+  changed_when: useLdapDnOrder_check.stdout.split("'")[1]|bool == item.useLdapDnOrder
+  when:
+    - item.useLdapDnOrder is defined
   no_log: true
 
 - name: Check the Enforce Unique Distinguished Name for {{ item.caname }}
@@ -78,8 +103,10 @@
   become_user: "{{ ejbca_user }}"
   become: yes
   register: doEnforceUniqueDistinguishedName_check
-  changed_when: item.enforce_unique_dn|string not in doEnforceUniqueDistinguishedName_check.stdout
+  changed_when: doEnforceUniqueDistinguishedName_check.stdout.split("'")[1]|bool == item.enforce_unique_dn
   no_log: true
+  when:
+    - item.enforce_unique_dn is defined
 
 - name: Configure the CRLPeriod for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLPeriod {{ item.crlPeriod }}"
@@ -87,7 +114,20 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: clrPeriod_check.changed
+  when:
+    - item.crlPeriod is defined
+    - clrPeriod_check.changed
+  no_log: true
+
+- name: Configure the CRLOverlapTime for {{ item.caname }}
+  command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLOverlapTime {{ item.crl_overlap_time }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: 
+    - item.crl_overlap_time is defined
+    - crlOverlapTime_check.changed
   no_log: true
 
 - name: Configure the CRLIssueInterval for {{ item.caname }}
@@ -96,7 +136,9 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: crlIssueInterval_check.changed
+  when: 
+    - item.crlIssueInterval is defined
+    - crlIssueInterval_check.changed
   no_log: true
 
 - name: Configure the defaultCRLDistPoint for {{ item.caname }}
@@ -105,7 +147,9 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: defaultCRLDistPoint_check.changed
+  when:
+    - item.defaultCRLDP is defined 
+    - defaultCRLDistPoint_check.changed
   no_log: true
 
 - name: Configure the defaultOCSPServiceLocator for {{ item.caname }}
@@ -114,7 +158,9 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: defaultOCSPServiceLocator_check.changed
+  when:
+    - item.defaultOCSPServiceLocator is defined 
+    - defaultOCSPServiceLocator_check.changed
   no_log: true
 
 - name: Configure the authorityInformationAccess for {{ item.caname }}
@@ -123,7 +169,9 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: authorityInformationAccess_check.changed
+  when: 
+    - item.authorityInformationAccess is defined
+    - authorityInformationAccess_check.changed
   no_log: true
 
 - name: Configure the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
@@ -143,7 +191,8 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: useLdapDnOrder_check.changed
+  when:
+    - useLdapDnOrder_check.changed
   no_log: true
   
 - name: Configure the Enforce Unique Distinguished Name for {{ item.caname }}
@@ -152,20 +201,7 @@
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
-  when: doEnforceUniqueDistinguishedName_check.changed
+  when:
+    - item.enforce_unique_dn is defined 
+    - doEnforceUniqueDistinguishedName_check.changed
   no_log: true
-
-#- name: Create the CRL
-#  command: "{{ ejbca_sh }} ca createcrl --caname {{ item.caname }}"
-#  args:
-#    chdir: "{{ ejbca_home }}"
-#  become_user: "{{ ejbca_user }}"
-#  become: yes
-
-#- name: Export the CRL
-#  command: "{{ ejbca_sh }} ca getcrl --caname {{ item.caname }} -f /opt/web/CRLs/{{ primekey_mgmtCA_ca_crl_name }}"
-#  args:
-#    chdir: "{{ ejbca_home }}"
-#  become_user: "{{ ejbca_user }}"
-#  become: yes
-#  register: getcrl
