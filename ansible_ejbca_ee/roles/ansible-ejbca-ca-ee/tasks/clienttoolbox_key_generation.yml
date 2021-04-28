@@ -2,7 +2,7 @@
 
 - name: Check if HSM keys exist for {{ item.slot_identifier }}
   command: >
-    {% if ncipher_preload %}"{{ preload_path }}"{% endif %}" {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh"
+    {% if ncipher_preload %}"{{ preload_path }}"{% endif %} "{{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh"
     PKCS11HSMKeyTool test
     "{{ hsm_shared_library }}"
     "{{ item.slot_identifier }}"
