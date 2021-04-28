@@ -53,6 +53,22 @@ peering_enable: true
 peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 peer_ca_issuerdn: "CN=ManagementCA, OU=Certification Authorities, O={{ organizationName }}, C={{ countryName }}"
 
+#Enable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: true
+databaseprotection_enableverify_AuditRecordData: true
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+
 # PKCS11 Crypto token properties
 p11_crypto_tokens:
   - id: 1

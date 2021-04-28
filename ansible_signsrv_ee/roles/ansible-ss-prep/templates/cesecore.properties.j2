@@ -26,17 +26,27 @@ cluster.nodeid="{{ inventory_hostname }}"
 #securityeventsaudit.exporter.X=org.cesecore.audit.impl.AuditExporterJson
 
 # Example configuration of SignServerLog4jDevice
-securityeventsaudit.implementation.0=org.signserver.server.log.SignServerLog4jDevice
+#securityeventsaudit.implementation.0=org.signserver.server.log.SignServerLog4jDevice
 
 # Example configuration of IntegrityProtectedDevice that logs to the database
 # With XML export to /tmp/ (default export dir)
 # On windows a path would be for example 'C:/Temp/'
-securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
+#securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
 #securityeventsaudit.implementation.1=org.signserver.server.integrityprotected.SequencialIntegrityProtectedDevice
-securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
+#securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #securityeventsaudit.deviceproperty.1.export.dir=/tmp/
 #securityeventsaudit.deviceproperty.1.export.fetchsize=1000
 #securityeventsaudit.deviceproperty.1.validate.fetchsize=1000
+
+{% if core_disable_audit_log_to_db is defined and core_disable_audit_log_to_db is sameas true %}
+securityeventsaudit.implementation.0=org.signserver.server.log.SignServerLog4jDevice
+securityeventsaudit.implementation.1=null
+{% else %}
+securityeventsaudit.implementation.0=org.signserver.server.log.SignServerLog4jDevice
+securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
+securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml 
+{% endif %}
+
 
 #------------------- PKCS#11 -------------------------------------
 # Configuration of PKCS#11 tokens.

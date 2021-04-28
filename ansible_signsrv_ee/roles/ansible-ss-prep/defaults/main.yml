@@ -20,6 +20,10 @@ signsrv_group: wildfly
 signsrv_user: wildfly
 signsrv_user_profile: "/home/{{ signsrv_user }}"
 
+ant_version: apache-ant-1.10.9-bin.tar.gz
+ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
+ant_checksum: sha256:5f8a85ddee6effe79163aa54c7bef6b60305e37200dedc1986437fb5c072a9f3
+
 signsvr_softhsm:
   - dir: /opt/softhsm
     src: /usr/lib64/libsofthsm2.so
@@ -45,14 +49,6 @@ signsrv_databaseprotection:
   token_pin: "{{ encrypted_signsrv_databaseprotection_token_pin | default('foo123') }}"
   hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
 
-signsrv_gen_hsm_slots:
-  - slot_name: SignServer_SLOT
-    slot_so_pin: "{{ encrypted_signsrv_so_token_pin | default('foo123') }}" 
-    slot_pin: "{{ encrypted_signsrv_token_pin | default('foo123') }}"
-  - slot_name: " {{ signsrv_databaseprotection.slot_label }}"
-    slot_so_pin: "{{ encrypted_signsrv_so_databaseprotection_token_pin | default('foo123') }}"
-    slot_pin: "{{ encrypted_signsrv_databaseprotection_token_pin | default('foo123') }}"
-
 # SignServer property files
 signsrv_templated_properties_files:
   - src: signserver_deploy.properties.j2
@@ -65,17 +61,45 @@ signsrv_templated_properties_files:
 appsrv_datasources:
   - jndi_name: "java:/SignServerDS"
     pool_name: SignServerDS
+    database_connection_type: mariadb 
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
     port: 3306
     database: signsrv
     user: signsrv-usr
+    credential_ref: dbPassword
     password: "{{ encrypted_database_signsrvusr_password | default('ejbca') }}"
+
+wildfly_enable_kerberos: false
+wildfly_kerberos_enable_debug_log: false
+krb_conf_use_os_file: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+wildfly_kerberos_keytab_file: "{{ wildfly_home }}/standalone/configuration/ejbca.keytab"
+# URL to download the keytab file used for kerberos.
+wildfly_kerberos_keytab_file_url:
+# SHA256 checksum of the keytab file
+wildfly_kerberos_keytab_file_url_checksum:
+wildfly_kerberos_keytab_principal: SVCEJBCA@INTERNAL.PRIMEKEY.COM
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:
 
 signsrv_xalan_xml_files:
   - src: "{{ signsvr_home }}/lib/ext/xalan-2.7.2.jar"
     dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
   - src: "{{ signsvr_home }}/lib/ext/serializer-2.7.2.jar"
     dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
+
+
+core_disable_audit_log_to_db: false
+
+#Enable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: true
+databaseprotection_enableverify_AuditRecordData: true
 
 #signserver_deploy.properties
 

@@ -1,11 +1,5 @@
 ---
 
-- name: Enable the firewalld service
-  service:
-    name: firewalld
-    state: started
-    enabled: yes
-
 - block:
     - name: Add environment variables to {{ signsrv_user }} user profile
       template:
@@ -19,10 +13,6 @@
         path: "{{ signsvr_root_dir }}/{{ signsrv_src_dir_name }}"
       register: signsrv_owns_it
 
-    #- name: debug the variables
-    #  debug:
-    #    var: primekey_owns_it
-
     - name: Set file permissions for {{ signsvr_home }}
       file:
         path: "{{ signsvr_home }}"
@@ -32,40 +22,90 @@
         group: "{{ signsrv_group }}"
       when: signsrv_user not in signsrv_owns_it.stat.pw_name
 
-    - name: Ensure signserver-custom/conf directory exists
-      file:
-        path: "{{ signsvr_home }}/../signserver-custom/conf"
-        state: directory
-        owner: "{{ signsrv_user }}"
-        group: "{{ signsrv_group }}"
-
   when: signsvr_manage_user
 
-- name: Set permissions on softhsm lib directory
+- name: Ensure signserver-custom/conf directory exists
   file:
-    path: /var/lib/softhsm
+    path: "{{ signsvr_home }}/../signserver-custom/conf"
     state: directory
-    recurse: yes
-    mode: 0750
     owner: "{{ signsrv_user }}"
     group: "{{ signsrv_group }}"
 
-- name: check slots
-  shell: "softhsm2-util --show-slots | grep {{ item.slot_name }}"
-  register: show_hsm_slots
-  loop: "{{ signsrv_gen_hsm_slots }}"
-  changed_when: show_hsm_slots.rc != 0
-  failed_when: false
-  no_log: true
+- name: Check if Elytron Credential store pass exists
+  stat:
+    path: "{{ wildfly_elytron_pass_file }}"
+  register: elytron_pass_file_exists
+  changed_when: false
 
-- name: create HSM slots
-  command: "softhsm2-util --init-token --free --label {{ item.item.slot_name }} --so-pin {{ item.item.slot_so_pin }} --pin {{ item.item.slot_pin }}"
-  become: yes  
-  become_user: "{{ signsrv_user }}" 
-  loop: "{{ show_hsm_slots.results }}"
-  no_log: true
-  register: create_hsm_slots
-  when: item.changed
+- name: Check if Elytron Credential store file exists
+  stat:
+    path: "{{ wildfly_home }}/standalone/configuration/credentials"
+  register: elytron_store_file_exists
+  changed_when: false
+
+- name: Elytron Credential store configuration
+  block:
+    - name: Create directory
+      file:
+        path: "{{ wildfly_elytron_pass_dir }}"
+        state: directory
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0700
+
+    - name: Create fact
+      set_fact:
+        cred_pass: "{{ pass_33 }}"
+      no_log: true
+
+    - name: Create file
+      template:
+        src: wildfly_pass.j2
+        dest: "{{ wildfly_elytron_pass_file }}"
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0700
+
+    - name: Create credential store
+      command: "{{ wildfly_home }}/bin/elytron-tool.sh credential-store --create --location {{ wildfly_home }}/standalone/configuration/credentials --password {{ cred_pass }}"
+      become: yes  
+      become_user: "{{ signsrv_user }}"
+      args:
+        creates: "{{ wildfly_home }}/standalone/configuration/credentials"
+      no_log: true
+
+    - name: Add Database password to credential store
+      command: "{{ wildfly_home }}/bin/elytron-tool.sh credential-store --location {{ wildfly_home }}/standalone/configuration/credentials --password {{ cred_pass }} --add {{ item.credential_ref }} --secret {{ item.password }}"
+      become: yes  
+      become_user: "{{ signsrv_user }}"
+      loop: "{{ appsrv_datasources }}"
+      no_log: true
+
+  when: 
+    - not elytron_pass_file_exists.stat.exists
+    - not elytron_store_file_exists.stat.exists
+
+- name: Configure Wildfly Kerberos 
+  block:
+    - name: Configure Wildfly Kerberos config file
+      template:
+        src: krb5.conf.j2
+        dest: "{{ wildfly_kerberos_file_path }}"
+        owner: root
+        group: root
+        mode: 0644
+      when: not krb_conf_use_os_file|bool
+
+    - name: Download kerberbos keytab file for Wildfly
+      get_url:
+        url: "{{ wildfly_kerberos_keytab_file_url }}"
+        dest: "{{ wildfly_kerberos_keytab_file }}"
+        checksum: "{{ wildfly_kerberos_keytab_file_url_checksum }}"
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0640
+
+  when: wildfly_enable_kerberos|bool
 
 - name: Deploy Wildfly standalone.xml
   template:
@@ -98,7 +138,7 @@
 - name: flush handlers
   meta: flush_handlers
 
-- name: Ensure templated SignServer property files are copied to signerserver-custom/conf
+- name: Stage templated SignServer property files are copied to signerserver-custom/conf
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -125,15 +165,15 @@
   set_fact:
     signsrv_properties_files_to_remove: "{{ ( found_properties_files.files | map(attribute='path') | map('basename') | list | intersect (found_properties_files_with_matching_sample.results | selectattr('stat.path', 'defined') | map(attribute='item') | list )) | difference(signsrv_templated_properties_files | map(attribute='dest') | map('basename') | list ) }}"
 
-- name: Ensure that default SignServer properties files not in list of templated SignServer properties files are removed
+- name: Stage that default SignServer properties files not in list of templated SignServer properties files are removed
   block:
-  - name: Ensure existing properties files not in list of templated SignServer properties files are removed from signserver-custom/conf folder
+  - name: Stage existing properties files not in list of templated SignServer properties files are removed from signserver-custom/conf folder
     file:
       path: "{{ signsvr_home }}/../signserver-custom/conf/{{ item }}"
       state: absent
     loop: "{{ signsrv_properties_files_to_remove }}"
 
-  - name: Ensure existing properties files not in list of templated SignServer properties files are removed from signserver/conf folder
+  - name: Stage existing properties files not in list of templated SignServer properties files are removed from signserver/conf folder
     file:
       path: "{{ signsvr_home }}/conf/{{ item }}"
       state: absent
@@ -168,3 +208,9 @@
   stat:
     path: "{{ wildfly_home }}"
   register: found_appsrv_home
+
+- name: Restart wildfly when adding a CA node to the cluster
+  systemd:
+    name: wildfly
+    state: restarted
+  when: found_appsrv_home.stat.exists

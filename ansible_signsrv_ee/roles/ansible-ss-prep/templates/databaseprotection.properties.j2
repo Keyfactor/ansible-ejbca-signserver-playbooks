@@ -19,8 +19,8 @@
 # Most of the times it's the same but not always. See all mappings in modules/ejbca-entity/resources/orm-ejbca-mysql.xml
 #databaseprotection.enablesign = false
 #databaseprotection.enableverify = false
-databaseprotection.enablesign.AuditRecordData = true
-databaseprotection.enableverify.AuditRecordData = true
+databaseprotection.enablesign.AuditRecordData = {{ databaseprotection_enablesign_AuditRecordData| default('false') }}
+databaseprotection.enableverify.AuditRecordData = {{ databaseprotection_enableverify_AuditRecordData| default('false') }}
 #databaseprotection.enablesign = true
 #databaseprotection.enableverify = true
 #databaseprotection.enablesign.GlobalConfigurationData = false
@@ -37,7 +37,6 @@ databaseprotection.keyid.AuditRecordData = 1
 databaseprotection.keyid.0 = 1
 databaseprotection.keylabel.0 = {{ signsrv_databaseprotection.key_label }}
 databaseprotection.classname.0 = org.cesecore.keys.token.PKCS11CryptoToken
-#databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue=i{{ signsrv_databaseprotection.slot_label }}
 databaseprotection.properties.0 = sharedLibrary={{ signsrv_databaseprotection.hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue={{ signsrv_databaseprotection.slot_label }}
 databaseprotection.tokenpin.0 = {{ signsrv_databaseprotection.token_pin }}
 databaseprotection.version.0 = 2
