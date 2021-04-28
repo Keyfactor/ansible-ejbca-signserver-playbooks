@@ -4,23 +4,20 @@
 - name: Install server config file
   template:
     src: etc_my.cnf.d_server.cnf.j2
-    dest: "{{ mariadb_config_server }}"
-  notify: restart mariadb
+    dest: "{{ mariadb_srv_config_server }}"
   tags: mariadb
 
 - name: Install network config file
   template:
     src: etc_my.cnf.d_network.cnf.j2
-    dest: "{{ mariadb_config_network }}"
-  notify: restart mariadb
+    dest: "{{ mariadb_srv_config_network }}"
   tags: mariadb
 
 - name: Install custom config file
   template:
     src: etc_my.cnf.d_custom.cnf.j2
-    dest: "{{ mariadb_config_custom }}"
-  when: mariadb_custom_cnf|length != 0
-  notify: restart mariadb
+    dest: "{{ mariadb_srv_config_custom }}"
+  when: mariadb_srv_custom_cnf|length != 0
   tags: mariadb
 
 - name: Configure swappiness
