@@ -158,10 +158,12 @@
       loop: "{{ ejbca_peerConnector }}"
       when: ("ocsp" in item.type)
 
-    - name: Create OCSP Service template files to import with configdump
-      template:
-        src: 'service-oscpService.yaml.j2'
-        dest: '{{ ejbca_home }}/dump/va/services/ocspPublisher-{{ item.name }}.yaml'
+    #- name: Create OCSP Service template files to import with configdump
+    #  template:
+    #    src: 'service-oscpService.yaml.j2'
+    #    dest: '{{ ejbca_home }}/dump/va/services/ocspPublisher-{{ item.name }}.yaml'
+    #  loop: "{{ ejbca_peerConnector }}"
+    #  when: ("ocsp" in item.type)
 
     - name: Create external VA services and publisher with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
