@@ -9,4 +9,6 @@
 - name: Sign CSR End Entities
   include_tasks: csr_cert_sign.yml
   loop: "{{ identity_csr_info }}"
+  loop_control:
+    loop_var: csr_item
   when: identity_csr_info[0] is defined

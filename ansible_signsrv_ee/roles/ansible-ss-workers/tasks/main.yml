@@ -1,34 +1,59 @@
 ---
 # tasks file for ansible-ss-workers
 
-- name: Add Timestamp Authority
-  include_tasks: add_tsa_signer.yml
+- name: Add Timestamp Authority worker
+  include_tasks: add_worker.yml
+  loop: "{{ tsa_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: tsa_signers_enabled|bool
 
-- name: Add Microsoft Code Timestamp Signer
-  include_tasks: add_ms_code_timestamp_signer.yml
+- name: Add Microsoft Code Timestamp worker
+  include_tasks: add_worker.yml
+  loop: "{{ ms_tsa_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: ms_tsa_signers_enabled|bool
 
-- name: Add Plain Signer
-  include_tasks: add_plain_signer.yml
+- name: Add Plain worker
+  include_tasks: add_worker.yml
+  loop: "{{ plain_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: plain_signers_enabled|bool
 
-- name: Add PDF Signer
-  include_tasks: add_pdf_signer.yml
+- name: Add PDF worker
+  include_tasks: add_worker.yml
+  loop: "{{ pdf_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: pdf_signers_enabled|bool
 
-- name: Add Java Archive Signer
-  include_tasks: add_java_signer.yml
+- name: Add Java Archive worker
+  include_tasks: add_worker.yml
+  loop: "{{ java_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: java_signers_enabled|bool
 
-- name: Add Microsoft Code Signer
-  include_tasks: add_ms_auth_code_signer.yml
+- name: Add Microsoft Code worker
+  include_tasks: add_worker.yml
+  loop: "{{ ms_code_signers }}"
+  loop_control:
+    label: "{{ item.name }}" 
   when: ms_code_signers_enabled|bool
 
-- name: Add XML Signer
-  include_tasks: add_xml_signer.yml
+- name: Add XML worker
+  include_tasks: add_worker.yml
+  loop: "{{ xml_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: xml_signers_enabled|bool
 
-- name: Upload signed signer certificates & import
+- name: Upload signed certificates & import into worker
   include_tasks: add_upload_signer_certs.yml
+  loop: "{{ p11_generate }}"
+  loop_control:
+    label: "{{ p11_item.name }}.crt"
+    loop_var: p11_item
   when: p11_generate[0] is defined

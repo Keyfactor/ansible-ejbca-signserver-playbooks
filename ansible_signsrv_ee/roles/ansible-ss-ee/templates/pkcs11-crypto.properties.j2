@@ -36,7 +36,7 @@ WORKERGENID{{ item.id }}.SLOTLABELTYPE={{ item.SLOTLABELTYPE }}
 WORKERGENID{{ item.id }}.SLOTLABELVALUE={{ item.SLOTLABELVALUE }}
 
 # Optional password of the slot. If specified the token is "auto-activated".
-WORKERGENID{{ item.id }}.PIN="{{ encrypted_signsrv_token_pin | default('foo123') }}"
+WORKERGENID{{ item.id }}.PIN="{{ item.slot_pin }}"
 
 # Optional PKCS#11 attributes file or attributes
 #WORKERGENID{{ item.id }}.ATTRIBUTESFILE=/opt/signserver/doc/sample-config/p11attributes.cfg

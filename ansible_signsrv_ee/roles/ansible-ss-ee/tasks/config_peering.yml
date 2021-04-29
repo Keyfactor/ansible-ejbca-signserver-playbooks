@@ -9,29 +9,48 @@
   become: yes
   become_user: "{{ signsrv_user }}"
   register: query_peering_res
-  changed_when: peering_enable|string not in query_peering_res.stdout
+  changed_when:  false
+  failed_when: false
 
-- name: Enable Peering globally
-  command: "{{ signsrv_home }}/bin/signserver setproperty global PEERS_INCOMING_ENABLED {{ peering_enable }}"
+#- name: debug query_peering_res
+#  debug:
+#    var: query_peering_res
+
+- name: Enable Peering on SignServer
+  block:
+
+    - name: Enable Peering globally
+      command: "{{ signsrv_home }}/bin/signserver setproperty global PEERS_INCOMING_ENABLED {{ peering_enable }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      register: enable_peering
+
+    - name: Reload SignServer
+      command: "{{ signsrv_home }}/bin/signserver reload all"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      register: enable_peering_reload
+      
+  when: peering_enable|string not in query_peering_res.stdout
+
+- name: Check Peer Systems configured in SignServer
+  command: "{{ signsrv_home }}/bin/signserver wspeersystems -list"
   args:
     chdir: "{{ signsrv_home }}"
   environment:
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
   become_user: "{{ signsrv_user }}"
-  register: enable_peering
-  when: query_peering_res.changed
-
-- name: Reload SignServer
-  command: "{{ signsrv_home }}/bin/signserver reload all"
-  args:
-    chdir: "{{ signsrv_home }}"
-  environment:
-    APPSRV_HOME: "{{ wildfly_home }}"
-  become: yes
-  become_user: "{{ signsrv_user }}"
-  register: enable_peering_reload
-  when: query_peering_res.changed
+  register: check_peersystems_in_ss
+  changed_when: false
 
 - name: Allow EJBCA Peer to connect to SignServer
   command: "{{ signsrv_home }}/bin/signserver wspeersystems -add -certserialno {{ item.serial }} -issuerdn '{{ peer_ca_issuerdn }}'"
@@ -44,7 +63,9 @@
   loop: "{{ peer_ca_cert_serial_numbers }}"
   loop_control:
     label: "{{ item.type }}"
-  when: item.type == "sign"
+  when: 
+    - item.type == "sign"
+    - item.serial in check_peersystems_in_ss.stdout
   register: add_peering_systems
   failed_when: add_peering_systems.rc >= 2
-  changed_when: add_peering_systems.rc == 0
+  

@@ -3,17 +3,31 @@
 
 - name: Deploy SignServer
   include_tasks: deploy_ss.yml
-  
-- name: Add PKCS11 
-  include_tasks: add_p11.yml
-  when: p11_crypto_tokens[0] is defined
 
-- name: Generate keys in PKCS11
-  include_tasks: add_gen_signer_keys.yml
-  when: create_p11_slot.changed
+- name: Configure PKCS11
+  block:
+
+    - name: Add PKCS11 
+      include_tasks: add_p11.yml
+      loop: "{{ p11_crypto_tokens }}"
+      loop_control:
+        label: "{{ item.name }}"
+      no_log: true
+
+    - name: Generate keys in PKCS11
+      include_tasks: add_gen_signer_keys.yml
+      loop: "{{ p11_generate }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: create_p11_slot.changed
+
+  when: p11_crypto_tokens[0] is defined
 
 - name: Add Time Monitor
   include_tasks: add_time_monitor.yml
+  loop: "{{ time_monitor_workers }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: time_monitor_workers_enabled|bool
 
 - name: Configure SignServer Admins

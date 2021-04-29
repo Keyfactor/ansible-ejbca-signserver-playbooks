@@ -35,10 +35,14 @@
 # Default: mysql
 # (use the nodb option to use a local file-based database instead of regular database, this needs further configuring of the database location).
 # For MariaDB use "mysql".
-database.name=mysql
+#database.name=mysql
 #database.name=postgres
 #database.name=oracle
 #database.name=nodb
+
+{% if appsrv_datasources[0] is defined %}{% for item in appsrv_datasources %}
+database.name={%if "mariadb" == item.database_connection_type %}mysql{%elif "sqlserver" == item.database_connection_type%}mssql{%else%}{{ item.database_connection_type }}{% endif %}
+{% endfor %}{% endif %}
 
 # The location of the file-based database when using the nodb database option (the example below would work for JBoss)
 # the directory needs to be present, writable by the application server and empty at first startup.
@@ -352,10 +356,9 @@ web.clientcli.dist.enabled={{ web_clientcli_dist_enabled| default('false') }}
 #cryptotoken.p11.lib.72.file=/usr/lib64/libnethsm64.so
 #cryptotoken.p11.lib.114.name=AWS CloudHSM
 #cryptotoken.p11.lib.114.file=/opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so
-{% if signsrv_softhsm[0] is defined %}
+{% if use_softhsm is defined and use_softhsm is sameas true %}
 cryptotoken.p11.lib.80.name=SoftHSM
-#cryptotoken.p11.lib.80.file=/usr/local/lib/softhsm/libsofthsm2.so
-cryptotoken.p11.lib.80.file={{ signsrv_softhsm[0].src }}
+cryptotoken.p11.lib.80.file={{ hsm_shared_library }}
 {% endif %}
 
 # ------------ Peer Connector settings (Enterprise Edition only) --------------

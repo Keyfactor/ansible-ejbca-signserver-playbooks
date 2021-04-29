@@ -1,6 +1,6 @@
 ---
 
-- name: Check if end entity exists
+- name: Check if {{ item.username }} end entity exists
   command: "{{ ejbca_sh }} ra findendentity {{ item.username }}"
   args:
     chdir: "{{ ejbca_home }}"
@@ -15,7 +15,7 @@
 #    var: endentity_exists
 
 - block:
-  - name: Add External Webserver Entity to CA
+  - name: Add {{ item.username }} Entity to CA
     command: "{{ ejbca_sh }} ra addendentity --username '{{ item.username }}' --password '{{  item.password }}' --dn '{{ item.full_dn }}' --altname '{{ item.altname }}' --caname '{{ item.caname }}' --type 1 --token {{ item.token }} --certprofile '{{ item.certprofile }}' --eeprofile '{{ item.eeprofile }}'"
     args:
       chdir: "{{ ejbca_home }}"
@@ -25,7 +25,7 @@
     tags: certreq-cli-batch
     no_log: true
 
-  - name: Set password
+  - name: Set password for {{ item.username }}
     command: "{{ ejbca_sh }} ra setclearpwd --username '{{ item.username }}' '{{ item.password }}'"
     args:
       chdir: "{{ ejbca_home }}"
@@ -35,7 +35,7 @@
     tags: certreq-cli-batch
     no_log: true
 
-  - name: Batch time
+  - name: Create certs for {{ item.username }}
     command: "{{ ejbca_sh }} batch --username {{ item.username }} -dir {{ identity_batch_output_dir }}"
     args:
       chdir: "{{ ejbca_home }}"
@@ -45,7 +45,7 @@
     tags: certreq-cli-batch
     no_log: true
 
-  - name: Determine certificate serial number
+  - name: Determine {{ item.username }} certificate serial number
     command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
     #no_log: true
     register: cert_serialNumber
@@ -67,7 +67,7 @@
   #      "{{ ra_peer_cert_serial_numbers|default([]) + [ {'cert_serial_Number':cert_serialNumber.stdout.split('=')[1], 'caname':item.caname} ] }}"
   #  tags: certreq-cli-batch
 
-  - name: Copy certificate file to localhost
+  - name: Copy {{ item.username }} certificate file to localhost
     become: no
     fetch:
       src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
@@ -75,7 +75,7 @@
       flat: yes
     tags: certreq-cli-batch
 
-  - name: Copy key file to localhost
+  - name: Copy {{ item.username }} key file to localhost
     become: no
     fetch:
       src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}-Key.pem"
@@ -83,7 +83,7 @@
       flat: yes
     tags: certreq-cli-batch
 
-  - name: Copy key file to localhost
+  - name: Copy {{ item.username }} CA chain file to localhost
     become: no
     fetch:
       src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}-CA.pem"

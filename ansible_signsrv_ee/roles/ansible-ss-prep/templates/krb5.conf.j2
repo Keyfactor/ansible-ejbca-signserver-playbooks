@@ -1,0 +1,21 @@
+[libdefaults]
+  default_realm = {{ krb_conf_default_realm }}
+  dns_lookup_realm = true
+  dns_lookup_kdc = true
+
+[realms]
+{% if krb_conf_realms is defined and krb_conf_realms|length %}
+{% for item in krb_conf_realms %}
+  {{ item.realm }} = {
+    kdc = {{ item.kdc }}
+{% if item.default_domain is defined or item.default_domain| default(omit) %}
+    default_domain = {{ item.default_domain }}
+{% else %}
+{% endif %}
+{% if item.admin_server is defined or item.admin_server| default(omit) %}
+    admin_server = {{ item.admin_server }}
+{% else %}
+{% endif %}
+    }
+{% endfor %}
+{% endif %}

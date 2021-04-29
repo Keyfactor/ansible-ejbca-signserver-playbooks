@@ -8,33 +8,23 @@
     APPSRV_HOME: "{{ wildfly_home }}"
   become: yes
   become_user: "{{ signsrv_user }}"
-  register: check_time_monitor_exists
-  failed_when: false
   changed_when: false
+  failed_when: false
+  register: check_worker_exists
 
-- name: Add Time Monitor to SignServer
+- name: Create Worker to SignServer
   block:
 
-    - name: Prepare {{ item.name }} conf file
+    - name: Prepare {{ item.name }} properties file
       template:
-        src: timemonitor.properties.j2
-        dest: "{{ signsrv_home }}/conf/timemonitor-{{ item.id }}.properties"
+        src: "{{ item.template }}"
+        dest: "{{ signsrv_home }}/conf/{{ item.name }}-{{ item.id }}.properties"
         owner: "{{ signsrv_user }}"
         group: "{{ signsrv_group }}"
         mode: 0640
 
     - name: Add {{ item.name }} to SignServer
-      command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/timemonitor-{{ item.id }}.properties"
-      args:
-        chdir: "{{ signsrv_home }}"
-      environment:
-        APPSRV_HOME: "{{ wildfly_home }}"
-      become: yes
-      become_user: "{{ signsrv_user }}"
-      register: create_time_monitor
-
-    - name: Reload SignServer for {{ item.name }}
-      command: "{{ signsrv_home }}/bin/signserver reload {{ item.id }}"
+      command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/{{ item.name }}-{{ item.id }}.properties"
       args:
         chdir: "{{ signsrv_home }}"
       environment:
@@ -42,4 +32,13 @@
       become: yes
       become_user: "{{ signsrv_user }}"
 
-  when: check_time_monitor_exists.rc != 0
+    - name: Reload {{ item.name }} worker
+      command: "{{ signsrv_home }}/bin/signserver reload {{ item.name }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+
+  when: check_worker_exists.rc != 0

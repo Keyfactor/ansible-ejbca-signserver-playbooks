@@ -45,8 +45,8 @@
   file:
     path: /opt/apache-ant
     state: directory
-    owner: "{{ ejbca_user }}"
-    group: "{{ ejbca_group }}"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
   when: not ant_dir_check.stat.exists
 
 - name: Unarchive ant

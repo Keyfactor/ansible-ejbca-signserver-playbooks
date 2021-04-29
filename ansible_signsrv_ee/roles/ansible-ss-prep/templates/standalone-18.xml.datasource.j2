@@ -128,7 +128,7 @@
                 <formatter>
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
                 </formatter>
-                <file relative-to="jboss.server.log.dir" path="ejbca.log"/>
+                <file relative-to="jboss.server.log.dir" path="signsrv.log"/>
                 <rotate-size value="32M"/>
                 <max-backup-index value="31"/>
                 <append value="true"/>
@@ -152,17 +152,26 @@
                 <level name="WARN"/>
             </logger>
             <logger category="org.ejbca" use-parent-handlers="false">
-        <level name="INFO"/>
+                <level name="INFO"/>
                 <handlers>
                     <handler name="EJBCAFILE"/>
+                    <handler name="FILE"/>
                 </handlers>
             </logger>
             <logger category="org.cesecore" use-parent-handlers="false">
-        <level name="INFO"/>
+                <level name="INFO"/>
                 <handlers>
                     <handler name="EJBCAFILE"/>
+                    <handler name="FILE"/>
                 </handlers>
-        </logger>
+            </logger>
+            <logger category="org.signserver" use-parent-handlers="false">
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="EJBCAFILE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </logger>
             <logger category="org.jboss.security" use-parent-handlers="false">
                 <level name="INFO"/>
                 <handlers>

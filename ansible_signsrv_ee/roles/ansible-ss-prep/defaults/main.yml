@@ -9,7 +9,7 @@ wildfly_manage_service: true
 
 signsrv_src_link_dir: "{{  signsrv_root_dir }}/signsrv"
 
-wildfly_standalone_file: standalone-19.xml.datasource.j2
+wildfly_standalone_file: standalone-23.xml.datasource.j2
 systemd_dir: /usr/lib/systemd/system
 
 signsrv_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
@@ -83,6 +83,10 @@ krb_conf_realms:
     kdc: INTERNAL.PRIMEKEY.COM
     default_domain:
     admin_server:
+
+# Elytron password file location
+wildfly_elytron_pass_dir: /opt/elytron
+wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
 
 signsrv_xalan_xml_files:
   - src: "{{ signsrv_home }}/lib/ext/xalan-2.7.2.jar"

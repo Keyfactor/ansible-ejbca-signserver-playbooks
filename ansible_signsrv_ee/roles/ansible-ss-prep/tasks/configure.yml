@@ -72,12 +72,16 @@
       become_user: "{{ signsrv_user }}"
       args:
         creates: "{{ wildfly_home }}/standalone/configuration/credentials"
+      environment:
+        JAVA_OPTS: -Djava.security.disableSystemPropertiesFile
       no_log: true
 
     - name: Add Database password to credential store
       command: "{{ wildfly_home }}/bin/elytron-tool.sh credential-store --location {{ wildfly_home }}/standalone/configuration/credentials --password {{ cred_pass }} --add {{ item.credential_ref }} --secret {{ item.password }}"
       become: yes  
       become_user: "{{ signsrv_user }}"
+      environment:
+        JAVA_OPTS: -Djava.security.disableSystemPropertiesFile
       loop: "{{ appsrv_datasources }}"
       no_log: true
 
@@ -134,6 +138,22 @@
     owner: "{{ signsrv_user }}"
     group: "{{ signsrv_group }}"
   notify: restart wildfly
+
+- name: Find windows files
+  find:
+    path: "{{ signsrv_home }}"
+    file_type: file
+    recurse: yes
+    patterns: "*.bat,*.ps1,*.cmd"
+  register: find_win_files
+
+- name: Remove windows files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ find_win_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
 
 - name: flush handlers
   meta: flush_handlers
