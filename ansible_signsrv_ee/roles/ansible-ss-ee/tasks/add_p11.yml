@@ -1,0 +1,81 @@
+---
+
+- name: Check if PCKS11 Slot - {{ item.name }} exists in SignServer
+  command: "{{ signsrv_home }}/bin/signserver getstatus brief {{ item.name }}"
+  args:
+    chdir: "{{ signsrv_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: check_p11_exists
+  failed_when: false
+  changed_when: false
+  no_log: true
+
+#- name: Debug getstatus
+#  debug:
+#    var: check_p11_exists
+
+- name: Add Crypto Token to SignServer
+  block:
+
+    - name: Prepare PKCS11 Slot - {{ item.name }} conf file 
+      template:
+        src: pkcs11-crypto.properties.j2
+        dest: "{{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0640
+      no_log: true
+
+    - name: Add PKCS11 Slot - {{ item.name }} to SignServer
+      command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      register: create_p11_slot
+      no_log: true
+
+    - name: Remove the PIN from PKCS11 Slot - {{ item.name }} conf file
+      lineinfile:
+        path: "{{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
+        state: absent
+        regexp: 'WORKERGENID[0-9]*\.PIN*?'
+      no_log: true
+
+    - name: Reload SignServer for PKCS11 Slot - {{ item.name }}
+      command: "{{ signsrv_home }}/bin/signserver reload {{ item.id }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      no_log: true
+
+    - name: Activate the PKCS11 Slot - {{ item.name }}
+      command: "{{ signsrv_home }}/bin/signserver activatecryptotoken {{ item.id }} {{ item.slot_pin }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      no_log: true
+      failed_when: false
+
+    - name: Create a test key on the crypto tokens
+      command: "{{ signsrv_home }}/bin/signserver generatekey {{ item.id }} -alias {{ item.testkey_alias }} -keyalg {{ item.testkey_keyalg }} -keyspec {{ item.testkey_keyspec }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      no_log: true
+  
+  when: check_p11_exists.rc != 0

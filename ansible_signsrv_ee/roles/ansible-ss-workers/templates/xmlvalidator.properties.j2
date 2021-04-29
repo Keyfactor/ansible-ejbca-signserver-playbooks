@@ -1,0 +1,12 @@
+# {{ ansible_managed | comment }}
+# Sample XMLValidator.
+
+# General properties
+WORKERGENID1.TYPE=PROCESSABLE
+WORKERGENID1.IMPLEMENTATION_CLASS=org.signserver.module.xmlvalidator.XMLValidator
+WORKERGENID1.NAME=DemoXMLValidator
+
+# Authentication. One of NOAUTH, CLIENTCERT, org.signserver.server.UsernamePasswordAuthorizer, org.signserver.server.UsernameAuthorizer
+WORKERGENID1.AUTHTYPE=NOAUTH
+
+WORKERGENID1.VALIDATIONSERVICEWORKER = CertValidationWorker

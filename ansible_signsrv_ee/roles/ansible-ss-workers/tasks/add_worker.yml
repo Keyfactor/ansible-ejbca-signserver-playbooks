@@ -1,0 +1,44 @@
+---
+
+- name: Check if {{ item.name }} exists in SignServer
+  command: "{{ signsrv_home }}/bin/signserver getstatus brief {{ item.name }}"
+  args:
+    chdir: "{{ signsrv_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  changed_when: false
+  failed_when: false
+  register: check_worker_exists
+
+- name: Create Worker to SignServer
+  block:
+
+    - name: Prepare {{ item.name }} properties file
+      template:
+        src: "{{ item.template }}"
+        dest: "{{ signsrv_home }}/conf/{{ item.name }}-{{ item.id }}.properties"
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0640
+
+    - name: Add {{ item.name }} to SignServer
+      command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/{{ item.name }}-{{ item.id }}.properties"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+
+    - name: Reload {{ item.name }} worker
+      command: "{{ signsrv_home }}/bin/signserver reload {{ item.name }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+
+  when: check_worker_exists.rc != 0

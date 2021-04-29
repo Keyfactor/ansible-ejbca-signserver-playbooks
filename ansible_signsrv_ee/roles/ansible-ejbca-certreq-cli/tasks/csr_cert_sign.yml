@@ -1,0 +1,90 @@
+---
+
+- name: Check if {{  csr_item.username }} entity exists
+  command: "{{ ejbca_sh }} ra findendentity {{  csr_item.username }}"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_method: sudo
+  become_user: "{{ ejbca_user }}"
+  changed_when: False
+  failed_when: "'FAILED' in endentity_exists.stderr"
+  register: endentity_exists
+  tags: certreq-cli-batch
+
+- block:
+    - name: Copy {{  csr_item.username }} CSR file from Controller
+      copy:
+        src: "{{ ejbca_csr_dir_output }}/{{ csr_item.name }}.csr"
+        dest: "{{ identity_batch_output_dir }}/{{ csr_item.name }}.csr"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+      register: file_copy
+      tags: certreq-cli-csr
+
+    - name: Add {{ csr_item.username }} end entity
+      command: >
+        "{{ ejbca_home }}/bin/ejbca.sh" ra addendentity
+        --username "{{ csr_item.username }}"
+        --dn "{{ csr_item.full_dn }}"
+        --caname "{{ csr_item.caname }}"
+        --type 1
+        --token {{ csr_item.token }}
+        --password {{ csr_item.password }}
+        --certprofile {{ csr_item.certprofile }}
+        --eeprofile {{ csr_item.eeprofile }}
+      no_log: true
+      become_method: sudo
+      become_user: "{{ ejbca_user }}"
+      register: adding_csr_end_entity
+      failed_when: adding_csr_end_entity.rc >= 2
+      changed_when: adding_csr_end_entity.rc == 0
+      tags: certreq-cli-csr
+
+    - debug:
+        msg: "Adding end entity failed with message: {{ adding_csr_end_entity.stdout }}"
+      when: adding_csr_end_entity.rc == 1
+
+    - name: Sign {{ csr_item.username }} CSR
+      command: "{{ ejbca_home }}/bin/ejbca.sh createcert --username {{ csr_item.username }}  --password {{ csr_item.password }} -c {{ identity_batch_output_dir }}/{{ csr_item.name }}.csr -f /var/tmp/{{ csr_item.name }}.crt"
+      no_log: true
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: ejbca_sign_csr
+      failed_when: ejbca_sign_csr.rc >= 2
+      changed_when: ejbca_sign_csr.rc == 0
+      tags: certreq-cli-csr
+
+    - name: Get {{ csr_item.username }} CA chain file
+      command: "{{ ejbca_home }}/bin/ejbca.sh ca getcacert --caname {{ csr_item.caname }} -f /var/tmp/{{ csr_item.name }}-fullchain.crt --include-full-chain"
+      no_log: true
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: ejbca_sign_csr
+      failed_when: ejbca_sign_csr.rc >= 2
+      changed_when: ejbca_sign_csr.rc == 0
+      tags: certreq-cli-csr
+
+    - name: Copy {{ csr_item.username }} certificate & CA Chain file to localhost
+      become: no
+      fetch:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        flat: yes
+      loop:
+        - { src: "{{ identity_batch_output_dir }}/{{ csr_item.name }}.crt", dest: "{{ ejbca_csr_dir_output }}/{{ csr_item.name }}.crt" }
+        - { src: "{{ identity_batch_output_dir }}/{{ csr_item.name }}-fullchain.crt", dest: "{{ ejbca_csr_dir_output }}/{{ csr_item.name }}-fullchain.crt" }
+      loop_control:
+        label: "{{ item.src }}"
+      tags: certreq-cli-csr
+
+    - name: Cleanup the {{ csr_item.username }} csr, cert, & CA chain file in /var/tmp
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ identity_batch_output_dir }}/{{ csr_item.name }}.csr"
+        - "{{ identity_batch_output_dir }}/{{ csr_item.name }}.crt"
+        - "{{ identity_batch_output_dir }}/{{ csr_item.name }}-fullchain.crt"
+      tags: certreq-cli-csr
+
+  when: endentity_exists.rc == 1

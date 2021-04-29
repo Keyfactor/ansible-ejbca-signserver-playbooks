@@ -1,0 +1,37 @@
+# {{ ansible_managed | comment }}
+# Configuration of Plain Signer WORKERGENID{{ item.id }}.
+#
+
+## General properties
+WORKERGENID{{ item.id }}.TYPE=PROCESSABLE
+WORKERGENID{{ item.id }}.IMPLEMENTATION_CLASS=org.signserver.module.cmssigner.PlainSigner
+WORKERGENID{{ item.id }}.NAME={{ item.name }}
+
+# Authentication. One of NOAUTH, CLIENTCERT, org.signserver.server.UsernamePasswordAuthorizer, org.signserver.server.UsernameAuthorizer
+WORKERGENID{{ item.id }}.AUTHTYPE={{ item.AuthType }}
+
+# Crypto token: CryptoTokenP12, CryptoTokenP11, CryptoTokenP11NG1, CryptoTokenP11NG1KeyWrapping
+WORKERGENID{{ item.id }}.CRYPTOTOKEN={{ item.CryptoToken }}
+
+# Using key from keystore
+WORKERGENID{{ item.id }}.DEFAULTKEY={{ item.DefaultKey }}
+# Key using ECDSA
+#WORKERGENID{{ item.id }}.DEFAULTKEY=signer00002
+
+# Allow peering with EJBCA
+WORKERGENID{{ item.id }}.PEERS_VISIBLE={{ item.peer_enable |default('true') }}
+
+# Signature algorithm
+# Default: SHA256 with RSA, DSA or ECDSA depending on key. Values: SHA256withRSA, SHA256withRSAandMGF1, SHA256withDSA, HA256withECDSA
+WORKERGENID{{ item.id }}.SIGNATUREALGORITHM={{ item.SignatureAlgorithm |default('SHA256WithRSA')  }}
+
+# Digest algorithm for the request in the log
+# Default: SHA256
+WORKERGENID{{ item.id }}.LOGREQUEST_DIGESTALGORITHM={{ item.LogRequest_DefaultAlgorithm }}
+
+# Log request digest
+# Default: true
+WORKERGENID{{ item.id }}.DO_LOGREQUEST_DIGEST={{ item.Do_LogRequest_Digest |default('true') }}
+
+# If the key usage counter is disabled
+WORKERGENID{{ item.id }}.DISABLEKEYUSAGECOUNTER={{ item.DisableKeyUsageCounter |default('true') }}

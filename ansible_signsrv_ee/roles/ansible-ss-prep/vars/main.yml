@@ -1,0 +1,26 @@
+---
+# vars file for ansible-ss-prep
+
+# List of repository packages that will be installed by this role
+signsrv_packages_8:
+  - unzip
+  - java-11-openjdk-devel
+  - nss-tools
+  - wget
+  - jq
+  - vim
+  - firewalld
+  - python3-libsemanage
+
+# List of repository packages that will be installed by this role
+signsrv_packages_7:
+  - unzip
+  - java-11-openjdk-devel
+  - nss-tools
+  - wget
+  - jq
+  - vim 
+  - firewalld
+  - libsemanage-python
+
+pass_33: "{{ lookup('password', '/dev/null length=33 chars=ascii_letters') }}"

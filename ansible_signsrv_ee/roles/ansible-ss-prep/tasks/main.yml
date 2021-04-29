@@ -1,0 +1,8 @@
+---
+# tasks file for ansible-ss-prep
+
+- name: Install SignServer requried files and software
+  include_tasks: install.yml
+
+- name: Configure SignServer
+  include_tasks: configure.yml

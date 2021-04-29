@@ -1,0 +1,29 @@
+# {{ ansible_managed | comment }}
+# SignServer TimeMonitor configuration
+
+timeserver.ntpdatecommand={{ timeserver_ntpdatecommand |default('/usr/sbin/ntpdate') }}
+timeserver.ntpqcommand={{ timeserver_ntpqcommand |default('/usr/bin/ntpq') }}
+
+signserver.managedconfig={{ signserver_managedconfig |default('true') }}
+
+#timeserver.host=192.168.13.200
+#timeserver.sendsamples=2
+#timeserver.timeout=0.2
+
+#timemonitor.maxAcceptedOffset=997
+#timemonitor.warnOffset=500
+#timemonitor.statusExpireTime=900
+#timemonitor.leapStatusExpireTime=60000
+#timemonitor.minRunTime=500
+#timemonitor.warnRunTime=700
+
+timemonitor.stateweb.enabled={{ timemonitor_stateweb_enabled |default('true') }}
+timemonitor.stateweb.bindaddress={{ timemonitor_stateweb_bindaddress |default('127.0.0.1') }}
+timemonitor.stateweb.port={{ timemonitor_stateweb_port |default('8980') }}
+timemonitor.stateweb.threads={{ timemonitor_stateweb_threads |default('5') }}
+timemonitor.stateweb.backlog={{ timemonitor_stateweb_backlog |default('0') }}
+
+signserver.process.url={{ signserver_process_url |default('http://localhost:8080/signserver/process') }}
+signserver.statuspropertiesworker.name={{ signserver_statuspropertiesworker_name |default('TimeMonitorManager') }}
+signserver.statusproperty.name={{ signserver_statusproperty_name |default('TIMESOURCE0_INSYNC') }}
+signserver.leapstatusproperty.name={{ signserver_leapstatusproperty_name |default('LEAPSECOND') }}
