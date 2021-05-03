@@ -1,0 +1,40 @@
+---
+# vars file wth default values
+
+# Path to where key and CSR is generated 
+# as well as where EJBCA API access key/certificate is located
+# files will be generated/read from "{working_path}/files"
+working_path: /path/to/module/files/test
+
+# Values used for private key generation
+privatekey_path: '{{ working_path }}/files/prvkey.pem'
+# Values used for the CSR generation
+csr_path: '{{ working_path }}/files/csr.pem'
+cert_common_name: primekey.com
+cert_organization_name: PrimeKey
+cert_organizational_unit_name:
+cert_country_name: 'SE'
+cert_state_or_province_name:
+
+# Path to store the ceritficates issued, or to load from to check if renewal is needed
+cert_path: '{{ working_path }}/files/cert.pem'
+
+#Request a renew if certificate in cert_path exists and has 30 days remaining
+request_type: RENEW
+days_remaining: 30
+
+# EJBCA enrollment options
+#
+# The certificate profile, end entity profile and CA to use for issuing the certificate
+certificate_profile_name: 'Client'
+end_entity_profile_name: 'User'
+certificate_authority_name: 'ManagementCA'
+
+# The API URL for the EJBCA Certification Authority
+ejbca_api_url: 'https://localhost:8443/ejbca/ejbca-rest-api/v1'
+# PEM encoded certificate and key information
+# Remember to replace the contents of these files with your actual client keypair,
+# or change this path to point to another location where they can be found.
+ejbca_api_client_cert_path: '{{ working_path }}/files/apiClientCert.pem'
+ejbca_api_client_cert_key_path: '{{ working_path }}/files/apiClientKey.pem'
+

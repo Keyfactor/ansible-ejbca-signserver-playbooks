@@ -1,0 +1,5 @@
+---
+
+- hosts: localhost
+  roles:
+    - ejbca_certificate_request
