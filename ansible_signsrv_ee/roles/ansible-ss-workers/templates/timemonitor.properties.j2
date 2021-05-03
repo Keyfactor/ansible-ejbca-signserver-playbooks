@@ -1,0 +1,30 @@
+# Sample configuration of an TimeMonitorManager.
+#
+
+WORKER{{ item.id }}.TYPE=PROCESSABLE
+WORKER{{ item.id }}.IMPLEMENTATION_CLASS=org.signserver.module.timemonitormanager.TimeMonitorManager
+WORKER{{ item.id }}.NAME={{ item.name }}
+WORKER{{ item.id }}.AUTHTYPE=org.signserver.server.RemoteAddressAuthorizer
+WORKER{{ item.id }}.ALLOW_FROM={{ item.allow_from }}
+WORKER{{ item.id }}.WORKERLOGGER=org.signserver.server.log.NullWorkerLogger
+
+# The below values needs to be adjusted to the environment:
+WORKER{{ item.id }}.TIMESERVER.HOST={{ item.ntp_hosts }}
+WORKER{{ item.id }}.TIMESERVER.SENDSAMPLES={{ item.timeserver_SendSamples | default('2') }}
+WORKER{{ item.id }}.TIMESERVER.TIMEOUT={{ item.timeserver_Timeout | default('0.2') }}
+
+WORKER{{ item.id }}.TIMEMONITOR.MAXACCEPTEDOFFSET={{ item.timemonitor_MaxAcceptedOffset | default('997') }}
+WORKER{{ item.id }}.TIMEMONITOR.WARNOFFSET={{ item.timemonitor_WarnOffset | default('500') }}
+WORKER{{ item.id }}.TIMEMONITOR.STATUSEXPIRETIME={{ item.timemonitor_StatusExpireTime | default('4500') }}
+WORKER{{ item.id }}.TIMEMONITOR.LEAPSTATUSEXPIRETIME={{ item.timemonitor_LeapStatusExpireTime | default('60000') }}
+WORKER{{ item.id }}.TIMEMONITOR.MINRUNTIME={{ item.timemonitor_MinRuntime | default('1000') }}
+WORKER{{ item.id }}.TIMEMONITOR.WARNRUNTIME={{ item.timemonitor_WarnRuntime | default('700') }}
+
+WORKER{{ item.id }}.TIMEMONITOR.DISABLED={{ item.timeMonitorDisabled }}
+
+WORKER{{ item.id_2 }}.TYPE=PROCESSABLE
+WORKER{{ item.id_2 }}.IMPLEMENTATION_CLASS=org.signserver.module.timemonitormanager.TimeMonitorStatusReportWorker
+WORKER{{ item.id_2 }}.NAME={{ item.name_2 }}
+WORKER{{ item.id_2 }}.AUTHTYPE=org.signserver.server.RemoteAddressAuthorizer
+WORKER{{ item.id_2 }}.ALLOW_FROM={{ item.allow_from_2 }}
+WORKER{{ item.id_2 }}.WORKERLOGGER=org.signserver.server.log.NullWorkerLogger

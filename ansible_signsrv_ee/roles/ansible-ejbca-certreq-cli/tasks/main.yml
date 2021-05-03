@@ -12,3 +12,73 @@
   loop_control:
     loop_var: csr_item
   when: identity_csr_info[0] is defined
+
+- name: Sign CSR End Entities for PDF
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ pdf_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - pdf_signers_enabled is defined
+    - pdf_signers_enabled|bool
+
+- name: Sign CSR End Entities for TSA
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ tsa_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - tsa_signers_enabled is defined
+    - tsa_signers_enabled|bool
+
+- name: Sign CSR End Entities for Code Signing
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ ms_code_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - ms_code_signers_enabled is defined
+    - ms_code_signers_enabled|bool
+
+- name: Sign CSR End Entities for Microsoft TSA
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ ms_tsa_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - ms_tsa_signers_enabled is defined
+    - ms_tsa_signers_enabled|bool
+
+- name: Sign CSR End Entities for Plain
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ plain_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - plain_signers_enabled is defined
+    - plain_signers_enabled|bool
+
+- name: Sign CSR End Entities for Java
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ java_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - java_signers_enabled is defined
+    - java_signers_enabled|bool
+
+- name: Sign CSR End Entities for XML
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ xml_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - xml_signers_enabled is defined
+    - xml_signers_enabled|bool

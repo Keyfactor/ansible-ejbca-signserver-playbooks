@@ -1,0 +1,6 @@
+---
+# tasks file for ansible-ss-peering
+
+- name: Configure Peering with CA
+  include_tasks: config_peering.yml
+  when: peering_enable|bool

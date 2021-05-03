@@ -1,0 +1,20 @@
+---
+# defaults file for ansible-ss-admins
+
+organizationName: Solitude
+organizationDomainName: solitude.skyrim
+countryName: US
+
+signsrv_root_dir: /opt
+signsrv_home: "{{ signsrv_root_dir }}/signsrv"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+
+signsrv_group: wildfly
+signsrv_user: wildfly
+
+signsrv_admins:
+  - name: "Super Admin"
+    serial: 7491076C9E4BA13EE882551C8066A8B26C4C4BC6
+    issuerdn: "CN=ManagementCA,OU=Certification Authorities,OU=Solitude,O=Skyrim"
