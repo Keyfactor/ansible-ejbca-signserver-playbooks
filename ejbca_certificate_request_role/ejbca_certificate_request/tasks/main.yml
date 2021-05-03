@@ -1,0 +1,39 @@
+---
+# tasks file for EJBCA module
+
+- name: Verify that the directory we want to use exists on the server.
+  file:
+    path: '{{ working_path }}'
+    state: directory
+
+- name: Create certificate private key on the server.
+  openssl_privatekey:
+    path: '{{ privatekey_path }}'
+    passphrase: '{{ privatekey_passphrase | default(omit) }}'
+    cipher: '{{ privatekey_cipher | default(omit) }}'
+    type: RSA
+    size: 2048
+
+- name: Create certificate signing request on the server
+  openssl_csr:
+    path: '{{ csr_path }}'
+    privatekey_path: '{{ privatekey_path }}'
+    privatekey_passphrase: '{{ privatekey_passphrase | default(omit) }}'
+    digest: sha256
+    common_name: '{{ cert_common_name }}'
+    organization_name: '{{ cert_organization_name | default(omit) }}'
+    organizational_unit_name: '{{ cert_organizational_unit_name | default(omit) }}'
+    country_name: '{{ cert_country_name | default(omit) }}'
+    state_or_province_name: '{{ cert_state_or_province_name | default(omit) }}'
+
+- name: Request a certificate from EJBCA
+  ejbca_certificate:
+    path: '{{ cert_path }}'
+    csr: '{{ csr_path }}'
+    certificate_profile_name: '{{ certificate_profile_name }}'
+    end_entity_profile_name: '{{ end_entity_profile_name }}'
+    certificate_authority_name: '{{ certificate_authority_name }}'
+    ejbca_api_url: '{{ ejbca_api_url }}'
+    ejbca_api_client_cert_path: '{{ ejbca_api_client_cert_path }}'
+    ejbca_api_client_cert_key_path: '{{ ejbca_api_client_cert_key_path }}'
+
