@@ -17,13 +17,13 @@ ejbcara01.solitude.skyrim ansible_host=172.16.170.6
 signsrv01.solitude.skyrim ansible_host=172.16.170.11
 
 [ejbcaCaServersAWS]
-aep-ca01.pkihosted-dev.c2company.com ansible_host=aep-aws-ca
+it-ca01.pkihosted-dev.c2company.com ansible_host=it-ca
 
 [ejbcaRaServersAWS]
-aep-ra01.pkihosted-dev.c2company.com ansible_host=aep-aws-ra
+it-ra01.pkihosted-dev.c2company.com ansible_host=it-ra
 
 [ejbcaVaServersAWS]
-aep-va01.pkihosted-dev.c2company.com ansible_host=aep-aws-va
+it-va01.pkihosted-dev.c2company.com ansible_host=it-va
 
 [ejbcaSsServersAWS]
-aep-sign01.pkihosted-dev.c2company.com ansible_host=aep-aws-ss
+it-ss01.pkihosted-dev.c2company.com ansible_host=it-ss

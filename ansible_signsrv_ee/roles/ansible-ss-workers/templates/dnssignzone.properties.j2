@@ -1,0 +1,61 @@
+# Sample configuration of a ZoneFileServerSideSigner.
+#
+
+## General properties
+WORKER{{ main_item.0.id }}.TYPE=PROCESSABLE
+WORKER{{ main_item.0.id }}.IMPLEMENTATION_CLASS=org.signserver.module.dnssec.signer.ZoneFileServerSideSigner
+WORKER{{ main_item.0.id }}.NAME={{ main_item.0.name }}
+WORKER{{ main_item.0.id }}.AUTHTYPE={{ main_item.0.AuthType }}
+
+# Crypto token
+#{{ main_item.0.id }}.CRYPTOTOKEN=CryptoTokenP12
+WORKER{{ main_item.0.id }}.CRYPTOTOKEN={{ main_item.0.CryptoToken }}
+#{{ main_item.0.id }}.CRYPTOTOKEN=CryptoTokenP11NG1
+#{{ main_item.0.id }}.CRYPTOTOKEN=CryptoTokenP11NG1KeyWrapping
+
+# Signature algorithm
+WORKER{{ main_item.0.id }}.SIGNATUREALGORITHM={{ main_item.0.SignatureAlgorithm }}
+#{{ main_item.0.id }}.SIGNATUREALGORITHM=SHA256withRSA
+
+# Prefix for the name of the ZSK keys to be used by the client call
+# (recommended convention is to use the zone name/workername with underscore and a "Z" to indicate ZSK).
+#{{ main_item.0.id }}.ZSK_KEY_ALIAS_PREFIX=example.com_Z_
+WORKER{{ main_item.0.id }}.ZSK_KEY_ALIAS_PREFIX={{ main_item.0.name }}_Z_
+
+# List of pre-generated key signing keys (comma-separated).
+# Should contain 1 or 2 entries
+WORKER{{ main_item.0.id }}.ACTIVE_KSKS={{ main_item.0.name }}_K_1,{{ main_item.0.name }}_K_2
+
+# Fixed salt (for testing/troubleshooting)
+#{{ main_item.0.id }}.NSEC3_SALT=6dcd4ce23d88e2ee
+WORKER{{ main_item.0.id }}.NSEC3_SALT=
+
+# Zone name to use
+#
+WORKER{{ main_item.0.id }}.ZONE_NAME={{ main_item.0.name }}.
+
+## Archiving properties
+
+# Using the base 64 archiver
+WORKER{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.base64dbarchiver.Base64DatabaseArchiver
+
+# Using the old database archiver
+#{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.olddbarchiver.OldDatabaseArchiver
+
+# Archiving only requests
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST
+
+# Archiving only responses
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=RESPONSE
+
+# Archiving both requests and responses
+WORKER{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST_AND_RESPONSE
+
+# Store forwarded address (from the X-Forwarded-For header) as the request address
+#{{ main_item.0.id }}.ARCHIVER0.USE_FORWARDED_ADDRESS=true
+
+# Include additional forwarded addresses (apart from the last), only applies if the property above is set
+#{{ main_item.0.id }}.ARCHIVER0.MAX_FORWARDED_ADDRESSES=3
+
+# Included direct (non-forwarded address) at the end of forwarded addresses
+#{{ main_item.0.id }}.ARCHIVER0.INCLUDE_DIRECT_ADDRESS=true

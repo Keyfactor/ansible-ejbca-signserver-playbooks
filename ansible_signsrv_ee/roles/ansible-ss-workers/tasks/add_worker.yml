@@ -1,7 +1,7 @@
 ---
 
-- name: Check if {{ item.name }} exists in SignServer
-  command: "{{ signsrv_home }}/bin/signserver getstatus brief {{ item.name }}"
+- name: Check if {{ main_item.0.name }} exists in SignServer
+  command: "{{ signsrv_home }}/bin/signserver getstatus brief {{ main_item.0.name }}"
   args:
     chdir: "{{ signsrv_home }}"
   environment:
@@ -15,16 +15,16 @@
 - name: Create Worker to SignServer
   block:
 
-    - name: Prepare {{ item.name }} properties file
+    - name: Prepare {{ main_item.0.name }} properties file
       template:
-        src: "{{ item.template }}"
-        dest: "{{ signsrv_home }}/conf/{{ item.name }}-{{ item.id }}.properties"
+        src: "{{ main_item.0.template }}"
+        dest: "{{ signsrv_home }}/conf/{{ main_item.0.name }}-{{ main_item.0.id}}.properties"
         owner: "{{ signsrv_user }}"
         group: "{{ signsrv_group }}"
         mode: 0640
 
-    - name: Add {{ item.name }} to SignServer
-      command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/{{ item.name }}-{{ item.id }}.properties"
+    - name: Add {{ main_item.0.name }} to SignServer
+      command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/{{ main_item.0.name }}-{{ main_item.0.id}}.properties"
       args:
         chdir: "{{ signsrv_home }}"
       environment:
@@ -32,13 +32,18 @@
       become: yes
       become_user: "{{ signsrv_user }}"
 
-    - name: Reload {{ item.name }} worker
-      command: "{{ signsrv_home }}/bin/signserver reload {{ item.name }}"
+    - name: Reload {{ main_item.0.name }} worker
+      command: "{{ signsrv_home }}/bin/signserver reload {{ main_item.0.name }}"
       args:
         chdir: "{{ signsrv_home }}"
       environment:
         APPSRV_HOME: "{{ wildfly_home }}"
       become: yes
       become_user: "{{ signsrv_user }}"
+
+    - name: Upload signed certificate
+      include: add_upload_signer_certs.yml
+      when: main_item.1.dn is defined
 
   when: check_worker_exists.rc != 0
+  

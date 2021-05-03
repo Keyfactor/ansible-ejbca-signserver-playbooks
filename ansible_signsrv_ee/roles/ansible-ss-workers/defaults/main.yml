@@ -212,3 +212,20 @@ p11_generate:
     keyalias: "{{ xml_signers[0].DefaultKey }}"
     dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=XML-Signer-01"
     sig_alg: SHA256WithRSA
+
+
+# Settings for SignServer TimeMonitor configuration
+enable_timemonitor_service: true
+timeserver_ntpdatecommand: /usr/sbin/ntpdate
+timeserver_ntpqcommand: /usr/bin/ntpq
+signserver_managedconfig: true
+timemonitor_stateweb_enabled: true
+timemonitor_stateweb_bindaddress: 127.0.0.1
+timemonitor_stateweb_port: 8980
+timemonitor_stateweb_threads: 5
+timemonitor_stateweb_backlog: 0
+
+signserver_process_url: http://localhost/signserver/process
+signserver_statuspropertiesworker_name: TimeMonitorManager
+signserver_statusproperty_name: TIMESOURCE0_INSYNC
+signserver_leapstatusproperty_name: LEAPSECOND

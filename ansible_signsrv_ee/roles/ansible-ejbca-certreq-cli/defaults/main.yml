@@ -11,6 +11,8 @@ ejbca_user: wildfly
 
 identity_batch_output_dir: /var/tmp
 organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"
+countryName: US
 
 identity_info:
   - dn: 'ou=Devices,ou=Solitude,o=Skyrim'
@@ -24,3 +26,14 @@ identity_info:
     caname: "{{ organizationName }}-Sub-CA"
     token: PEM
     useType: signserver
+
+#identity_csr_info:
+#  - dn: "C={{ countryName }},O={{ organizationName }},OU=Signers"
+#    name: "Test0001"
+#    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=Test0001"
+#    username: "{{ Test0001 }}"
+#    password: "{{ encrypted_SignServer_identity_password | default('foo123') }}"
+#    certprofile: signerPdf-3y
+#    eeprofile:  "signers{{ organizationNameShort }}"
+#    caname: "{{ organizationNameShort}}-Sub-CA"
+#    token: USERGENERATED

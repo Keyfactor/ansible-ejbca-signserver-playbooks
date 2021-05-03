@@ -11,7 +11,10 @@
     - ansible-ejbca-wildfly
     - ansible-ejbca-pkc11-client
     - ansible-ss-prep
-    - ansible-ss-ee
+    - ansible-ss-peering
+    - ansible-ss-admins
+    - ansible-ss-crypto-workers
+    - ansible-ss-gen-keys
 
 - hosts: ejbcaCaServers
   become: yes

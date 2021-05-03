@@ -1,0 +1,6 @@
+---
+# tasks file for ansible-ss-admins
+
+- name: Configure SignServer Admins
+  include_tasks: config_admins.yml
+  when: signsrv_admins[0] is defined

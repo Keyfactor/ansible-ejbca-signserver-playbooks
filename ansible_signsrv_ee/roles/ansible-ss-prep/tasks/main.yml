@@ -6,3 +6,6 @@
 
 - name: Configure SignServer
   include_tasks: configure.yml
+
+- name: Deploy SignServer
+  include_tasks: deploy_ss.yml

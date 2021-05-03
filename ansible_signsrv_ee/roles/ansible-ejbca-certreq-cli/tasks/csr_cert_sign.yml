@@ -1,7 +1,8 @@
 ---
 
-- name: Check if {{  csr_item.username }} entity exists
-  command: "{{ ejbca_sh }} ra findendentity {{  csr_item.username }}"
+- name: Check if {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} entity exists
+  command: >
+    {{ ejbca_sh }} ra findendentity {% if csr_item.username is defined %}"{{ csr_item.username }}"{% else %}"{{ sign_item.0.name }}"{% endif %}
   args:
     chdir: "{{ ejbca_home }}"
   become_method: sudo
@@ -12,26 +13,31 @@
   tags: certreq-cli-batch
 
 - block:
-    - name: Copy {{  csr_item.username }} CSR file from Controller
+    - name: Copy {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} CSR file from Controller
       copy:
-        src: "{{ ejbca_csr_dir_output }}/{{ csr_item.name }}.csr"
-        dest: "{{ identity_batch_output_dir }}/{{ csr_item.name }}.csr"
+        src: "{{ ejbca_csr_dir_output }}/{% if csr_item.username is defined %}{{ csr_item.name }}.csr{% else %}{{ sign_item.0.name }}.csr{% endif %}"
+        dest: "{{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}.csr{% else %}{{ sign_item.0.name }}.csr{% endif %}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       register: file_copy
       tags: certreq-cli-csr
 
-    - name: Add {{ csr_item.username }} end entity
+    - name: Create fact
+      set_fact:
+        entity_pass: "{{ pass_15 }}"
+      no_log: true
+
+    - name: Add {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} end entity
       command: >
-        "{{ ejbca_home }}/bin/ejbca.sh" ra addendentity
-        --username "{{ csr_item.username }}"
-        --dn "{{ csr_item.full_dn }}"
-        --caname "{{ csr_item.caname }}"
+        {{ ejbca_sh }} ra addendentity 
+        --username {% if csr_item.username is defined %}"{{ csr_item.name }}"{% else %}"{{ sign_item.0.name }}"{% endif %} 
+        --dn {% if csr_item.full_dn is defined %}"{{ csr_item.full_dn }}"{% else %}"{{ sign_item.1.dn }}"{% endif %} 
+        --caname {% if csr_item.caname is defined %}"{{ csr_item.caname }}"{% else %}"{{ sign_item.0.caname }}"{% endif %} 
         --type 1
-        --token {{ csr_item.token }}
-        --password {{ csr_item.password }}
-        --certprofile {{ csr_item.certprofile }}
-        --eeprofile {{ csr_item.eeprofile }}
+        --token {% if csr_item.token is defined %}"{{ csr_item.token }}"{% else %}"{{ sign_item.0.token }}"{% endif %} 
+        --password {{ entity_pass }}
+        --certprofile {% if csr_item.certprofile is defined %}"{{ csr_item.certprofile }}"{% else %}"{{ sign_item.0.certprofile }}"{% endif %} 
+        --eeprofile {% if csr_item.eeprofile is defined %}"{{ csr_item.eeprofile }}"{% else %}"{{ sign_item.0.eeprofile }}"{% endif %} 
       no_log: true
       become_method: sudo
       become_user: "{{ ejbca_user }}"
@@ -44,8 +50,13 @@
         msg: "Adding end entity failed with message: {{ adding_csr_end_entity.stdout }}"
       when: adding_csr_end_entity.rc == 1
 
-    - name: Sign {{ csr_item.username }} CSR
-      command: "{{ ejbca_home }}/bin/ejbca.sh createcert --username {{ csr_item.username }}  --password {{ csr_item.password }} -c {{ identity_batch_output_dir }}/{{ csr_item.name }}.csr -f /var/tmp/{{ csr_item.name }}.crt"
+    - name: Sign {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} CSR
+      command: >
+        {{ ejbca_sh }} createcert 
+        --username {% if csr_item.username is defined %}{{ csr_item.name }}{% else %}{{ sign_item.0.name }}{% endif %}
+        --password {{ entity_pass }} 
+        -c {{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}.csr{% else %}{{ sign_item.0.name }}.csr{% endif %} 
+        -f /var/tmp/{% if csr_item.username is defined %}{{ csr_item.name }}.crt{% else %}{{ sign_item.0.name }}.crt{% endif %}
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"
@@ -54,8 +65,12 @@
       changed_when: ejbca_sign_csr.rc == 0
       tags: certreq-cli-csr
 
-    - name: Get {{ csr_item.username }} CA chain file
-      command: "{{ ejbca_home }}/bin/ejbca.sh ca getcacert --caname {{ csr_item.caname }} -f /var/tmp/{{ csr_item.name }}-fullchain.crt --include-full-chain"
+    - name: Get {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} CA chain file
+      command: >
+        {{ ejbca_sh }} ca getcacert 
+        --caname {% if csr_item.caname is defined %}"{{ csr_item.caname }}"{% else %}"{{ sign_item.0.caname }}"{% endif %}  
+        -f /var/tmp/{% if csr_item.username is defined %}{{ csr_item.name }}-fullchain.crt{% else %}{{ sign_item.0.name }}-fullchain.crt{% endif %} 
+        --include-full-chain
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"
@@ -64,27 +79,27 @@
       changed_when: ejbca_sign_csr.rc == 0
       tags: certreq-cli-csr
 
-    - name: Copy {{ csr_item.username }} certificate & CA Chain file to localhost
+    - name: Copy {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} certificate & CA Chain file to localhost
       become: no
       fetch:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         flat: yes
       loop:
-        - { src: "{{ identity_batch_output_dir }}/{{ csr_item.name }}.crt", dest: "{{ ejbca_csr_dir_output }}/{{ csr_item.name }}.crt" }
-        - { src: "{{ identity_batch_output_dir }}/{{ csr_item.name }}-fullchain.crt", dest: "{{ ejbca_csr_dir_output }}/{{ csr_item.name }}-fullchain.crt" }
+        - { src: "{{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}.crt{% else %}{{ sign_item.0.name }}.crt{% endif %}", dest: "{{ ejbca_csr_dir_output }}/{% if csr_item.username is defined %}{{ csr_item.name }}.crt{% else %}{{ sign_item.0.name }}.crt{% endif %}" }
+        - { src: "{{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}-fullchain.crt{% else %}{{ sign_item.0.name }}-fullchain.crt{% endif %}", dest: "{{ ejbca_csr_dir_output }}/{% if csr_item.username is defined %}{{ csr_item.name }}-fullchain.crt{% else %}{{ sign_item.0.name }}-fullchain.crt{% endif %}" }
       loop_control:
         label: "{{ item.src }}"
       tags: certreq-cli-csr
 
-    - name: Cleanup the {{ csr_item.username }} csr, cert, & CA chain file in /var/tmp
+    - name: Cleanup the {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} csr, cert, & CA chain file in /var/tmp
       file:
         path: "{{ item }}"
         state: absent
       loop:
-        - "{{ identity_batch_output_dir }}/{{ csr_item.name }}.csr"
-        - "{{ identity_batch_output_dir }}/{{ csr_item.name }}.crt"
-        - "{{ identity_batch_output_dir }}/{{ csr_item.name }}-fullchain.crt"
+        - "{{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}.csr{% else %}{{ sign_item.0.name }}.csr{% endif %}"
+        - "{{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}.crt{% else %}{{ sign_item.0.name }}.crt{% endif %}"
+        - "{{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}-fullchain.crt{% else %}{{ sign_item.0.name }}-fullchain.crt{% endif %}"
       tags: certreq-cli-csr
 
   when: endentity_exists.rc == 1

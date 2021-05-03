@@ -201,35 +201,12 @@
     register: removed_signsrv_properties
   when: signsrv_properties_files_to_remove
 
-- name: Configure SignServer Time Monitor service property file is copied to {{ signsrv_home}}/conf
-  template:
-    src: timemonitor.properties.j2
-    dest: "{{ signsrv_home }}/conf/timemonitor.properties"
-    owner: "{{ signsrv_user }}"
-    group: "{{ signsrv_group }}"
-  register: configured_ss_timemon_properties
-  when: enable_timemonitor_service|bool
-
-- name: Configure SignServer Time Monitor service file
-  template:
-    src: timemonitor-systemd.service.j2
-    dest: "{{ systemd_dir }}/timemonitor.service"
-  register: configured_ss_timemon_service
-  when: enable_timemonitor_service|bool
-
-- name: Enable the timemonitor service
-  service:
-    name: timemonitor
-    state: started
-    enabled: yes
-  when: enable_timemonitor_service|bool
-
 - name: Check if application server exists
   stat:
     path: "{{ wildfly_home }}"
   register: found_appsrv_home
 
-- name: Restart wildfly when adding a CA node to the cluster
+- name: Restart wildfly when adding a node to the cluster
   systemd:
     name: wildfly
     state: restarted

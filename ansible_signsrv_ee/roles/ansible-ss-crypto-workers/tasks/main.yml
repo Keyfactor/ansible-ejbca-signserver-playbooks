@@ -1,0 +1,10 @@
+---
+# tasks file for ansible-ss-crypto-workers
+
+- name: Add PKCS11 
+  include_tasks: add_p11.yml
+  loop: "{{ p11_crypto_tokens }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+  when: p11_crypto_tokens[0] is defined

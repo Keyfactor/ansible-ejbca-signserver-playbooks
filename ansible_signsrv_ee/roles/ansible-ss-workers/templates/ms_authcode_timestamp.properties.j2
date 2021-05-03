@@ -1,76 +1,76 @@
 # {{ ansible_managed | comment }}
-# Configuration of MSAuthCodeTimeStampSigner WORKERGENID{{ item.id }}.
+# Configuration of MSAuthCodeTimeStampSigner {{ main_item.0.id }}.
 #
 
 ## General properties
-WORKERGENID{{ item.id }}.TYPE=PROCESSABLE
-WORKERGENID{{ item.id }}.IMPLEMENTATION_CLASS=org.signserver.module.tsa.MSAuthCodeTimeStampSigner
+WORKER{{ main_item.0.id }}.TYPE=PROCESSABLE
+WORKER{{ main_item.0.id }}.IMPLEMENTATION_CLASS=org.signserver.module.tsa.MSAuthCodeTimeStampSigner
 # Name of the worker if referenced by name instead of Id.
-WORKERGENID{{ item.id }}.NAME={{ item.name }}
+WORKER{{ main_item.0.id }}.NAME={{ main_item.0.name }}
 
 # Authentication. One of NOAUTH, CLIENTCERT, org.signserver.server.UsernamePasswordAuthorizer, org.signserver.server.UsernameAuthorizer
-WORKERGENID{{ item.id }}.AUTHTYPE={{ item.AuthType }}
+WORKER{{ main_item.0.id }}.AUTHTYPE={{ main_item.0.AuthType }}
 
 # Crypto token: CryptoTokenP12, CryptoTokenP11, CryptoTokenP11NG1, CryptoTokenP11NG1KeyWrapping
-WORKERGENID{{ item.id }}.CRYPTOTOKEN={{ item.CryptoToken }}
+WORKER{{ main_item.0.id }}.CRYPTOTOKEN={{ main_item.0.CryptoToken }}
 
 # Using key from sample keystore
-WORKERGENID{{ item.id }}.DEFAULTKEY={{ item.DefaultKey }}
+WORKER{{ main_item.0.id }}.DEFAULTKEY={{ main_item.0.DefaultKey }}
 # Key using ECDSA
-#WORKERGENID{{ item.id }}.DEFAULTKEY=ts00002
+#{{ main_item.0.id }}.DEFAULTKEY=ts00002
 
 # Allow peering with EJBCA
-WORKERGENID{{ item.id }}.PEERS_VISIBLE={{ item.peer_enable |default('true') }}
+WORKER{{ main_item.0.id }}.PEERS_VISIBLE={{ main_item.0.peer_enable |default('true') }}
 
 # Check validity period of the certificate will be verified before processing. Default true.
-WORKERGENID{{ item.id }}.CHECKCERTVALIDITY={{ item.CheckCertValidity |default('true') }}
+WORKER{{ main_item.0.id }}.CHECKCERTVALIDITY={{ main_item.0.CheckCertValidity |default('true') }}
 
 # Check validity of the PrivateKeyUsagePeriod in the certificate will be verified before processing if it is present. Default true.
-WORKERGENID{{ item.id }}.CHECKCERTPRIVATEKEYVALIDITY={{ item.CheckCertPrivateKeyValidity |default('true') }}
+WORKER{{ main_item.0.id }}.CHECKCERTPRIVATEKEYVALIDITY={{ main_item.0.CheckCertPrivateKeyValidity |default('true') }}
 
 # Check the minimum remaining days of the signing certificate before expiration. 0 means disable. Default 0.
-WORKERGENID{{ item.id }}.MINREMAININGCERTVALIDITY={{ item.MinRemainingCertValidity |default('0') }}
+WORKER{{ main_item.0.id }}.MINREMAININGCERTVALIDITY={{ main_item.0.MinRemainingCertValidity |default('0') }}
 
 # Sets how many signatures that are allowed to be created with the same key by this worker. Default is -1 (no limit).
 # The counter is per key so if multiple workers share the same key they will all increment the counter.
-WORKERGENID{{ item.id }}.KEYUSAGELIMIT={{ item.KeyUsageLimit |default('-1') }}
+WORKER{{ main_item.0.id }}.KEYUSAGELIMIT={{ main_item.0.KeyUsageLimit |default('-1') }}
 
 ## Archiving properties
 
 # Using the base 64 archiver
-#WORKERGENID{{ item.id }}.ARCHIVERS=org.signserver.server.archive.base64dbarchiver.Base64DatabaseArchiver
+WORKER{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.base64dbarchiver.Base64DatabaseArchiver
 
 # Using the old database archiver
-#WORKERGENID{{ item.id }}.ARCHIVERS=org.signserver.server.archive.olddbarchiver.OldDatabaseArchiver
+#{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.olddbarchiver.OldDatabaseArchiver
 
 # Archiving only requests
-#WORKERGENID{{ item.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST
 
 # Archiving only responses
-#WORKERGENID{{ item.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=RESPONSE
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=RESPONSE
 
 # Archiving both requests and responses
-#WORKERGENID{{ item.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST_AND_RESPONSE
+WORKER{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST_AND_RESPONSE
 
 # Store forwarded address (from the X-Forwarded-For header) as the request address
-#WORKERGENID{{ item.id }}.ARCHIVER0.USE_FORWARDED_ADDRESS=true
+#{{ main_item.0.id }}.ARCHIVER0.USE_FORWARDED_ADDRESS=true
 
 # Include additional forwarded addresses (apart from the last), only applies if the property above is set
-#WORKERGENID{{ item.id }}.ARCHIVER0.MAX_FORWARDED_ADDRESSES=3
+#{{ main_item.0.id }}.ARCHIVER0.MAX_FORWARDED_ADDRESSES=3
 
 # Included direct (non-forwarded address) at the end of forwarded addresses
-#WORKERGENID{{ item.id }}.ARCHIVER0.INCLUDE_DIRECT_ADDRESS=true
+#{{ main_item.0.id }}.ARCHIVER0.INCLUDE_DIRECT_ADDRESS=true
 
 ## TSA properties
 
 # Optional. Class implementing the ITimeSource.
-#WORKERGENID{{ item.id }}.TIMESOURCE=org.signserver.server.LocalComputerTimeSource
+#{{ main_item.0.id }}.TIMESOURCE=org.signserver.server.LocalComputerTimeSource
 
 # Optional. The signature algorithm to use.
-WORKERGENID{{ item.id }}.SIGNATUREALGORITHM={{ item.SignatureAlgorithm |default('SHA256WithRSA') }}
+WORKER{{ main_item.0.id }}.SIGNATUREALGORITHM={{ main_item.0.SignatureAlgorithm |default('SHA256WithRSA') }}
 
 # Optional. Include the SigningCertificate CMS attribute in the responses.
-WORKERGENID{{ item.id }}.INCLUDE_SIGNING_CERTIFICATE_ATTRIBUTE={{ item.IncludeSignCertAttr |default('true') }}
+WORKER{{ main_item.0.id }}.INCLUDE_SIGNING_CERTIFICATE_ATTRIBUTE={{ main_item.0.IncludeSignCertAttr |default('true') }}
 
 # If the key usage counter is disabled
-WORKERGENID{{ item.id }}.DISABLEKEYUSAGECOUNTER={{ item.DisableKeyUsageCounter |default('true') }}
+WORKER{{ main_item.0.id }}.DISABLEKEYUSAGECOUNTER={{ main_item.0.DisableKeyUsageCounter |default('true') }}
