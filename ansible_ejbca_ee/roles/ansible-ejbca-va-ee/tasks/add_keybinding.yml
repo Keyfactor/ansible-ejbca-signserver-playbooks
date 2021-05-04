@@ -20,7 +20,16 @@
 #  when: item.item.name not in item.stdout
 
 - name: Create key binding 
-  command: "{{ ejbca_home }}/bin/ejbca.sh keybind create --name {{ item.name }} --type OcspKeyBinding --token {{ item.crypto_token_name }} --status ACTIVE --alias {{ item.key_label }} --sigalg {{ item.signature_algorithm }} --cert null"
+  command: >
+    {{ ejbca_home }}/bin/ejbca.sh keybind create 
+     --name {{ item.name }} 
+     --type OcspKeyBinding 
+     --token {{ item.crypto_token_name }} 
+     --status ACTIVE 
+     --alias {{ item.key_label }} 
+     --sigalg {{ item.signature_algorithm }} 
+     --cert null 
+     -untilNextUpdate {{ item.until_next_update| default('60') }}"
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
