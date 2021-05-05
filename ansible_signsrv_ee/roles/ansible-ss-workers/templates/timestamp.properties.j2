@@ -16,7 +16,7 @@ WORKER{{ main_item.0.id }}.CRYPTOTOKEN={{ main_item.0.CryptoToken }}
 
 
 # Using key from keystore
-WORKER{{ main_item.0.id }}.DEFAULTKEY={{ main_item.0.DefaultKey }}
+WORKER{{ main_item.0.id }}.DEFAULTKEY={{ main_item.1.keyalias }}
 # Key using ECDSA
 #{{ main_item.0.id }}.DEFAULTKEY=ts00002
 

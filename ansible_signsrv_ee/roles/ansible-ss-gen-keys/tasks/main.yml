@@ -1,7 +1,7 @@
 ---
 # tasks file for ansible-ss-gen-keys
 
-- name: Generate keys in PKCS11 PDF
+- name: Generate keys  PDF
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ pdf_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -10,7 +10,7 @@
     - pdf_signers_enabled is defined
     - pdf_signers_enabled|bool
 
-- name: Generate keys in PKCS11 for TSA
+- name: Generate keys for TSA
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ tsa_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -19,7 +19,7 @@
     - tsa_signers_enabled is defined
     - tsa_signers_enabled|bool
 
-- name: Generate keys in PKCS11 for Code Signing
+- name: Generate keys for Code Signing
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ ms_code_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -28,7 +28,7 @@
     - ms_code_signers_enabled is defined
     - ms_code_signers_enabled|bool
 
-- name: Generate keys in PKCS11 for Microsoft TSA
+- name: Generate keys for Microsoft TSA
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ ms_tsa_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -37,7 +37,7 @@
     - ms_tsa_signers_enabled is defined
     - ms_tsa_signers_enabled|bool
 
-- name: Generate keys in PKCS11 for Plain
+- name: Generate keys for Plain
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ plain_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -46,7 +46,7 @@
     - plain_signers_enabled is defined
     - plain_signers_enabled|bool
 
-- name: Generate keys in PKCS11 for Java
+- name: Generate keys for Java
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ java_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -55,7 +55,16 @@
     - java_signers_enabled is defined
     - java_signers_enabled|bool
 
-- name: Generate keys in PKCS11 for XML
+- name: Generate keys for Java CMS
+  include_tasks: add_gen_signer_key_w_csr.yml
+  loop: "{{ java_cms_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when: 
+    - java_cms_signers_enabled is defined
+    - java_cms_signers_enabled|bool
+
+- name: Generate keys for XML
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ xml_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -64,7 +73,16 @@
     - xml_signers_enabled is defined
     - xml_signers_enabled|bool
 
-- name: Generate keys in PKCS11 for DNS
+- name: Generate keys for Extended CMS
+  include_tasks: add_gen_signer_key_w_csr.yml
+  loop: "{{ ext_cms_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when: 
+    - ext_cms_signers_enabled is defined
+    - ext_cms_signers_enabled|bool
+
+- name: Generate keys for DNS
   include_tasks: add_gen_signer_key_w_csr.yml
   loop: "{{ dns_signers |subelements('keys_to_gen') }}"
   loop_control:
@@ -72,3 +90,12 @@
   when: 
     - dns_signers_enabled is defined
     - dns_signers_enabled|bool
+
+- name: Generate keys for PGP
+  include_tasks: add_gen_signer_key_w_csr.yml
+  loop: "{{ pgp_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when: 
+    - pgp_signers_enabled is defined
+    - pgp_signers_enabled|bool

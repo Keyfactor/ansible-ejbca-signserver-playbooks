@@ -69,7 +69,7 @@
       command: >
         {{ ejbca_sh }} ca getcacert 
         --caname {% if csr_item.caname is defined %}"{{ csr_item.caname }}"{% else %}"{{ sign_item.0.caname }}"{% endif %}  
-        -f /var/tmp/{% if csr_item.username is defined %}{{ csr_item.name }}-fullchain.crt{% else %}{{ sign_item.0.name }}-fullchain.crt{% endif %} 
+        -f {{ identity_batch_output_dir }}/{% if csr_item.username is defined %}{{ csr_item.name }}-fullchain.crt{% else %}{{ sign_item.0.name }}-fullchain.crt{% endif %} 
         --include-full-chain
       no_log: true
       become: yes
@@ -92,7 +92,7 @@
         label: "{{ item.src }}"
       tags: certreq-cli-csr
 
-    - name: Cleanup the {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} csr, cert, & CA chain file in /var/tmp
+    - name: Cleanup the {% if csr_item.username is defined %}{{ csr_item.username }}{% else %}{{ sign_item.0.name }}{% endif %} csr, cert, & CA chain file in {{ identity_batch_output_dir }}
       file:
         path: "{{ item }}"
         state: absent

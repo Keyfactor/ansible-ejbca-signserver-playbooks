@@ -9,6 +9,24 @@
   loop: "{{ httpd_cert_files }}"
   register: file_copy
 
+- name: Copy CA chain files from Controller
+  copy:
+    src: "{{ ejbca_csr_dir_output }}/{{ item.caname }}"
+    dest: "/etc/pki/tls/certs/{{ item.caname }}"
+    owner: root
+    group: root
+  loop: "{{ httpd_trusted_cas }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  register: file_copy_ca_chain
+
+- name: Add {{ item.caname }} chain file to trusted-ca.crt file
+  shell: >
+    cat /etc/pki/tls/certs/{{ item.caname }} >> /etc/pki/tls/certs/trusted-ca.crt
+  loop: "{{ httpd_trusted_cas }}"
+  loop_control:
+    label: "{{ item.caname }}"
+
 - block:
   - name: Open http port
     firewalld:
@@ -88,6 +106,6 @@
 - name: Ensure service is started
   systemd:
     name: httpd
-    state: started
+    state: restarted
     enabled: true
   tags: reverse-proxy

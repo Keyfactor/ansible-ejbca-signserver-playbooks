@@ -252,42 +252,42 @@ web.clientcli.dist.enabled={{ web_clientcli_dist_enabled| default('false') }}
 # Setting specifying which remote IPs that may call this healthcheck servlet. Use ';' for between multiple IPs.
 # If the setting contains the keyword ANY, access is granted from any IP address.
 # Default : 127.0.0.1;::1;0:0:0:0:0:0:0:1
-#healthcheck.authorizedips=127.0.0.1;::1;0:0:0:0:0:0:0:1
+healthcheck.authorizedips={{ ss_conf_healtcheck_authorizedips| default('127.0.0.1;::1;0:0:0:0:0:0:0:1') }}
 
 # Parameter to set the number of Mega Bytes of memory that must be free before removing
 # the node out of the cluster.
 # Default : 1
-#healthcheck.minimumfreememory=1
+healthcheck.minimumfreememory={{ ss_conf_healtcheck_minimumfreememory| default('1') }}
 
 # Parameter indicating the string that should be used to do
 # a minimal check that the database is working. May differ between databases.
 # Default : Select count(*) from signerconfigdata
-#healthcheck.checkdbstring=Select count(*) from signerconfigdata
+healthcheck.checkdbstring={{ ss_conf_healtcheck_checkdbstring| default("Select count(*) from signerconfigdata") }}
 
 # Parameter to specify location of file containing information about maintenance
 # Use this file to specify weather to include node in healthcheck or report as down for maintenance,
 # which will return an error message in the format "MAINT: <property name>",
 # where <property name> is the property name specified below.
 # Default: empty (not used)
-#healthcheck.maintenancefile=maintenance.properties
+healthcheck.maintenancefile={{ ss_conf_healtcheck_maintenancefile| default('') }}
 
 # Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
 # The healthcheck.maintenancefile should contain a single line like this:
 # DOWN_FOR_MAINTENANCE=true
 # Where the node will be down for maintenance if the property is true, and not down for maintenance if the property is false.
 # Default: DOWN_FOR_MAINTENANCE
-#healthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
+healthcheck.maintenancepropertyname={{ ss_conf_healtcheck_maintenancepropertyname| default('DOWN_FOR_MAINTENANCE') }}
 
 # Parameter to configure a custom error message
 # When this is not set (the default), details describing the errors will be
 # included in the error page
-#healthcheck.customerrormessage=NOTOK
+healthcheck.customerrormessage={{ ss_conf_healtcheck_customerrormessage| default('NOTOK') }}
 
 # Parameter to configure whether health check errors should be reported as
 # HTTP response code 500 (internal server error) with an error page, or as
 # HTTP response code 200 (OK) with a plain text body
 # Default: true (send error), set to false to get the plain text behavior
-#healthcheck.sendservererror=false
+healthcheck.sendservererror={{ ss_conf_healtcheck_sendservererror| default('true') }}
 
 # ------------- Status Repository Configuration --------------------------------
 
