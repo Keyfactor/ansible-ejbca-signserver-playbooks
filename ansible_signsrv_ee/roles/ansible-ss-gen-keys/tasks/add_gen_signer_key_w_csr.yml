@@ -17,7 +17,7 @@
     var: check_p11_keys_no_exist
   when: check_p11_keys_no_exist.rc == 1
 
-- name: Create new key on Crypto Token & Generate CSR to download to host
+- name: Create a new key on Crypto Token & Generate CSR to download to host
   block:
     
     - name: Generate key for {{ item.0.name }}:{{ item.1.keyalias }} - {{ item.1.keyalg }}:{{ item.1.keysize }}

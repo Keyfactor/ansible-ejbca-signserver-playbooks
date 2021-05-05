@@ -45,5 +45,9 @@
       include: add_upload_signer_certs.yml
       when: main_item.1.dn is defined
 
+    - name: Generate CSR & Import for PGP Signer
+      include: gen_pgp_csr_import.yml
+      when: main_item.1.pgp_dn is defined
+
   when: check_worker_exists.rc != 0
   

@@ -49,4 +49,8 @@ httpd_cert_files:
   - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.id_name }}.key"
     dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
   - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.httpd_ca_cert_file }}.crt"
-    dest: "/etc/pki/tls/certs/trusted-ca.crt"
+    dest: "/etc/pki/tls/certs/chain.crt"
+
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+  - caname: "{{ organizationNameShort }}-Sub-CA"

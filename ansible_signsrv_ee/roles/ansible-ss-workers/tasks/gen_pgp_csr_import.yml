@@ -1,0 +1,59 @@
+---
+
+- name: Generate a CSR for {{ main_item.0.name }} worker
+  command: >
+    {{ signsrv_home }}/bin/signserver generatecertreq "{{ main_item.0.name }}" "{{ main_item.1.pgp_dn }}" {{ main_item.1.sig_alg }} /var/tmp/{{ main_item.0.name }}.csr
+  args:
+    chdir: "{{ signsrv_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: gen_pgp_signer_csr
+
+- name: Read the CSR into a variable
+  command: cat /var/tmp/{{ main_item.0.name }}.csr
+  register: read_pgp_signer_csr
+  become: yes
+  become_user: "{{ signsrv_user }}"
+
+- name: Debug read_pgp_signer_csr
+  debug:
+    var: read_pgp_signer_csr
+  when: read_pgp_signer_csr.rc != 0
+
+- name: Add CSR for {{ main_item.0.name }} worker PGPPUBLICKEY attribute
+  command: >
+    {{ signsrv_home }}/bin/signserver setproperty "{{ main_item.0.name }}" PGPPUBLICKEY "{{ read_pgp_signer_csr.stdout }}"
+  args:
+    chdir: "{{ signsrv_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: add_pgp_signer_csr
+
+- name: Debug add_pgp_signer_csr
+  debug:
+    var: add_pgp_signer_csr
+  when: add_pgp_signer_csr.rc != 0
+
+- name: Reload {{ main_item.0.name }} worker
+  command: "{{ signsrv_home }}/bin/signserver reload {{ main_item.0.name }}"
+  args:
+    chdir: "{{ signsrv_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: reload_pgp_signer_csr_import
+
+- name: Debug reload_pgp_signer_csr_import
+  debug:
+    var: reload_pgp_signer_csr_import
+  when: reload_pgp_signer_csr_import.rc != 0
+
+- name: Cleanup {{ main_item.0.name }} CSR file
+  file:
+    path: "/var/tmp/{{ main_item.0.name }}.csr"
+    state: absent

@@ -4,7 +4,12 @@
 - name: Create End Entities batch style 
   include_tasks: batch_cert_request.yml
   loop: "{{ identity_info }}"
+  no_log: true
   when: identity_info[0] is defined
+
+- name: Download CA Certs for Trustchain file
+  include_tasks: get_ca_certs.yml
+  when: httpd_trusted_cas[0] is defined
 
 - name: Sign CSR End Entities
   include_tasks: csr_cert_sign.yml
@@ -73,6 +78,16 @@
     - java_signers_enabled is defined
     - java_signers_enabled|bool
 
+- name: Sign CSR End Entities for Java CMS
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ java_cms_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - java_cms_signers_enabled is defined
+    - java_cms_signers_enabled|bool
+
 - name: Sign CSR End Entities for XML
   include_tasks: csr_cert_sign.yml
   loop: "{{ xml_signers |subelements('keys_to_gen') }}"
@@ -82,3 +97,13 @@
   when: 
     - xml_signers_enabled is defined
     - xml_signers_enabled|bool
+
+- name: Sign CSR End Entities for Extended CMS
+  include_tasks: csr_cert_sign.yml
+  loop: "{{ ext_cms_signers |subelements('keys_to_gen') }}"
+  loop_control:
+    label: "{{ sign_item.0.name }}"
+    loop_var: sign_item
+  when: 
+    - ext_cms_signers_enabled is defined
+    - ext_cms_signers_enabled|bool
