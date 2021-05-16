@@ -232,7 +232,8 @@
       loop: "{{ ejbca_peerConnector }}"
       loop_control:
         label: "{{ item.name }}"
-      when: ("ocsp" in item.type)
+      when: 
+        - ("ocsp" in item.type)
 
     - name: Create External VA OCSP key update service template files to import with configdump
       template:

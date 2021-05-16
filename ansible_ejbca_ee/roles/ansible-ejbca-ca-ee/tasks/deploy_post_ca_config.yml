@@ -1,22 +1,29 @@
 ---
 
-- name: Test that HSM slots are available
-  include_tasks: hsm_test.yml
-  loop: "{{ test_hsm_slots }}"
-  loop_control:
-    label: "{{ item.slot_identifier }}"
-  no_log: true
-  tags: hsm_test
-  when: test_hsm_slots[0] is defined
+- name: Key Binding Keys
+  block:
 
-- name: Generate HSM keys
-  include_tasks: clienttoolbox_key_generation.yml
-  loop: "{{ generate_hsm_keys }}"
-  loop_control:
-    label: "{{ item.slot_identifier }}"
-  no_log: true
-  tags: clienttoolbox_key_generation
-  when: generate_hsm_keys[0] is defined
+    - name: Test that HSM slots are available for Key Bindings
+      include_tasks: hsm_test.yml
+      loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
+      when: ("PKCS11CryptoToken" in key_item.0.tokentype)
+
+    - name: Generate key on HSM for Key Bindings
+      include_tasks: clienttoolbox_key_generation.yml      
+      loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
+      when: ("PKCS11CryptoToken" in key_item.0.tokentype)
+
+  when: ejbca_keybinding[0] is defined
 
 - name: Create Key Binding 
   include_tasks: add_keybinding_ca.yml
@@ -41,6 +48,15 @@
         dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher-{{ item.name }}.yaml'
       loop: "{{ ejbca_peerConnector }}"
       when: ("ocsp" in item.type)
+
+    - name: Create External VA OCSP key update service template files to import with configdump
+      template:
+        src: 'service-oscp-keyupdate.yaml.j2'
+        dest: '{{ ejbca_home }}/dump/va/services/ocspKeyUpdate-{{ item.name }}.yaml'
+      loop: "{{ ejbca_peerConnector }}"
+      when: 
+        - ("ocsp" in item.type)
+        - remote_key_update|bool
 
     - name: Create external VA services and publisher with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
