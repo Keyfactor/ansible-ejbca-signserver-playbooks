@@ -1,4 +1,4 @@
----
+
 - name: Copy superadmin.p12 to local server
   fetch:
     src: "{{ ejbca_home }}/p12/{{ item.username }}.p12"

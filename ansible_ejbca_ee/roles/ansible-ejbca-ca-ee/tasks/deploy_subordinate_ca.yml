@@ -1,23 +1,56 @@
 ---
 
-- name: Test that HSM slots are available
-  include_tasks: hsm_test.yml
-  loop: "{{ test_hsm_slots }}"
-  loop_control:
-    label: "{{ item.slot_identifier }}"
-  no_log: true
-  tags: hsm_test
-  when: test_hsm_slots[0] is defined
+- name: Database Protection Keys
+  block:
 
-- name: Generate HSM keys
-  include_tasks: clienttoolbox_key_generation.yml
-  loop: "{{ generate_hsm_keys }}"
-  loop_control:
-    label: "{{ item.slot_identifier }}"
-  no_log: true
-  tags: clienttoolbox_key_generation
-  when: generate_hsm_keys[0] is defined
+    - name: Test that HSM slots are available for Database Protection
+      include_tasks: hsm_test.yml
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
+
+    - name: Generate key on HSM for Database Protection
+      include_tasks: clienttoolbox_key_generation.yml
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
+
+  when: 
+    - ejbca_databaseprotection[0] is defined
+    - databaseprotection_enablesign_AuditRecordData is defined
+    - databaseprotection_enablesign_AuditRecordData|bool
+    - databaseprotection_enableverify_AuditRecordData is defined
+    - databaseprotection_enableverify_AuditRecordData|bool 
+
+- name: Suborindated CA Keys
+  block:
+
+    - name: Test that HSM slots are available for Suborindated CA's
+      include_tasks: hsm_test.yml
+      loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
+
+    - name: Generate key on HSM for Suborindated CA's
+      include_tasks: clienttoolbox_key_generation.yml
+      loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
   
+  when: add_certification_authorities[0] is defined
+
 - name: Check deployment
   include_tasks: check_deployment.yml
   tags: check_deployment
@@ -32,12 +65,12 @@
 - name: Use Configdump to create the CA's
   block:
 
-    - name: Create crypto tokens for Policy/Sub/Management CA's
+    - name: Create crypto tokens for Suborindated CA's
       include_tasks: add_crypto_token.yml
       loop: "{{ add_certification_authorities }}"
       no_log: true
 
-    - name: Stage CA template to create with configdump
+    - name: Stage Suborindated CA template to create with configdump
       template:
         src: ca-template.yml.j2
         dest: "{{ ejbca_home }}/dump/subs/certification-authorities/{{ item.caname }}.yaml"
@@ -53,7 +86,7 @@
       no_log: true
       when: item.rootDn == "External"
       
-    - name: Intialize Policy/Sub/Management CA's with configdump
+    - name: Intialize Suborindated CA's with configdump
       command: "./dist/configdump/configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/subs --initialize"
       args:
         chdir: "{{ ejbca_home }}"
@@ -72,7 +105,7 @@
 - name: Use CLI to create the CA's
   block:
 
-    - name: Initialize Policy or Subordinate CAs with CLI commands
+    - name: Initialize Suborindated CAs with CLI commands
       include_tasks: init_ca.yml
       loop: "{{ add_certification_authorities }}"
       loop_control:
@@ -80,7 +113,7 @@
       no_log: true
       tags: create_cas
 
-    - name: Configure Sub CA's settings
+    - name: Configure Suborindated CA's settings
       include_tasks: config_ca_extensions.yml
       loop: "{{ add_certification_authorities }}"
       no_log: true
@@ -91,7 +124,7 @@
     - add_certification_authorities[0] is defined
     - not deploy_with_configdump|bool
 
-- name: Copy CA CSRs to the Ansible Controller 
+- name: Copy Suborindated CA's CSR's to the Ansible Controller 
   include_tasks: copy_csr_local.yml
   loop: "{{ add_certification_authorities }}"
   no_log: true

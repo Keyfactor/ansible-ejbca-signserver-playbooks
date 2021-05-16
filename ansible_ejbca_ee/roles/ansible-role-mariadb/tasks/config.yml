@@ -17,7 +17,7 @@
   template:
     src: etc_my.cnf.d_custom.cnf.j2
     dest: "{{ mariadb_srv_config_custom }}"
-  when: mariadb_srv_custom_cnf|length != 0
+  when: mariadb_custom_cnf|length != 0
   tags: mariadb
 
 - name: Configure swappiness

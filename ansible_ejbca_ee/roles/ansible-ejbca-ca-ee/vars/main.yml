@@ -1,2 +1,5 @@
 ---
 # vars file for primekey
+
+pass_33: "{{ lookup('password', '/dev/null length=33 chars=ascii_letters') }}"
+pass_15: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"

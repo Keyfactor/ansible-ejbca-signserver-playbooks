@@ -1,38 +1,109 @@
 ---
 # tasks file for ansible-ejbca-ca-ee
 
-- name: Test that HSM slots are available for Management & Root CA's
-  include_tasks: hsm_test.yml
-  loop: "{{ management_test_slots }}"
-  no_log: true
-  tags: hsm_test
-  when: management_test_slots[0] is defined
+- name: Database Protection Keys
+  block:
 
-- name: Test that HSM slots are available for Sub CA's
-  include_tasks: hsm_test.yml
-  loop: "{{ sub_test_slots }}"
-  no_log: true
-  tags: hsm_test
-  when: sub_test_slots[0] is defined
+    - name: Test that HSM slots are available for Database Protection
+      include_tasks: hsm_test.yml
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
 
-- name: Generate HSM keys for Management & Root CA's
-  include_tasks: clienttoolbox_key_generation.yml
-  loop: "{{ management_generate_hsm_keys }}"
-  no_log: true
-  tags: clienttoolbox_key_generation
-  when: management_generate_hsm_keys[0] is defined
+    - name: Generate key on HSM for Database Protection
+      include_tasks: clienttoolbox_key_generation.yml
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
 
-- name: Generate HSM keys for Sub CA's
-  include_tasks: clienttoolbox_key_generation.yml
-  no_log: true
-  loop: "{{ sub_generate_hsm_keys }}"
-  tags: clienttoolbox_key_generation
-  when: sub_generate_hsm_keys[0] is defined
+  when: 
+    - ejbca_databaseprotection[0] is defined
+    - databaseprotection_enablesign_AuditRecordData is defined
+    - databaseprotection_enablesign_AuditRecordData|bool
+    - databaseprotection_enableverify_AuditRecordData is defined
+    - databaseprotection_enableverify_AuditRecordData|bool 
+
+- name: Management & Root CA Keys
+  block:
+
+    - name: Test that HSM slots are available for Management & Root CA's
+      include_tasks: hsm_test.yml
+      loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
+
+    - name: Generate key on HSM for Management & Root CA's
+      include_tasks: clienttoolbox_key_generation.yml
+      loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
+  
+  when: management_add_certification_authorities[0] is defined
+
+- name: Sub CA Keys
+  block:
+
+    - name: Test that HSM slots are available for Sub CA's
+      include_tasks: hsm_test.yml
+      loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
+
+    - name: Generate key on HSM for Sub CA's
+      include_tasks: clienttoolbox_key_generation.yml      
+      loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
+
+  when: sub_add_certification_authorities[0] is defined
+
+- name: Key Binding Keys
+  block:
+
+    - name: Test that HSM slots are available for Key Bindings
+      include_tasks: hsm_test.yml
+      loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
+      when: ("PKCS11CryptoToken" in key_item.0.tokentype)
+
+    - name: Generate key on HSM for Key Bindings
+      include_tasks: clienttoolbox_key_generation.yml      
+      loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
+      when: ("PKCS11CryptoToken" in key_item.0.tokentype)
+
+  when: ejbca_keybinding[0] is defined
 
 - name: Check deployment
   include_tasks: check_deployment.yml
   tags: check_deployment
-  when: management_add_certification_authorities[0] is defined or management_import_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
+  when: ejbca_databaseprotection[0] is defined or management_add_certification_authorities[0] is defined or management_import_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined or ejbca_keybinding[0] is defined
 
 - name: Prepare configdump template files
   include_tasks: config_configdump.yml
@@ -53,6 +124,8 @@
         group: "{{ ejbca_group }}"
         mode: 0664
       loop: "{{ management_add_certification_authorities }}"
+      loop_control:
+        label: "{{ item.caname }}"
       no_log: true
 
     - name: Intialize Management & Root CA's with configdump
@@ -142,7 +215,8 @@
 
 - name: Create Key Binding 
   include_tasks: add_keybinding_ca.yml
-  when: use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+  when: 
+    - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
 - name: Create Peer Connector
   include_tasks: add_peer_conn.yml
@@ -156,14 +230,18 @@
         src: 'publisher-ocsp.yaml.j2'
         dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher-{{ item.name }}.yaml'
       loop: "{{ ejbca_peerConnector }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: ("ocsp" in item.type)
 
-    #- name: Create OCSP Service template files to import with configdump
-    #  template:
-    #    src: 'service-oscpService.yaml.j2'
-    #    dest: '{{ ejbca_home }}/dump/va/services/ocspPublisher-{{ item.name }}.yaml'
-    #  loop: "{{ ejbca_peerConnector }}"
-    #  when: ("ocsp" in item.type)
+    - name: Create External VA OCSP key update service template files to import with configdump
+      template:
+        src: 'service-oscp-keyupdate.yaml.j2'
+        dest: '{{ ejbca_home }}/dump/va/services/ocspKeyUpdate-{{ item.name }}.yaml'
+      loop: "{{ ejbca_peerConnector }}"
+      when: 
+        - ("ocsp" in item.type)
+        - remote_key_update|bool
 
     - name: Create external VA services and publisher with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"

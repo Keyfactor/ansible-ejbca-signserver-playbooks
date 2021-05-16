@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "02Mar2021-Skyrim-SA"
+superAdminCn: "6May2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 enable_firewalld_for_httpd: false
@@ -49,9 +49,9 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
-ejbca_version: 7.4.3.3
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_3_VA.zip
-ejbca_src_dir_name: ejbca_ee_7_4_3_3_VA
+ejbca_version: 7.5.0
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_5_0_VA
 ejbca_type: VA
 #ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
 #ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
@@ -133,7 +133,7 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # servlet. Use ';' for between multiple IPs.
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
-jbca_conf_healtcheck_authorizedips: 127.0.0.1
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 management_import_certification_authorities:
   - caname: "ManagementCA"

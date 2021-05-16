@@ -26,8 +26,11 @@
        --tokenType "{{ item.tokentype }}"
        --tokenPass "{{ item.tokenpass }}"
        {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}--tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"{% endif %}
-       --keyspec "{{ item.keyspec }}"
-       --keytype "{{ item.keytype }}" -s "{{ item.signalg }}"
+       {% for val in item.crypto_token %}{% if 'sign' == val.type %}
+       --keyspec "{{ val.key_size }}"
+       --keytype "{{ val.key_type }}" 
+       {% endif %}{% endfor %}
+       -s "{{ item.signalg }}" 
        -v "{{ item.validity }}"
        --policy "{{ item.policy }}"
        {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
@@ -70,8 +73,11 @@
        --tokenType "{{ item.tokentype }}"
        --tokenPass "{{ item.tokenpass }}"
        {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}--tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"{% endif %}
-       --keyspec "{{ item.keyspec }}"
-       --keytype "{{ item.keytype }}" -s "{{ item.signalg }}"
+       {% for val in item.crypto_token %}{% if 'sign' == val.type %}
+       --keyspec "{{ val.key_size }}"
+       --keytype "{{ val.key_type }}" 
+       {% endif %}{% endfor %}
+       -s "{{ item.signalg }}"
        -v "{{ item.validity }}"
        --policy "{{ item.policy }}"
        {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
@@ -114,8 +120,11 @@
        --tokenType "{{ item.tokentype }}"
        --tokenPass "{{ item.tokenpass }}"
        {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}--tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"{% endif %}
-       --keyspec "{{ item.keyspec }}"
-       --keytype "{{ item.keytype }}" -s "{{ item.signalg }}"
+       {% for val in item.crypto_token %}{% if 'sign' == val.type %}
+       --keyspec "{{ val.key_size }}"
+       --keytype "{{ val.key_type }}" 
+       {% endif %}{% endfor %}
+       -s "{{ item.signalg }}" 
        -v "{{ item.validity }}"
        --policy "{{ item.policy }}"
        {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}

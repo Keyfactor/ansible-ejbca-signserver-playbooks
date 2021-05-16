@@ -74,8 +74,6 @@ ejbca_templated_properties_files:
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
   - src: mail.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
-  - src: databaseprotection.properties.j2
-    dest: "{{ ejbca_home }}/../ejbca-custom/conf/databaseprotection.properties"
   - src: custom.properties.j2
     dest: "{{ ejbca_home }}/conf/custom.properties"
 
@@ -153,7 +151,7 @@ ejbca_conf_healtcheck_dbquery: "Select 1 From CertificateData where fingerprint=
 # servlet. Use ';' for between multiple IPs.
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
-jbca_conf_healtcheck_authorizedips: 127.0.0.1
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 # Parameter to specify if the check of CA tokens should actually perform a signature test
 # on the CA token, or it should only see if the token status is active.

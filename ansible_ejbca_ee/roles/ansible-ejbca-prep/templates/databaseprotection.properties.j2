@@ -35,10 +35,12 @@ databaseprotection.keyid = 1
 databaseprotection.keyid.AuditRecordData = 1
 
 databaseprotection.keyid.0 = 1
-databaseprotection.keylabel.0 = {{ ejbca_databaseprotection.key_label }}
+{% if 'dbprotect' == item.1.type %}
+databaseprotection.keylabel.0 = {{ item.1.key_label }}
 databaseprotection.classname.0 = org.cesecore.keys.token.PKCS11CryptoToken
-#databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue=i{{ ejbca_databaseprotection.slot_label }}
-databaseprotection.properties.0 = sharedLibrary={{ ejbca_databaseprotection.hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue={{ ejbca_databaseprotection.slot_label }}
-databaseprotection.tokenpin.0 = {{ ejbca_databaseprotection.token_pin }}
+#databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue=i{{ item.0.slot_identifier_value }}
+databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType={{ item.0.slot_identifier_type }}, slotLabelValue={{ item.0.slot_identifier_value }}
+databaseprotection.tokenpin.0 = {{ item.0.tokenpass }}
 databaseprotection.version.0 = 2
-databaseprotection.sigalg.0 = {{ ejbca_databaseprotection.signature_algorithm }}
+databaseprotection.sigalg.0 = {{ item.0.signature_algorithm }}
+{% endif %}

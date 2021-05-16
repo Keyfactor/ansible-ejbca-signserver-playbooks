@@ -13,11 +13,17 @@ CA Token:
   Signature Algorithm: {{ item.signalg }}
   Encryption Algorithm: {{ item.signalg }}
   Crypto Token: {{ item.caname }}
-  Default Key: {{ item.pkcs11_token.defaultkey_label }}
-  Certificate Signing Key: {{ item.pkcs11_token.signkey_label }}
-  CRL Signing Key: {{ item.pkcs11_token.signkey_label }}
-  Key Encryption Key: {{ item.pkcs11_token.defaultkey_label }}
-  Test Key: {{ item.pkcs11_token.testkey_label }}
+{% for val in item.crypto_token %}
+{% if 'default' == val.type %}
+  Default Key: {{ val.key_label }}
+  Key Encryption Key: {{ val.key_label }}
+{% endif %}
+{% if 'sign' == val.type %}
+  Certificate Signing Key: {{ val.key_label }}
+  CRL Signing Key: {{ val.key_label }}
+{% endif %}{% if 'test' == val.type %}  
+  Test Key: {{ val.key_label }}
+{% endif %}{% endfor %}
   Key Sequence Format: Numeric
   Key Sequence: '00000'
 Enforce Unique Public Keys: {{ item.enforce_unique_public_keys | default('true') }}
@@ -27,7 +33,7 @@ User Storage: {{ item.user_storage | default('true') }}
 Certificate Storage: {{ item.certificate_storage | default('true') }}
 Accept Revocations for Non-Existing Entries: {{ item.accept_revocations_for_non_existing_entries | default('false') }}
 Subject DN: {{ item.dn }}
-Signed By: {{ item.rootDn | default('Self Signed') }}
+Signed By: {{ item.root_ca_name | default('Self Signed') }}
 Validity: {{ item.validity_yml}}
 Use UTF-8 in Policy Notice Text: {{ item.use_utf8_in_policy_notice_text | default('false') }}
 LDAP DN Order: {{ item.useLdapDnOrder | default('false') }}

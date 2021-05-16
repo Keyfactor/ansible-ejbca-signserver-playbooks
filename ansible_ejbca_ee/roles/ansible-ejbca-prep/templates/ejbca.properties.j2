@@ -13,7 +13,7 @@ ejbca.cli.defaultusername={{ ejbca_conf_cli_default_username| default('ejbca') }
 ejbca.cli.defaultpassword={{ ejbca_conf_cli_default_password| default('ejbca') }}
 healthcheck.amountfreemem={{ ejbca_conf_healtcheck_amountfreemem| default('1') }}
 healthcheck.dbquery={{ ejbca_conf_healtcheck_dbquery| default("Select 1 From CertificateData where fingerprint='XX'") }}
-healthcheck.authorizedips={{ ejbca_conf_healtcheck_authorizedips| default('127.0.0.1') }}
+healthcheck.authorizedips={{ eejbca_conf_healtcheck_authorizedips| default('127.0.0.1') }}
 healthcheck.catokensigntest={{ ejbca_conf_healtcheck_catokensigntest| default('false') }}
 healthcheck.publisherconnections={{ ejbca_conf_healtcheck_publisherconnections| default('false') }}
 healthcheck.maintenancefile={{ ejbca_conf_healtcheck_maintenancefile| default('') }}
