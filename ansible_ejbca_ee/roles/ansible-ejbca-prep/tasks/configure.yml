@@ -166,16 +166,17 @@
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/databaseprotection.properties"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
-  loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+  loop: "{{ ejbca_databaseprotection if ejbca_databaseprotection is iterable |subelements('crypto_token') }}"
   loop_control:
     label: "{{ item.1.key_label }}"
   register: configure_db_protection
   when:
+    - ejbca_databaseprotection[0] is defined
     - databaseprotection_enablesign_AuditRecordData is defined
     - databaseprotection_enablesign_AuditRecordData|bool
     - databaseprotection_enableverify_AuditRecordData is defined
-    - databaseprotection_enableverify_AuditRecordData|bool
-    - ('dbprotect' in item.1.type)
+    - databaseprotection_enableverify_AuditRecordData|bool 
+    - ('dbprotect' in item.1.type)  
 
 - name: Register properties files in ejbca-custom/conf
   find:

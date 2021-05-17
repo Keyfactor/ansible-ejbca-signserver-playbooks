@@ -20,7 +20,7 @@ ant_version: apache-ant-1.10.9-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
 ant_checksum: sha256:5f8a85ddee6effe79163aa54c7bef6b60305e37200dedc1986437fb5c072a9f3
 
-wildfly_standalone_file: standalone-22.xml.datasource.j2
+wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_disable_infinispan: true
 
 ejbca_manage_user: true
@@ -33,18 +33,6 @@ ejbca_crl_dir_enabled: false
 ejbca_crl_dir:
   - /opt/web/CRLs
   - /opt/web/AIA
-
-# EJBCA audit log database protection configurations
-# slot_index: Index of HSM slot used for database integrity protection
-# key_label: Label of key used for database integrity protection
-# signature_algorithm: Algorithm used to sign database rows
-# token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
-ejbca_databaseprotection:
-  slot_label: DB_Protect_SLOT
-  key_label: dbProtect0001
-  signature_algorithm: SHA256WithRSA
-  token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
-  hsm_shared_library: /usr/lib64/libsofthsm2.so
 
 # apply_indexes: If default EJBCA database indexes should be applied. Will always report change if true
 # database_name: Name of EJBCA database
@@ -68,8 +56,8 @@ ejbca_templated_properties_files:
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
   - src: ejbca.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
-  - src: install.properties.j2
-    dest: "{{ ejbca_home }}/../ejbca-custom/conf/install.properties"
+  #- src: install.properties.j2
+  #  dest: "{{ ejbca_home }}/../ejbca-custom/conf/install.properties"
   - src: web.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
   - src: mail.properties.j2
@@ -199,8 +187,8 @@ core_ca_keepocspextendedservice: false
 ejbca_db_database_useSeparateCertificateTable: true
 
 #Enable DB integrity protection
-databaseprotection_enablesign_AuditRecordData: true
-databaseprotection_enableverify_AuditRecordData: true
+databaseprotection_enablesign_AuditRecordData: false
+databaseprotection_enableverify_AuditRecordData: false
 
 #mail.properties
 mail_from: "ejbca-donotreply@{{ organizationDomainName }}" 

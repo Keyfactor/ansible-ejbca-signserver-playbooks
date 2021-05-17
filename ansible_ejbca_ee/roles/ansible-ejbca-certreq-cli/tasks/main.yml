@@ -6,9 +6,11 @@
   loop: "{{ identity_info }}"
   loop_control:
     label: "{{ item.name }}"
+  no_log: true
   when: identity_info[0] is defined
 
 - name: Sign CSR End Entities
   include_tasks: csr_cert_sign.yml
   loop: "{{ identity_csr_info }}"
+  no_log: true
   when: identity_csr_info[0] is defined

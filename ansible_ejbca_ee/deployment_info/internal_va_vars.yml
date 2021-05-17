@@ -8,31 +8,13 @@ countryName: US
 superAdminCn: "6May2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
-enable_firewalld_for_httpd: false
-
 management_ca_id: 966011820
 root_ca_1_id: -1905764898
 sub_ca_1_id: -127947408
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
-#wildfly_version: 20.0.1.Final
-#wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
-#wildfly_standalone_file: standalone-20.xml.datasource.j2
-#wildfly_version: 21.0.2.Final
-#wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
-#wildfly_standalone_file: standalone-21.xml.datasource.j2
-wildfly_version: 23.0.1.Final
-wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-23.xml.datasource.j2
-wildfly_use_galleon: true
-wildfly_galleon_version: 4.2.6
-wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-#wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
-wildfly_jboss_client_checksum: sha256:8f974f36a927b8a51f2ef807c58e10960bc502c1caa5b93722e3dc913c74c466 #WF 23
-# Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
-wildfly_disable_infinispan: true
-
+# Maria DB configuration info
 mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
 mariadb_binlog_formatt: ROW
 mariadb_databases:
@@ -49,14 +31,27 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
+# Maria DB JDBC driver download URL
+ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+# Maria DB JDBC driver SHA256 hash
+ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+
+# Wildfly Configuration Info
+wildfly_version: 23.0.1.Final
+wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
+wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_use_galleon: true
+wildfly_galleon_version: 4.2.6
+wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
+wildfly_jboss_client_checksum: sha256:8f974f36a927b8a51f2ef807c58e10960bc502c1caa5b93722e3dc913c74c466 #WF 23
+# Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
+wildfly_disable_infinispan: true
+
+
 ejbca_version: 7.5.0
 ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_VA.zip
 ejbca_src_dir_name: ejbca_ee_7_5_0_VA
 ejbca_type: VA
-#ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
-#ejbca_jdbc_driver_checksum: sha256:0015110ee9fce50d3591fd75f6be328c3b65e63bbd160f6e5769d7c94dd211dc
-ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
-ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 
 # Location to write the CRL files on server
 ejbca_crl_dir_enabled: false
@@ -82,6 +77,8 @@ ejbca_templated_properties_files:
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
   - src: ocsp.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/ocsp.properties"
+  - src: custom.properties.j2
+    dest: "{{ ejbca_home }}/conf/custom.properties"
 
 appsrv_datasources:
   - jndi_name: "java:/EjbcaDS"
@@ -115,10 +112,13 @@ appsrv_datasources:
 use_softhsm: true
 use_ncipher: false
 use_safenet_lunasa: false
+
+# Slots to create for SoftHSM PKCS11
 softhsm_gen_hsm_slots:
   - slot_name: OCSP_KeyBinding_SLOT
     slot_so_pin: "{{ encrypted_ocsp_so_token_pin | default('foo123') }}" 
     slot_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+
 # If true, allows running application server service via preload
 ncipher_preload: false
 # Path to the preload executable
@@ -127,8 +127,10 @@ preload_path: /opt/nfast/bin/preload
 hsm_shared_library: /usr/lib64/libsofthsm2.so
 #hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
 
+# EJBCA CLI password to configure for the CLI account
 ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
 ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+
 # Parameter specifying IP addresses authorized to access the healthcheck
 # servlet. Use ';' for between multiple IPs.
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
@@ -141,7 +143,7 @@ management_import_certification_authorities:
     cert_file_location: /var/tmp/managementca.crt
     superadmincn: "{{ superAdminCn }}"
   - caname: "{{ organizationNameShort }}-Root-CA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ root_ca_1_id }}&format=pem"
+    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ root_ca_1_id }}&format=pem"
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
     superadmincn: ""
   - caname: "{{ organizationNameShort }}-Sub-CA"
@@ -149,8 +151,78 @@ management_import_certification_authorities:
     cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA.crt"
     superadmincn: ""
 
+# List of OCSP Signers to create on the External VA
+ejbca_va_keybinding:
+  - name: ocspSubSigningKey
+    crypto_token_name: ocspCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: OCSP_KeyBinding_SLOT
+    crypto_token:
+      - key_label: ocspSubSigningKey0001
+        key_size: "3072"
+        key_type: "RSA"
+        type: ocsp_keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Sub Signer"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: USERGENERATED
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+  - name: ocspRootSigningKey
+    crypto_token_name: ocspCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: OCSP_KeyBinding_SLOT
+    crypto_token:
+      - key_label: ocspRootSigningKey0001
+        key_size: "4096"
+        key_type: "RSA"
+        type: ocsp_keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Root Signer"
+    caname: "{{ organizationNameShort }}-Root-CA"
+    token: USERGENERATED
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+  - name: ocspMgmtSigningKey
+    crypto_token_name: ocspCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: OCSP_KeyBinding_SLOT
+    crypto_token:
+      - key_label: ocspMgmtSigningKey0001
+        key_size: "3072"
+        key_type: "RSA"
+        type: ocsp_keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Mgmt Signer"
+    caname: "ManagementCA" 
+    token: USERGENERATED
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+
+# Map the variable into this variable that has the OCSP Signer CSR's to get get signed
+identity_csr_info: "{{ ejbca_va_keybinding }}"
+    
+# Add the management CA to HTTP trust chain file. 
+add_mgmt_ca: true
+
+# 
+httpd_create_aia_crl_dir: false
+
+httpd_identity_info:
+  id_name: "{{ identity_info[0].name }}"
+  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"
+
 identity_info:
-  - dn: "OU=Devices,O={{ organizationName }},C={{ countryName }}"
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ocsp01.{{ organizationDomainName }}"
     name: "ocsp01.{{ organizationDomainName }}"
     full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ocsp01.{{ organizationDomainName }}"
     username: va_httpd_tls
@@ -160,74 +232,3 @@ identity_info:
     eeprofile: "tlsServer{{ organizationNameShort }}"
     caname: "{{ organizationNameShort }}-Sub-CA"
     token: PEM
-
-ejbca_va_keybinding:
-  - name: ocspSubSigningKey
-    slot_label: OCSP_KeyBinding_SLOT
-    slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
-    crypto_token_name: ocspCryptoToken
-    key_size: "3072"
-    key_label: ocspSubSigningKey0001
-    signature_algorithm: SHA256WithRSA
-    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
-    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
-    caname: "{{ organizationNameShort }}-Sub-CA"
-  - name: ocspRootSigningKey
-    slot_label: OCSP_KeyBinding_SLOT
-    slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
-    crypto_token_name: ocspCryptoToken
-    key_size: "3072"
-    key_label: ocspRootSigningKey0001
-    signature_algorithm: SHA256WithRSA
-    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
-    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
-    caname: "{{ organizationNameShort }}-Root-CA"
-  - name: ocspMgmtSigningKey
-    slot_label: OCSP_KeyBinding_SLOT
-    slot_identifier_type: "SLOT_LABEL"
-    type: PKCS11CryptoToken
-    crypto_token_name: ocspCryptoToken
-    key_size: "3072"
-    key_label: ocspMgmtSigningKey0001
-    signature_algorithm: SHA256WithRSA
-    token_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
-    slot_identifier: SLOT_LABEL:OCSP_KeyBinding_SLOT
-    caname: "ManagementCA" 
-
-identity_csr_info:
-  - dn: "OU=OCSP Signers,O={{ organizationName }},C={{ countryName }}"
-    name: "{{ ejbca_va_keybinding[0].name }}"
-    full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Sub Signer"
-    username: "{{ ejbca_va_keybinding[0].name }}"
-    password: "{{ encrypted_ocspSubKeyBinding_identity_password | default('foo123') }}"
-    certprofile: ocspSigner
-    eeprofile: ocspSigner
-    caname: "{{ ejbca_va_keybinding[0].caname }}"
-    token: USERGENERATED
-  - dn: "OU=OCSP Signerss,O={{ organizationName }},C={{ countryName }}"
-    name: "{{ ejbca_va_keybinding[1].name }}"
-    full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Root Signer"
-    username: "{{ ejbca_va_keybinding[1].name }}"
-    password: "{{ encrypted_ocspRootKeyBinding_identity_password | default('foo123') }}"
-    certprofile: ocspSigner
-    eeprofile: ocspSigner
-    caname: "{{ ejbca_va_keybinding[1].caname }}"
-    token: USERGENERATED
-  - dn: "OU=OCSP Signers,O={{ organizationName }},C={{ countryName }}"
-    name: "{{ ejbca_va_keybinding[2].name }}"
-    full_dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Mgmt Signer"
-    username: "{{ ejbca_va_keybinding[2].name }}"
-    password: "{{ encrypted_ocspMgmtKeyBinding_identity_password | default('foo123') }}"
-    certprofile: ocspSigner
-    eeprofile: ocspSigner
-    caname: "{{ ejbca_va_keybinding[2].caname }}"
-    token: USERGENERATED
-
-# Add the management CA to HTTP trust chain file. 
-add_mgmt_ca: true
-httpd_create_aia_crl_dir: false
-httpd_identity_info:
-  id_name: "{{ identity_info[0].name }}"
-  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"

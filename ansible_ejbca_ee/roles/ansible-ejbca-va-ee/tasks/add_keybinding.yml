@@ -22,23 +22,26 @@
 - name: Create key binding 
   command: >
     {{ ejbca_home }}/bin/ejbca.sh keybind create 
-     --name {{ item.name }} 
-     --type OcspKeyBinding 
-     --token {{ item.crypto_token_name }} 
-     --status ACTIVE 
-     --alias {{ item.key_label }} 
-     --sigalg {{ item.signature_algorithm }} 
-     --cert null 
-     -untilNextUpdate {{ item.until_next_update| default('60') }}"
+    --name {{ item.0.name }} 
+    --type OcspKeyBinding 
+    --token {{ item.0.crypto_token_name }} 
+    --status ACTIVE 
+    --alias {{ item.1.key_label }} 
+    --sigalg {{ item.0.signature_algorithm }} 
+    --cert null 
+    -untilNextUpdate {{ item.0.until_next_update| default('60') }}
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_create
-  loop: "{{ ejbca_va_keybinding }}"
-  when: item.name not in keybinding_exists.stdout
+  loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
+  when: item.0.name not in keybinding_exists.stdout
 
 - name: Create CSR for key binding 
-  command: "{{ ejbca_home }}/bin/ejbca.sh keybind gencsr --name {{ item.name }} -f /var/tmp/{{ item.name }}.csr"
+  command: >
+    {{ ejbca_home }}/bin/ejbca.sh keybind gencsr 
+    --name {{ item.name }} 
+    -f /var/tmp/{{ item.name }}.csr
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -55,6 +58,7 @@
   loop: "{{ ejbca_va_keybinding }}"
   loop_control:
     label: "{{ item.name }}"
+  no_log: true
   when: item.name not in keybinding_exists.stdout
 
 - name: Cleanup the cert files in /var/tmp
