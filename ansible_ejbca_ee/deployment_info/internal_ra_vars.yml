@@ -8,10 +8,6 @@ countryName: US
 superAdminCn: "6May2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
-#management_ca_id: 966011820
-#root_ca_1_id: -1905764898
-#sub_ca_1_id: -127947408
-
 peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
 wildfly_version: 23.0.1.Final
@@ -111,7 +107,9 @@ httpd_identity_info:
   id_ca_cert_file: "{{ identity_info[0].caname }}.crt"
 
 # List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
+# caname: Name of the CA in EJBCA
 # The superadmincn can be added to each CA to add a Common Name to the superadmin role.
+# fullchain: Must be set to false for this to work by getting each CA certificate to import as an external CA
 ejbca_ca_import:
   - caname: "ManagementCA"
     superadmincn: "{{ superAdminCn }}"
@@ -121,6 +119,9 @@ ejbca_ca_import:
   - caname: "{{ organizationNameShort }}-Root-CA"
     fullchain: false
 
+# CA chains to add to the HTTPD trusted CA certificate file for certauth
+# caname: Name of the CA in EJBCA
+# fullchain: Must be set to true for this to work by getting the issuing CA chain and then adding that chain to the file
 httpd_trusted_cas:
   - caname: "ManagementCA"
     fullchain: true

@@ -24,9 +24,9 @@
 {% endif %}
     # Redirect /, /ejbca and non-proxied URLs to /ejbca/
 {% if use_external_va is defined and use_external_va is sameas false or ejbca_type is defined and 'VA' == ejbca_type %}
-    RewriteCond %{THE_REQUEST} !(/ejbca/.*|/CRLs/.*|/AIA/.*|/ocsp.*) [OR]
+    RewriteCond %{THE_REQUEST} !(/ejbca/.*|/CRLs/.*|/crls/.*|/crl/.*|/AIA/.*|/aia/.*|/ocsp.*) [OR]
 {% else %}
-    RewriteCond %{THE_REQUEST} !(/ejbca/.*|/CRLs/.*|/AIA/.*) [OR]
+    RewriteCond %{THE_REQUEST} !(/ejbca/.*|/CRLs/.*|/crls/.*|/crl/.*|/AIA/.*|/aia/.*) [OR]
 {% endif %}
     RewriteCond %{THE_REQUEST} (/ejbca/ejbcaws.*|/ejbca/adminweb.*)
     RewriteRule (.*) http://%{HTTP_HOST}/ejbca/ [R]

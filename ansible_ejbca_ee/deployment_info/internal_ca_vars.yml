@@ -54,15 +54,12 @@ ejbca_crl_dir:
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-#wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7 # WF 20.0.1.Final
-#wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac # WF 21.0.2.Final
 wildfly_version: 23.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
 wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-#wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
 wildfly_jboss_client_checksum: sha256:8f974f36a927b8a51f2ef807c58e10960bc502c1caa5b93722e3dc913c74c466 #WF 23
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
@@ -515,6 +512,9 @@ httpd_cert_files:
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
     dest: "/etc/pki/tls/certs/chain.crt"
 
+# CA chains to add to the HTTPD trusted CA certificate file for certauth
+# caname: Name of the CA in EJBCA
+# fullchain: Must be set to true for this to work by getting the issuing CA chain and then adding that chain to the file
 httpd_trusted_cas:
   - caname: "ManagementCA"
     fullchain: true
