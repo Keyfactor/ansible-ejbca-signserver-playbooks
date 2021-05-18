@@ -12,7 +12,7 @@
 
 - name: Import External CA - {{ item.caname }}
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh ca importcacert
+    {{ ejbca_sh }} ca importcacert
     --caname {{ item.caname }}
     -f /var/tmp/{{ item.external_cachain_file }}
   no_log: true

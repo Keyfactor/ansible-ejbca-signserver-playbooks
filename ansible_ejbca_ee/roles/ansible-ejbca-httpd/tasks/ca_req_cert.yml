@@ -5,9 +5,28 @@
     path: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}.pem"
   register: tls_cert_exists
 
-- block:
+- name: Configure HTTPD TLS certificate when the node is a CA
+  block:
+
+  - name: Create cert stage directory
+    file:
+      path: /var/tmp/certstage
+      state: directory
+      owner: "{{ ejbca_user }}" 
+      group: "{{ ejbca_group }}"
+
   - name: Add External Webserver Entity to CA
-    command: "{{ ejbca_sh }} ra addendentity --username '{{ httpd_identity_info.id_username }}' --password '{{ httpd_identity_info.id_password }}' --dn '{{ httpd_identity_info.id_full_dn }}' --altname '{{ httpd_identity_info.id_altname }}' --caname '{{ httpd_identity_info.id_caname }}' --type 1 --token PEM --certprofile '{{ httpd_identity_info.id_certprofile }}' --eeprofile '{{ httpd_identity_info.id_eeprofile }}'"
+    command: >
+      {{ ejbca_sh }} ra addendentity 
+      --username '{{ httpd_identity_info.id_username }}' 
+      --password '{{ httpd_identity_info.id_password }}' 
+      --dn '{{ httpd_identity_info.id_full_dn }}' 
+      --altname '{{ httpd_identity_info.id_altname }}' 
+      --caname '{{ httpd_identity_info.id_caname }}' 
+      --type 1 
+      --token PEM 
+      --certprofile '{{ httpd_identity_info.id_certprofile }}' 
+      --eeprofile '{{ httpd_identity_info.id_eeprofile }}'
     args:
       chdir: "{{ ejbca_home }}"
     become_user: "{{ ejbca_user }}"
@@ -15,7 +34,10 @@
     register: ra_addIdent_result
 
   - name: Set password
-    command: "{{ ejbca_sh }} ra setclearpwd --username '{{ httpd_identity_info.id_username }}' '{{ httpd_identity_info.id_password }}'"
+    command: >
+      {{ ejbca_sh }} ra setclearpwd 
+      --username '{{ httpd_identity_info.id_username }}' 
+      --password '{{ httpd_identity_info.id_password }}'
     args:
       chdir: "{{ ejbca_home }}"
     become_user: "{{ ejbca_user }}"
@@ -23,13 +45,47 @@
     register: ra_setpwd_result
 
   - name: Batch time
-    command: "{{ ejbca_sh }} batch --username {{ httpd_identity_info.id_username }}"
+    command: >
+      {{ ejbca_sh }} batch 
+      --username {{ httpd_identity_info.id_username }}
     args:
       chdir: "{{ ejbca_home }}"
     become_user: "{{ ejbca_user }}"
     become: yes
     register: ra_batch_result
     tags: reverse-proxy
+
+  - name: Get {{ item.caname }} chain file
+    command: >
+      {{ ejbca_sh }} ca getcacert 
+      --caname {{ item.caname }}
+      {% if item.fullchain is defined and item.fullchain is sameas true %}
+      -f /var/tmp/certstage/{{ item.caname }}-fullchain.crt
+      --include-full-chain 
+      {% else %}
+      -f /var/tmp/certstage/{{ item.caname }}.crt
+      {% endif %}
+    become: yes
+    become_user: "{{ ejbca_user }}"
+    register: ejbca_get_ca_chain
+    failed_when: ejbca_get_ca_chain.rc >= 2
+    changed_when: ejbca_get_ca_chain.rc == 0
+    loop: "{{ httpd_trusted_cas }}"
+    loop_control:
+      label: "{{ item.caname }}"
+    tags: ejbca-cli-cacert
+
+  - name: Add {{ item.caname }} chain file to trusted-ca.crt file
+    shell: >
+      cat /var/tmp/certstage/{{ item.caname }}-fullchain.crt >> /etc/pki/tls/certs/trusted-ca.crt
+    loop: "{{ httpd_trusted_cas }}"
+    loop_control:
+      label: "{{ item.caname }}"
+
+  - name: Cleanup the cert stage directory
+    file:
+      path: /var/tmp/certstage
+      state: absent
 
   - name: Copy certificate files to location for httpd to use
     copy:

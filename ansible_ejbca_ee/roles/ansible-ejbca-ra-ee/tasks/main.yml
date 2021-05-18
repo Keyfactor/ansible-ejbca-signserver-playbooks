@@ -4,7 +4,7 @@
 - name: Check wildfly and start the service
   include_tasks: check_wildfly_status.yml
 
-- name: Setup Management CA with CLI commands
-  include_tasks: import_mgmt_ca.yml
-  tags: import_cas
-  when: management_import_certification_authorities[0] is defined
+#- name: Setup Management CA with CLI commands
+#  include_tasks: import_mgmt_ca.yml
+#  tags: import_cas
+#  when: management_import_certification_authorities[0] is defined

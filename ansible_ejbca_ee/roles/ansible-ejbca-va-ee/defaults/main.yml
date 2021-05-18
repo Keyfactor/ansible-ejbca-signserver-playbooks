@@ -32,20 +32,6 @@ ejbca_va_test_slots:
   - slot_identifier: "{{ ejbca_va_keybinding[0].slot_identifier }}"
     slot_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
 
-# EJBCA audit log database protection configurations
-# slot_index: Index of HSM slot used for database integrity protection
-# key_label: Label of key used for database integrity protection
-# signature_algorithm: Algorithm used to sign database rows
-# token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
-ejbca_databaseprotection:
-  slot_label: DB_Protect_SLOT
-  slot_identifier_type: "SLOT_LABEL"
-  slot_index: 0
-  key_label: dbProtect0001
-  signature_algorithm: SHA256WithRSA
-  token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
-  testkey_label: "testKey"
-
 # Database root user password. Should be encrypted with Ansible vault
 database_rootuser_password: "{{ encrypted_database_rootuser_password | default('root') }}"
 

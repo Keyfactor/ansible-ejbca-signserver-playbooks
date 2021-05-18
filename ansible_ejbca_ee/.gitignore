@@ -4,6 +4,7 @@
 *.swp
 peerCertSerialNums/*
 ejbcaCSR/*
+ejbcaCaCerts/*
 devsec*
 *AzureTest*
 deployment_info/custom*

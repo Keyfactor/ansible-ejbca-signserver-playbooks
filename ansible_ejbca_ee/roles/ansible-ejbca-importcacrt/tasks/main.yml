@@ -1,0 +1,9 @@
+---
+# tasks file for ansible-ejbca-importcacrt
+
+- name: Import CA Certs into EJBCA Node
+  include_tasks: importcacrt.yml
+  loop: "{{ ejbca_ca_import }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  when: ejbca_ca_import[0] is defined

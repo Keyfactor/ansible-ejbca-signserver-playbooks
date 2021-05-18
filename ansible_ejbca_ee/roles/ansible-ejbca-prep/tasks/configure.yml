@@ -149,7 +149,7 @@
     group: "{{ ejbca_group }}"
   when: wildfly_disable_infinispan|bool
 
-- name: Ensure templated EJBCA properties files are copied to ejbca-custom/conf
+- name: Configure EJBCA property files in ejbca-custom/conf
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -160,11 +160,33 @@
     label: "{{ item.src }}"
   register: configured_ejbca_properties
 
+- name: Configure EJBCA DB Protection file in ejbca-custom/conf
+  template:
+    src: databaseprotection.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/databaseprotection.properties"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  loop: "{{ ejbca_databaseprotection }}"
+  loop_control:
+    label: "{{ item.slot_identifier_value }}"
+  no_log: true
+  register: configure_db_protection
+  when:
+    - ejbca_databaseprotection[0] is defined
+    - databaseprotection_enablesign_AuditRecordData is defined
+    - databaseprotection_enablesign_AuditRecordData|bool
+    - databaseprotection_enableverify_AuditRecordData is defined
+    - databaseprotection_enableverify_AuditRecordData|bool 
+
 - name: Register properties files in ejbca-custom/conf
   find:
     paths: "{{ ejbca_home }}/../ejbca-custom/conf/"
     patterns: "*.properties"
   register: found_properties_files
+
+#- name: Debug found_properties_files
+#  debug:
+#    var: found_properties_files.files
 
 - name: Register properties files that has a matching sample file in EJBCA conf directory
   stat:
@@ -172,9 +194,13 @@
   register: found_properties_files_with_matching_sample
   loop: "{{ found_properties_files.files | map(attribute='path') | map('basename') | list }}"
 
+#- name: Debug found_properties_files_with_matching_sample
+#  debug:
+#    var: found_properties_files_with_matching_sample
+
 - name: Set variable properties files to be removed using (properties files in ejbca-custom | intersect (properties files with matching sample)) | difference(templated properties files)
   set_fact:
-    ejbca_properties_files_to_remove: "{{ ( found_properties_files.files | map(attribute='path') | map('basename') | list | intersect (found_properties_files_with_matching_sample.results | selectattr('stat.path', 'defined') | map(attribute='item') | list )) | difference(ejbca_templated_properties_files | map(attribute='dest') | map('basename') | list ) }}"
+    ejbca_properties_files_to_remove: "{{ ( found_properties_files.files | map(attribute='path') | map('basename') | list | intersect (found_properties_files_with_matching_sample.results | selectattr('stat.path', 'defined') | map(attribute='item') | list )) | difference(found_properties_files.files | map(attribute='path') | map('basename') | list ) }}"
 
 - name: Ensure that default EJBCA properties files not in list of templated EJBCA properties files are removed
   block:
@@ -210,9 +236,10 @@
     APPSRV_HOME: "{{ wildfly_home }}"
   args:
     chdir: "{{ ejbca_home }}"
+  register: compile_ejbca_ear
   when:
     - found_appsrv_home.stat.exists
-    - unpacked_ejbca.changed or configured_ejbca_properties.changed or removed_ejbca_properties.changed or unpacked_statedump.changed or ejbca_force_build_ear
+    - unpacked_ejbca.changed or configured_ejbca_properties.changed or configure_db_protection.changed or removed_ejbca_properties.changed or unpacked_statedump.changed or ejbca_force_build_ear
 
 - name: Copy EJBCA EAR file to application server when application server exists
   copy:
@@ -221,7 +248,8 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
     dest: "{{ wildfly_home }}/standalone/deployments/ejbca.ear"
-
+  when: compile_ejbca_ear.changed
+  
 - name: Start Wildfly for adding addtional nodes
   block:
     

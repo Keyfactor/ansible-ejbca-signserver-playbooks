@@ -2,7 +2,7 @@
 
 - name: Add end entity
   command: >
-    "{{ ejbca_home }}/bin/ejbca.sh" ra addendentity
+    "{{ ejbca_sh }}" ra addendentity
     --username "{{ item.username }}"
     --dn "{{ item.dn }}"
     --caname "{{ item.caname }}"
@@ -30,7 +30,7 @@
 
 - name: Set end entity password
   command: >
-    "{{ ejbca_home }}/bin/ejbca.sh" ra setclearpwd
+    "{{ ejbca_sh }}" ra setclearpwd
     --username "{{ item.username }}"
     --password {{ item.password }}
   loop: "{{ management_add_end_entities }}"
@@ -50,7 +50,7 @@
 
 - name: Create end entity credential
   command: >
-    "{{ ejbca_home }}/bin/ejbca.sh" batch
+    "{{ ejbca_sh }}" batch
     --username "{{ item.username }}"
     -dir "{{ ejbca_home }}/p12/"
   args:

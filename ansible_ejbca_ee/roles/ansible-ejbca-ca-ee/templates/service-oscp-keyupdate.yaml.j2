@@ -5,11 +5,9 @@ Worker Type: Remote Internal Keybinding Updater
 Worker Properties:
   CAs to Check:
   - Any CA
-{% for item in ejbca_peerConnector %}
 {% if 'ocsp' == item.type %}
   Peer System: {{ item.name }}
 {% endif %}
-{% endfor %}
   Time Before Certificate Expires: 1
   Time Unit of Certificate Expiry: DAYS
   Renew Keys: true

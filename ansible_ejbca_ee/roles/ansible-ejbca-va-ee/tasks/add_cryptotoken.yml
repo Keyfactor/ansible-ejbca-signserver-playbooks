@@ -12,13 +12,13 @@
 #  debug:
 #    var: item
 
-- name: Create VA crypto token for OCSP {{ item.crypto_token_name }}
+- name: Create VA crypto token for OCSP {{ item.0.crypto_token_name }}
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh cryptotoken create --token {{ item.crypto_token_name }} --pin {{ item.token_pin }} --autoactivate true 
-    --type {% if "SoftCryptoToken" == item.type %}"SoftCryptoToken"{% elif "PKCS11CryptoToken" == item.type %}"PKCS11CryptoToken"
+    {{ ejbca_home }}/bin/ejbca.sh cryptotoken create --token {{ item.0.crypto_token_name }} --pin {{ item.0.tokenpass }} --autoactivate true 
+    --type {% if "SoftCryptoToken" == item.0.tokentype %}"SoftCryptoToken"{% elif "PKCS11CryptoToken" == item.0.tokentype %}"PKCS11CryptoToken"
     --lib "{{ hsm_shared_library }}" 
-    --slotlabel "{{ item.slot_label }}"
-    --slotlabeltype "{{ item.slot_identifier_type }}"{% endif %}
+    --slotlabel "{{ item.0.slot_identifier_value }}"
+    --slotlabeltype "{{ item.0.slot_identifier_type }}"{% endif %}
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -30,21 +30,21 @@
 - name: Create Keys using SoftCryptoToken
   block:
 
-    - name: Check what keys are on the SoftCryptoToken {{ item.crypto_token_name }}
+    - name: Check what keys are on the SoftCryptoToken {{ item.0.crypto_token_name }}
       command: >
-        {{ ejbca_home }}/bin/ejbca.sh cryptotoken listkeys --token {{ item.crypto_token_name }}
+        {{ ejbca_home }}/bin/ejbca.sh cryptotoken listkeys --token {{ item.0.crypto_token_name }}
       become: yes
       become_user: "{{ ejbca_user }}"
       register: va_cryptotoken_list_keys
 
-    - name: Create OCSP Signing keys in crypto token {{ item.crypto_token_name }} - {{ item.key_label }}:{{ item.key_size }}
+    - name: Create OCSP Signing keys in crypto token {{ item.0.crypto_token_name }} - {{ item.1.key_label }}:{{ item.1.key_size }}
       command: >
-        {{ ejbca_home }}/bin/ejbca.sh cryptotoken generatekey --token {{ item.crypto_token_name }} --alias {{ item.key_label }}  --keyspec {{ item.key_size }}
+        {{ ejbca_home }}/bin/ejbca.sh cryptotoken generatekey --token {{ item.0.crypto_token_name }} --alias {{ item.1.key_label }}  --keyspec {{ item.1.key_size }}
       no_log: true
       become_user: "{{ ejbca_user }}"
-      when: item.name not in va_cryptotoken_list_keys.stdout
+      when: item.0.name not in va_cryptotoken_list_keys.stdout
 
-  when: ( "SoftCryptoToken" in item.type ) 
+  when: ( "SoftCryptoToken" in item.0.tokentype ) 
 
 
 

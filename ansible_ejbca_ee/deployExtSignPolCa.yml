@@ -16,10 +16,8 @@
     # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
     # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
     deploy_with_configdump: false
-    # Map in the List Dictionaires for the test HSM slots, generate hsm keys, and add CA's. The variable to map in 
+    # Map in the List Dictionaires for the CA's to create in EJBCA. The variable to map in 
     # are sourced from the include_vars above.
-    test_hsm_slots: "{{ policy_test_slots }}"
-    generate_hsm_keys: "{{ policy_generate_hsm_keys }}"
     add_certification_authorities: "{{ policy_add_certification_authorities }}"
   roles:
     - ansible-ejbca-ca-ee

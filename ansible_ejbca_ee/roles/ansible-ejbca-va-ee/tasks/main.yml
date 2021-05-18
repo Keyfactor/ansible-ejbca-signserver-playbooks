@@ -1,37 +1,47 @@
 ---
 # tasks file for primekey
 
-- name: Test that HSM slots are available
-  include_tasks: hsm_test.yml
-  loop: "{{ ejbca_va_keybinding }}"
-  no_log: true
-  tags: hsm_test
-  when:
-    - ejbca_va_keybinding[0] is defined
-    - ( "PKCS11CryptoToken" in item.type )
+- name: OCSP Key Binding Keys
+  block:
 
-- name: Generate HSM keys
-  include_tasks: clienttoolbox_key_generation.yml
-  loop: "{{ ejbca_va_keybinding }}"
-  no_log: true
-  tags: clienttoolbox_key_generation
+    - name: Test that HSM slots are available for OCSP Key Bindings
+      include_tasks: hsm_test.yml
+      loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test
+      when: 
+        - ("PKCS11CryptoToken" in key_item.0.tokentype)
+
+    - name: Generate key on HSM for OCSP Key Bindings
+      include_tasks: clienttoolbox_key_generation.yml      
+      loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: clienttoolbox_key_generation
+      when: 
+        - ("PKCS11CryptoToken" in key_item.0.tokentype)
+
   when: 
     - ejbca_va_keybinding[0] is defined
-    - ( "PKCS11CryptoToken" in item.type ) 
 
 - name: Check deployment
   include_tasks: check_deployment.yml
   tags: check_deployment
   when: management_import_certification_authorities[0] is defined
 
-- name: Setup Management CA with CLI commands
-  include_tasks: import_mgmt_ca.yml
-  tags: import_cas
-  when: management_import_certification_authorities[0] is defined
+#- name: Setup Management CA with CLI commands
+#  include_tasks: import_mgmt_ca.yml
+#  tags: import_cas
+#  when: management_import_certification_authorities[0] is defined
 
 - name: Create OCSP Crypto Token
   include_tasks: add_cryptotoken.yml
-  loop: "{{ ejbca_va_keybinding }}"
+  loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
   no_log: true
   when:
     - ejbca_va_keybinding[0] is defined

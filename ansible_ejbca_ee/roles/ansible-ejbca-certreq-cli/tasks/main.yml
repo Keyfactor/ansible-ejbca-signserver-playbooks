@@ -6,9 +6,27 @@
   loop: "{{ identity_info }}"
   loop_control:
     label: "{{ item.name }}"
+  no_log: true
   when: identity_info[0] is defined
 
 - name: Sign CSR End Entities
   include_tasks: csr_cert_sign.yml
   loop: "{{ identity_csr_info }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
   when: identity_csr_info[0] is defined
+
+- name: Download CA Certs for Trustchain file
+  include_tasks: get_ca_certs.yml
+  loop: "{{ httpd_trusted_cas }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  when: httpd_trusted_cas[0] is defined
+
+- name: Download CA Cert files for External RA/VA
+  include_tasks: get_ca_certs.yml
+  loop: "{{ ejbca_ca_import }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  when: ejbca_ca_import[0] is defined

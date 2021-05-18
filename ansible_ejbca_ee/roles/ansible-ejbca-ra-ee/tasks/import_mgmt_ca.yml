@@ -11,12 +11,14 @@
   loop: "{{ management_import_certification_authorities }}"
   loop_control:
     label: "{{ item.caname }}"
-  no_log: true
+  #no_log: true
 
 - name: Import Mgmt CA certificate
   command: "{{ ejbca_home }}/bin/ejbca.sh ca importcacert {{ item.caname }} {{ item.cert_file_location }} {% if item.superadmincn %}-initauthorization -superadmincn '{{ item.superadmincn }}' {% endif %}"
   loop: "{{ management_import_certification_authorities }}"
-  no_log: true
+  loop_control:
+    label: "{{ item.caname }}"
+  #no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
   register: import_mgmtca_cert

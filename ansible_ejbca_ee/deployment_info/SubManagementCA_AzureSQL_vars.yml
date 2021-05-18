@@ -143,7 +143,7 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # servlet. Use ';' for between multiple IPs.
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
-ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+eejbca_conf_healtcheck_authorizedips: 127.0.0.1
 
 # EJBCA audit log database protection configurations
 # slot_index: Index of HSM slot used for database integrity protection
@@ -380,7 +380,8 @@ sub_add_certification_authorities:
     crlPeriod_yml: 6mo
     crlIssueInterval: 0
     crlIssueInterval_yml: 0m
-    crl_overlap_time: 10m
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
     delta_crl_period: 0m
     useLdapDnOrder: false
     enforce_unique_public_keys: true

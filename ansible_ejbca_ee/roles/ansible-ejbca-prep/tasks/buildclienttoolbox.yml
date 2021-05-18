@@ -36,4 +36,11 @@
         dest: "{{ ejbca_root_dir }}/clientToolBox/ext/{{ ejbca_jdbc_gen_name }}"
         state: link
 
+    - name: Copy IHashGenerator.class to the clientToolBox lib directory
+      copy: 
+        src: IHashGenerator.class
+        dest: "{{ ejbca_root_dir }}/clientToolBox/lib"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+
   when: unpacked_ejbca.changed or configured_ejbca_properties.changed or removed_ejbca_properties.changed or not found_clienttoolbox.stat.exists
