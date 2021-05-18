@@ -1,6 +1,7 @@
 ---
 # defaults file for ansible-ejbca-certreq-cli
 ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+ejbca_cacrt_dir_output: "{{ playbook_dir }}/ejbcaCaCerts"
 ejbca_root_dir: /opt
 ejbca_home: "{{ ejbca_root_dir }}/ejbca"
 ejbca_sh: "{{ ejbca_home }}/bin/ejbca.sh"

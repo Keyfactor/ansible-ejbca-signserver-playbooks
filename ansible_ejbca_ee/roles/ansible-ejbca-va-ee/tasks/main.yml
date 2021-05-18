@@ -34,10 +34,10 @@
   tags: check_deployment
   when: management_import_certification_authorities[0] is defined
 
-- name: Setup Management CA with CLI commands
-  include_tasks: import_mgmt_ca.yml
-  tags: import_cas
-  when: management_import_certification_authorities[0] is defined
+#- name: Setup Management CA with CLI commands
+#  include_tasks: import_mgmt_ca.yml
+#  tags: import_cas
+#  when: management_import_certification_authorities[0] is defined
 
 - name: Create OCSP Crypto Token
   include_tasks: add_cryptotoken.yml

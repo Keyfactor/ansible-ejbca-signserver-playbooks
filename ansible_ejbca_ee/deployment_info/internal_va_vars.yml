@@ -8,9 +8,9 @@ countryName: US
 superAdminCn: "6May2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
-management_ca_id: 966011820
-root_ca_1_id: -1905764898
-sub_ca_1_id: -127947408
+#management_ca_id: 966011820
+#root_ca_1_id: -1905764898
+#sub_ca_1_id: -127947408
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
@@ -137,20 +137,6 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # "ANY" can be specified to allow any remote IP.
 ejbca_conf_healtcheck_authorizedips: 127.0.0.1
 
-management_import_certification_authorities:
-  - caname: "ManagementCA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ management_ca_id }}&format=pem&level=0"
-    cert_file_location: /var/tmp/managementca.crt
-    superadmincn: "{{ superAdminCn }}"
-  - caname: "{{ organizationNameShort }}-Root-CA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ root_ca_1_id }}&format=pem"
-    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Root-CA.crt"
-    superadmincn: ""
-  - caname: "{{ organizationNameShort }}-Sub-CA"
-    cert_download_url: "https://ca01.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_1_id }}&format=pem&level=0"
-    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA.crt"
-    superadmincn: ""
-
 # List of OCSP Signers to create on the External VA
 ejbca_va_keybinding:
   - name: ocspSubSigningKey
@@ -211,9 +197,6 @@ ejbca_va_keybinding:
 # Map the variable into this variable that has the OCSP Signer CSR's to get get signed
 identity_csr_info: "{{ ejbca_va_keybinding }}"
     
-# Add the management CA to HTTP trust chain file. 
-add_mgmt_ca: true
-
 # 
 httpd_create_aia_crl_dir: false
 
@@ -232,3 +215,20 @@ identity_info:
     eeprofile: "tlsServer{{ organizationNameShort }}"
     caname: "{{ organizationNameShort }}-Sub-CA"
     token: PEM
+
+# List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
+# The superadmincn can be added to each CA to add a Common Name to the superadmin role.
+ejbca_ca_import:
+  - caname: "ManagementCA"
+    superadmincn: "{{ superAdminCn }}"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    fullchain: false
+
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+    fullchain: true
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: true

@@ -2,7 +2,7 @@
 
 - name: Ensure administrator role member has been added
   command: >
-    "{{ ejbca_home }}/bin/ejbca.sh" roles addrolemember
+    "{{ ejbca_sh }}" roles addrolemember
     --role "{{ item.role }}"
     --caname "{{ item.caname }}"
     --with "{{ item.match_with }}"

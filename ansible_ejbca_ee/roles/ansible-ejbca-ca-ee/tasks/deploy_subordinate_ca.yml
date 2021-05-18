@@ -5,7 +5,7 @@
 
     - name: Test that HSM slots are available for Database Protection
       include_tasks: hsm_test.yml
-      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
@@ -14,7 +14,7 @@
 
     - name: Generate key on HSM for Database Protection
       include_tasks: clienttoolbox_key_generation.yml
-      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item

@@ -63,7 +63,7 @@ ejbca_templated_properties_files:
   - src: mail.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
   - src: custom.properties.j2
-    dest: "{{ ejbca_home }}/conf/custom.properties"
+    dest:  "{{ ejbca_home }}/../ejbca-custom/conf/custom.properties"
 
 ejbca_force_build_ear: false
 

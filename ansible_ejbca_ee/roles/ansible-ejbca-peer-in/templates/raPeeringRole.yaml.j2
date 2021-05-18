@@ -14,7 +14,7 @@ Role Members:
 Namespace: ''
 RA Style Id: 0
 Access Rules:
-{% for item in management_import_certification_authorities %}
+{% for item in ejbca_ca_import %}
   /ca/{{ item.caname }}/: Allow
 {% endfor %}
   /peerincoming/: Allow

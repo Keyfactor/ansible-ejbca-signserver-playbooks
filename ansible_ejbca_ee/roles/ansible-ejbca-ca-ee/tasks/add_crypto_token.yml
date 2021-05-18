@@ -1,7 +1,7 @@
 ---
 
 - name: Query crypto tokens
-  command: "{{ ejbca_home }}/bin/ejbca.sh cryptotoken list"
+  command: "{{ ejbca_sh }} cryptotoken list"
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -14,7 +14,7 @@
 
 - name: Create cryptotoken for {{ item.caname }}
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh cryptotoken create 
+    {{ ejbca_sh }} cryptotoken create 
     --token {{ item.caname }} 
     --pin {{ item.tokenpass }} 
     --autoactivate {{ item.cryptotoken_enable_auto_activate }} 

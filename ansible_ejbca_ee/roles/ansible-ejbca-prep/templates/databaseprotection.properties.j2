@@ -35,12 +35,14 @@ databaseprotection.keyid = 1
 databaseprotection.keyid.AuditRecordData = 1
 
 databaseprotection.keyid.0 = 1
-{% if 'dbprotect' == item.1.type %}
-databaseprotection.keylabel.0 = {{ item.1.key_label }}
+{% for val in item.crypto_token %}
+{% if 'dbprotect' == val.type %}
+databaseprotection.keylabel.0 = {{ val.key_label }}
 databaseprotection.classname.0 = org.cesecore.keys.token.PKCS11CryptoToken
-#databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue=i{{ item.0.slot_identifier_value }}
-databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType={{ item.0.slot_identifier_type }}, slotLabelValue={{ item.0.slot_identifier_value }}
-databaseprotection.tokenpin.0 = {{ item.0.tokenpass }}
+#databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue=i{{ item.slot_identifier_value }}
+databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType={{ item.slot_identifier_type }}, slotLabelValue={{ item.slot_identifier_value }}
+databaseprotection.tokenpin.0 = {{ item.tokenpass }}
 databaseprotection.version.0 = 2
-databaseprotection.sigalg.0 = {{ item.0.signature_algorithm }}
+databaseprotection.sigalg.0 = {{ item.signature_algorithm }}
 {% endif %}
+{% endfor %}

@@ -2,7 +2,7 @@
 
 - name: Check if {{ item.external_caname }} is already in EJBCA
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh ca importcacert listcas
+    {{ ejbca_sh }} ca importcacert listcas
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -25,7 +25,7 @@
 
     - name: Import External CA - {{ item.external_caname }}
       command: >
-        {{ ejbca_home }}/bin/ejbca.sh ca importcacert
+        {{ ejbca_sh }} ca importcacert
         --caname {{ item.external_caname }}
         -f /var/tmp/{{ item.external_cachain_file }}
       no_log: true

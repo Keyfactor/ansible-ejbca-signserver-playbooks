@@ -496,7 +496,7 @@ enable_crl_crontab: false
 
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
 httpd_identity_info:
-  id_dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
+  id_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
   id_name: "ca01.{{ organizationDomainName }}"
   id_full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
   id_username: ca_httpd_tls
@@ -513,4 +513,10 @@ httpd_cert_files:
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-Key.pem"
     dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
-    dest: "/etc/pki/tls/certs/trusted-ca.crt"
+    dest: "/etc/pki/tls/certs/chain.crt"
+
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+    fullchain: true
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: true

@@ -1,7 +1,7 @@
 ---
 
 - name: Query crypto tokens
-  command: "{{ ejbca_home }}/bin/ejbca.sh cryptotoken list"
+  command: "{{ ejbca_sh }} cryptotoken list"
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -14,7 +14,7 @@
 
 - name: Create cryptotoken for key binding
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh cryptotoken create 
+    {{ ejbca_sh }} cryptotoken create 
     --token {{ item.0.crypto_token_name }} 
     --pin {{ item.0.tokenpass }} 
     --autoactivate {{ item.0.cryptotoken_enable_auto_activate }} 
@@ -40,7 +40,7 @@
 #    var: keybinding_cryptotoken
 
 - name: Query Key Binding
-  command: "{{ ejbca_home }}/bin/ejbca.sh keybind list"
+  command: "{{ ejbca_sh }} keybind list"
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -61,7 +61,7 @@
 
 - name: Create key binding for RA / SignServer / VA
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh keybind create 
+    {{ ejbca_sh }} keybind create 
     --name {{ item.0.name }} 
     --type AuthenticationKeyBinding 
     --token {{ item.0.crypto_token_name }} 
@@ -84,7 +84,7 @@
 
 - name: Create CSR for key binding
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh keybind gencsr 
+    {{ ejbca_sh }} keybind gencsr 
     --name {{ item.name }} 
     -f /var/tmp/{{ item.name }}.csr
   args:
@@ -104,7 +104,7 @@
 
 - name: Create end entity 
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh ra addendentity
+    {{ ejbca_sh }} ra addendentity
     --username "{{ item.name }}"
     --dn "{{ item.dn }}"
     --caname "{{ item.caname }}"
@@ -135,7 +135,7 @@
   
 - name: Sign CSR for key binding 
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh createcert 
+    {{ ejbca_sh }} createcert 
     --username {{ item.name }} 
     --password {{ entity_pass }} 
     -c /var/tmp/{{ item.name }}.csr 
@@ -157,7 +157,7 @@
 
 - name: Import cert for key binding 
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh keybind import 
+    {{ ejbca_sh }} keybind import 
     --name {{ item.name }} 
     -f /var/tmp/{{ item.name }}.crt
   loop: "{{ ejbca_keybinding }}"
@@ -175,7 +175,7 @@
 
 - name: Activate key binding 
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh keybind setstatus 
+    {{ ejbca_sh }} keybind setstatus 
     --name {{ item.name }} 
     -v Active
   loop: "{{ ejbca_keybinding }}"
@@ -193,7 +193,7 @@
 
 # TODO - Figure out why this can't be set via CLI, but works by setting in the UI
 #- name: Set Next Key Pair Alias 
-#  command: "{{ ejbca_home }}/bin/ejbca.sh keybind modify --name {{ item.0.name }} --nextkeypair {{ item.0.key_label }}"
+#  command: "{{ ejbca_sh }} keybind modify --name {{ item.0.name }} --nextkeypair {{ item.0.key_label }}"
 #  no_log: true
 #  become: yes
 #  become_user: "{{ ejbca_user }}"

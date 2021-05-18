@@ -6,7 +6,7 @@
 
     - name: Test that HSM slots are available for Database Protection
       include_tasks: hsm_test.yml
-      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
@@ -15,11 +15,11 @@
 
     - name: Generate key on HSM for Database Protection
       include_tasks: clienttoolbox_key_generation.yml
-      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') }}"
+      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
-      no_log: true
+      #no_log: true
       tags: clienttoolbox_key_generation
 
   when: 
@@ -237,12 +237,14 @@
 
     - name: Create External VA OCSP key update service template files to import with configdump
       template:
-        src: 'service-oscp-keyupdate.yaml.j2'
-        dest: '{{ ejbca_home }}/dump/va/services/ocspKeyUpdate-{{ item.name }}.yaml'
+        src: "service-oscp-keyupdate.yaml.j2"
+        dest: "{{ ejbca_home }}/dump/va/services/ocspKeyUpdate-{{ item.name }}.yaml"
       loop: "{{ ejbca_peerConnector }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: 
         - ("ocsp" in item.type)
-        - remote_key_update|bool
+        - item.remote_key_update|bool
 
     - name: Create external VA services and publisher with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"

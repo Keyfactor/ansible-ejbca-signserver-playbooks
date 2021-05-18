@@ -1,7 +1,7 @@
 ---
 
 - name: Query Peer Connectors
-  command: "{{ ejbca_home }}/bin/ejbca.sh peer list"
+  command: "{{ ejbca_sh }} peer list"
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -10,7 +10,7 @@
   changed_when: list_peer_connectors.rc == 0
 
 - name: Create Peer Connectors
-  command: "{{ ejbca_home }}/bin/ejbca.sh peer create --name '{{ item.name }}' --state {{ item.state| default('ENABLED') }} --url {{ item.url }} --akb '{{ item.keybinding }}' "
+  command: "{{ ejbca_sh }} peer create --name '{{ item.name }}' --state {{ item.state| default('ENABLED') }} --url {{ item.url }} --akb '{{ item.keybinding }}' "
   no_log: false
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -87,7 +87,7 @@
 #    var: peer_connection_info
 
 - name: Enable Process incoming requests in Peer Connection EJBCA >= 7.4.0
-  command: "{{ ejbca_home }}/bin/ejbca.sh peer edit --id {{ item.id }} --process-incoming-requests true --max-parallel-requests {{ ra_peer_max_parallel_reqs }} --min-parallel-requests {{ ra_peer_min_parallel_reqs }}"
+  command: "{{ ejbca_sh }} peer edit --id {{ item.id }} --process-incoming-requests true --max-parallel-requests {{ ra_peer_max_parallel_reqs }} --min-parallel-requests {{ ra_peer_min_parallel_reqs }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   loop: "{{ peer_connection_info }}"

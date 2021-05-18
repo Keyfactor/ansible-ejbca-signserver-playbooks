@@ -29,5 +29,6 @@
   pre_tasks:
     - include_vars: deployment_info/internal_ra_vars.yml      
   roles:
+    - ansible-ejbca-importcacrt
     - ansible-ejbca-httpd
     - ansible-ejbca-peer-in

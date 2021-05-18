@@ -51,12 +51,14 @@
 
     - name: Create External VA OCSP key update service template files to import with configdump
       template:
-        src: 'service-oscp-keyupdate.yaml.j2'
-        dest: '{{ ejbca_home }}/dump/va/services/ocspKeyUpdate-{{ item.name }}.yaml'
+        src: "service-oscp-keyupdate.yaml.j2"
+        dest: "{{ ejbca_home }}/dump/va/services/ocspKeyUpdate-{{ item.name }}.yaml"
       loop: "{{ ejbca_peerConnector }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: 
         - ("ocsp" in item.type)
-        - remote_key_update|bool
+        - item.remote_key_update|bool
 
     - name: Create external VA services and publisher with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"

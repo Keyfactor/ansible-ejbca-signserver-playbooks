@@ -1,14 +1,15 @@
 ---
 
-- name: Get {{ item.caname }} chain file
+- name: Get the {{ item.caname }} chain file
   command: >
     {{ ejbca_sh }} ca getcacert 
     --caname {{ item.caname }}
-    -f {{ identity_batch_output_dir }}/{{ item.caname }}
-    --include-full-chain
-  loop: "{{ httpd_trusted_cas }}"
-  loop_control:
-    label: "{{ item.caname }}"
+    {% if item.fullchain is defined and item.fullchain is sameas true %}
+    -f {{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt
+    --include-full-chain 
+    {% else %}
+    -f {{ identity_batch_output_dir }}/{{ item.caname }}.crt
+    {% endif %}
   become: yes
   become_user: "{{ ejbca_user }}"
   register: ejbca_get_ca_chain
@@ -16,22 +17,23 @@
   changed_when: ejbca_get_ca_chain.rc == 0
   tags: ejbca-cli-cacert
 
+- name: Create local directory for {{ ejbca_cacrt_dir_output }}
+  become: no
+  file:
+    path: "{{ ejbca_cacrt_dir_output }}"
+    state: directory
+  delegate_to: localhost
+
 - name: Copy {{ item.caname }} Chain file to localhost
   become: no
   fetch:
-    src: "{{ identity_batch_output_dir }}/{{ item.caname }}"
-    dest: "{{ ejbca_csr_dir_output }}/{{ item.caname }}"
+    src: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt{% else %}{{ identity_batch_output_dir }}/{{ item.caname }}.crt{% endif %}'
+    dest: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}-fullchain.crt{% else %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}.crt{% endif %}'
     flat: yes
-  loop: "{{ httpd_trusted_cas }}"
-  loop_control:
-    label: "{{ item.caname }}"
   tags: ejbca-cli-cacert
 
 - name: Cleanup the {{ item.caname }} Chain files
   file:
-    path: "{{ identity_batch_output_dir }}/{{ item.caname }}"
+    path: '{% if item.fullchain is defined and item.fullchain is sameas true %}"{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt"{% else %}"{{ identity_batch_output_dir }}/{{ item.caname }}.crt"{% endif %}'
     state: absent
-  loop: "{{ httpd_trusted_cas }}"
-  loop_control:
-    label: "{{ item.caname }}"
   tags: ejbca-cli-cacert
