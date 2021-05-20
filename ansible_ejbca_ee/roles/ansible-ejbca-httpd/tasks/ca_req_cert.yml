@@ -55,7 +55,7 @@
     register: ra_batch_result
     tags: reverse-proxy
 
-  - name: Get {{ item.caname }} chain file
+  - name: Get CA chain file
     command: >
       {{ ejbca_sh }} ca getcacert 
       --caname {{ item.caname }}
@@ -75,7 +75,7 @@
       label: "{{ item.caname }}"
     tags: ejbca-cli-cacert
 
-  - name: Add {{ item.caname }} chain file to trusted-ca.crt file
+  - name: Add CA chain file to trusted-ca.crt file
     shell: >
       cat /var/tmp/certstage/{{ item.caname }}-fullchain.crt >> /etc/pki/tls/certs/trusted-ca.crt
     loop: "{{ httpd_trusted_cas }}"
