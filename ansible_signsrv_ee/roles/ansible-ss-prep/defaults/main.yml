@@ -25,26 +25,6 @@ ant_version: apache-ant-1.10.9-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
 ant_checksum: sha256:5f8a85ddee6effe79163aa54c7bef6b60305e37200dedc1986437fb5c072a9f3
 
-hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
-
-# SignServer audit log database protection configurations
-# slot_index: Index of HSM slot used for database integrity protection
-# key_label: Label of key used for database integrity protection
-# signature_algorithm: Algorithm used to sign database rows
-# token_pin: PIN used to access HSM slot. Should be encrypted with Ansible vault
-#ejbca_databaseprotection:
-#  slot_label: DB_Protect_SLOT
-#  key_label: dbProtect00001
-#  signature_algorithm: SHA256WithRSA
-#  token_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
-#  hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
-signsrv_databaseprotection:
-  slot_label: DB_Protect_SLOT
-  key_label: dbProtect00001
-  signature_algorithm: SHA256WithRSA
-  token_pin: "{{ encrypted_signsrv_databaseprotection_token_pin | default('foo123') }}"
-  hsm_shared_library: /opt/softhsm/hsm_pkcs11.so
-
 # SignServer property files
 signsrv_templated_properties_files:
   - src: signserver_deploy.properties.j2

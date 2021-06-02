@@ -234,7 +234,7 @@
 #        name: "{{ line.item.0.name }}"
 #        type: "{{ line.item.0.useType}}"
 
-- name: Create local directories
+- name: Create local directory for {{ ejbca_csr_dir_output }}
   become: no
   file:
     path: "{{ ejbca_csr_dir_output }}"

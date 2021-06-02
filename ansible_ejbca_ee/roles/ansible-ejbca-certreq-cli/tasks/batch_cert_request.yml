@@ -95,7 +95,6 @@
       - ejbca_src_dir_name is defined
       - ejbca_type == "VA"
 
-
   - name: Copy {{ item.username }} certificate file to localhost
     become: no
     fetch:

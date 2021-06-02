@@ -15,6 +15,8 @@ identity_batch_output_dir: /var/tmp
 signsrv_group: wildfly
 signsrv_user: wildfly
 
+systemd_dir: /usr/lib/systemd/system
+
 # PKCS11 Crypto token properties
 p11_crypto_tokens:
   - id: 1

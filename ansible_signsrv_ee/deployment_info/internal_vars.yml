@@ -208,10 +208,45 @@ ms_code_signers:
         dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=Microsoft-Code-Signer-01"
         sig_alg: SHA256WithRSA
 
+# Microsoft CMS code signer properties
+ms_code_cms_signers_enabled: true
+ms_code_cms_signers:
+  - id: 50
+    name: MSAuthCodeCMSSigner
+    AuthType: NOAUTH
+    peer_enable: true
+    #Program_Name:
+    Allow_Program_Name_Override: false
+    #Program_Url:
+    Allow_Program_Url_Override: false
+    SignatureAlgorithm: SHA256WithRSA
+    DigestAlgorithm: SHA256
+    Tsa_Worker: "{{ ms_tsa_signers[0].name }}"
+    #Tsa_Url:
+    #TsaPolicyOid:
+    Timestamp_Format: AUTHENTICODE
+    Do_LogRequest_Digest: true
+    LogRequest_DefaultAlgorithm: SHA256
+    Do_LogResponse_Digest: true
+    LogResponse_DigestAlgorithm: SHA256
+    DisableKeyUsageCounter: false
+    template: ms_authcode_signer.properties.j2
+    CryptoToken: CryptoTokenP11
+    certprofile: signerCodeSigning-3y
+    eeprofile: "signers{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort}}-Sub-CA"
+    token: USERGENERATED
+    keys_to_gen:
+      - keyalg: RSA
+        keysize: 2048
+        keyalias: signKeyMsCodeSign0001
+        dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=Microsoft-Code-Signer-01"
+        sig_alg: SHA256WithRSA
+
 # Microsoft code timestamp signer properties
 ms_tsa_signers_enabled: true
 ms_tsa_signers:
-  - id: 50
+  - id: 60
     name: MSAuthCodeTimeStampSigner
     AuthType: NOAUTH
     peer_enable: true
@@ -237,7 +272,7 @@ ms_tsa_signers:
 # Plain signer properties
 plain_signers_enabled: true
 plain_signers:
-  - id: 60
+  - id: 70
     name: PlainSigner
     AuthType: NOAUTH
     peer_enable: true
@@ -261,7 +296,7 @@ plain_signers:
 # Java archive signer properties
 java_signers_enabled: true
 java_signers:
-  - id: 70
+  - id: 80
     name: JArchiveSigner 
     AuthType: NOAUTH
     peer_enable: true
@@ -297,7 +332,7 @@ java_signers:
 # Java CMS archive signer properties
 java_cms_signers_enabled: true
 java_cms_signers:
-  - id: 80
+  - id: 90
     name: JArchiveCmsSigner 
     AuthType: NOAUTH
     peer_enable: true
@@ -326,7 +361,7 @@ java_cms_signers:
 # XML signer properties
 xml_signers_enabled: true
 xml_signers:
-  - id: 90
+  - id: 100
     name: XMLSigner
     AuthType: NOAUTH    
     peer_enable: true
@@ -349,7 +384,7 @@ xml_signers:
 # DNS Zone signer properties
 dns_signers_enabled: true
 dns_signers:
-    - id: 100
+    - id: 110
       name: solitude.skyrim
       AuthType: NOAUTH
       SignatureAlgorithm: SHA256WithRSA
@@ -402,7 +437,7 @@ dns_signers:
 # Open PGP signer properties
 pgp_signers_enabled: true
 pgp_signers:
-  - id: 110
+  - id: 120
     name: OpenPgpSigner
     AuthType: NOAUTH    
     peer_enable: true
@@ -423,7 +458,7 @@ pgp_signers:
 # Ext CMS signer properties
 ext_cms_signers_enabled: true
 ext_cms_signers:
-  - id: 120
+  - id: 130
     name: ExtCmsSigner
     AuthType: NOAUTH    
     peer_enable: true
@@ -452,6 +487,13 @@ ext_cms_signers:
         keyalias: signKeyExtCmsSign0001
         dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=Ext-CMS-Signer-01"
         sig_alg: SHA256WithRSA
+
+# Ext CMS signer properties
+validation_workers_enabled: true
+validation_workers:
+  - id: 140
+    name: ExtCmsSigner
+    AuthType: NOAUTH  
 
 identity_info:
   - dn: 'ou=Devices,ou=Solitude,o=Skyrim'
