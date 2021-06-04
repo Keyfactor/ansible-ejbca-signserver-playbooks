@@ -198,7 +198,7 @@ httpd_create_aia_crl_dir: false
 
 httpd_identity_info:
   id_name: "{{ identity_info[0].name }}"
-  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"
+  id_ca_cert_file: "{{ organizationNameShort }}-Sub-CA.crt"
 
 identity_info:
   - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ocsp01.{{ organizationDomainName }}"

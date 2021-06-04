@@ -13,7 +13,7 @@
     path: "{{ ejbca_csr_dir_output }}"
     state: directory
   delegate_to: localhost
-  when: not ejbca_src_dir.stat.exists
+  when: not ejbca_csr_dir_output_exists.stat.exists
 
 - name: Create End Entities batch style 
   include_tasks: batch_cert_request.yml

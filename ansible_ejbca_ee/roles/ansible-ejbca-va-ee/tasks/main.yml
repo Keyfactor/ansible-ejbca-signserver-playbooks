@@ -36,7 +36,8 @@
     name: ansible-ejbca-cli-key-gen
   loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
   loop_control:
-        label: "{{ key_item.0.slot_identifier_value }}"
+        label: "{{ item.0.slot_identifier_value }}"
+  no_log: true
   when: ( "SoftCryptoToken" in item.0.tokentype ) 
 
 - name: Create OCSP Key Binding
