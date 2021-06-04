@@ -1,43 +1,12 @@
 ---
 
-- name: Query crypto tokens
-  command: "{{ ejbca_sh }} cryptotoken list"
-  no_log: true
-  become: yes
-  become_user: "{{ ejbca_user }}"
-  register: cryptoToken_list
-  changed_when: false
-
-#- name: Debug cryptoToken_list
-#  debug:
-#    var: cryptoToken_list
-
 - name: Create cryptotoken for key binding
-  command: >
-    {{ ejbca_sh }} cryptotoken create 
-    --token {{ item.0.crypto_token_name }} 
-    --pin {{ item.0.tokenpass }} 
-    --autoactivate {{ item.0.cryptotoken_enable_auto_activate }} 
-    --type {% if "soft" == item.0.tokentype %}"SoftCryptoToken"{% elif "org.cesecore.keys.token.PKCS11CryptoToken" == item.0.tokentype or "PKCS11CryptoToken" == item.0.tokentype %}"PKCS11CryptoToken" 
-    --lib "{{ hsm_shared_library }}" 
-    --slotlabel "{{ item.0.slot_identifier_value }}"
-    --slotlabeltype "{{ item.0.slot_identifier_type }}"{% endif %}
-  loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
-  loop_control:
-    label: "{{ item.0.crypto_token_name }}"
+  include_role: 
+    name: ansible-ejbca-crypto-token
+  loop: "{{ key_bindings }}"
   no_log: true
-  become: yes
-  become_user: "{{ ejbca_user }}"
-  register: keybinding_cryptotoken
-  failed_when: keybinding_cryptotoken.rc >= 2
-  #changed_when: keybinding_cryptotoken.rc == 0
   when: 
-    - item.0.crypto_token_name not in cryptoToken_list.stdout
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
-
-#- name: Debug keybinding_cryptotoken
-#  debug:
-#    var: keybinding_cryptotoken
 
 - name: Query Key Binding
   command: "{{ ejbca_sh }} keybind list"
@@ -71,7 +40,7 @@
     --cert null
   become: yes
   become_user: "{{ ejbca_user }}"
-  loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
+  loop: "{{ key_bindings |subelements('crypto_token') }}"
   loop_control:
     label: "{{ item.0.name }}"
   no_log: true
@@ -89,7 +58,7 @@
     -f /var/tmp/{{ item.name }}.csr
   args:
     creates: "/var/tmp/{{ item.name }}.csr"
-  loop: "{{ ejbca_keybinding }}"
+  loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
   no_log: true
@@ -113,7 +82,7 @@
     --password {{ entity_pass }}
     --certprofile {{ item.certprofile }}
     --eeprofile {{ item.eeprofile }}
-  loop: "{{ ejbca_keybinding }}"
+  loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
   no_log: true
@@ -142,7 +111,7 @@
     -f /var/tmp/{{ item.name }}.crt
   args:
     creates: "/var/tmp/{{ item.name }}.crt"
-  loop: "{{ ejbca_keybinding }}"
+  loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
   no_log: true
@@ -160,7 +129,7 @@
     {{ ejbca_sh }} keybind import 
     --name {{ item.name }} 
     -f /var/tmp/{{ item.name }}.crt
-  loop: "{{ ejbca_keybinding }}"
+  loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
   no_log: true
@@ -178,7 +147,7 @@
     {{ ejbca_sh }} keybind setstatus 
     --name {{ item.name }} 
     -v Active
-  loop: "{{ ejbca_keybinding }}"
+  loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
   no_log: true
@@ -203,7 +172,7 @@
 
 - name: Determine certificate serial number
   command: "openssl x509 -noout -serial -in /var/tmp/{{ item.name }}.crt"
-  loop: "{{ ejbca_keybinding }}"
+  loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
   no_log: true
@@ -241,7 +210,7 @@
     state: directory
   delegate_to: localhost
 
-- name: Write cert serial numbers to file for use with EJBCA VA or RA playbooks 
+- name: Write cert serial numbers to {{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
   become: no
   copy:
     dest: "{{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml"
@@ -250,7 +219,7 @@
   register: write_the_output
   no_log: true
 
-- name: Write cert serial numbers to shared vars directory for use with EJBCA VA or RA playbooks 
+- name: Write cert serial numbers to shared vars directory {{ sharedVarsLocation }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
   become: no
   copy:
     dest: "{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml"

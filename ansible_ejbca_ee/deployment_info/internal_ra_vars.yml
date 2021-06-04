@@ -5,18 +5,18 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "6May2021-Skyrim-SA"
+superAdminCn: "3Jun2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
-wildfly_version: 23.0.1.Final
+wildfly_version: 23.0.2.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
 wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
 wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboss_client_checksum: sha256:8f974f36a927b8a51f2ef807c58e10960bc502c1caa5b93722e3dc913c74c466 #WF 23
+wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 

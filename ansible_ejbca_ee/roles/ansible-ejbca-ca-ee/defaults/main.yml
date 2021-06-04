@@ -41,24 +41,6 @@ preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
 hsm_shared_library: /usr/lib64/libsofthsm2.so
 
-# List of HSM slots that should be tested that they are accessible
-#management_test_slots:
-#  - slot_identifier: i0
-#    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
-#  - slot_identifier: "{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
-#  - slot_identifier: "{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ encrypted_rootca_token_pin | default('foo123') }}"
-#  - slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier }}"
-#    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
-
-# List of HSM slots that should be tested that they are accessible
-#sub_test_slots:
-#  - slot_identifier: i0
-#    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
-#  - slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
-
 # EJBCA audit log database protection configurations
 # slot_index: Index of HSM slot used for database integrity protection
 # key_label: Label of key used for database integrity protection
@@ -331,116 +313,6 @@ sub_add_certification_authorities:
       signkey_label: "signKey00001"
       defaultkey_label: "defaultKey00001"
       testkey_label: "testKey"
-  #- caname: "{{ organizationNameShort }}-Sub-CA"
-  #  certprofile: "SubCA-{{ organizationName }}-G1"
-  #  dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-  #  rootDn: "External"
-  #  subjectaltname: ""
-  #  validity: "3650"
-  # validity_yml: "10y"
-  #  policy: "null"
-  #  keytype: "RSA"
-  # keyspec: "3072"
-  #  signalg: "SHA384WithRSA"
-  #  tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
-  #  tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
-  #  defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort }}-subca-g1.crl"
-  #  defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-  #  authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}SubCAG1.p7b"
-  #  certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}SubCAG1.p7b"
-  #  crlPeriod: 259200000
-  #  crlIssueInterval: 86400000
-  #  useLdapDnOrder: false
-  #  doEnforceUniqueDistinguishedName: false
-  #  externalcachain_url: http://it-ca.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
-  #  externalcachain_file: /var/tmp/rootca.pem
-  #  pkcs11_token:
-  #    slot_identifier_type: "SLOT_LABEL"
-  #    slot_identifier_value: "Sub_CA_SLOT"
-  #    signkey_label: "signKey00001"
-  #    defaultkey_label: "defaultKey00001"
-  #    testkey_label: "testKey"
-
-# List of HSM keys that should be generated using clientToolBox
-# key_label: Key label
-# key_size: RSA key size, name of ECC curve or DSA key using syntax DSAnnnn
-# slot_identifier: Slot identifier
-# slot_pin: Slot PIN
-# slot_conf: Dict of parameters if slot config file is used
-# src: Slot config template
-# dest: Slot config destination
-#management_generate_hsm_keys:
-#  - key_label: "{{ ejbca_databaseprotection.key_label }}"
-#    key_size: "{{ ejbca_databaseprotection.key_size }}"
-#    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
-#    slot_label: "{{ ejbca_databaseprotection.slot_label }}"
-#    #slot_conf:
-#      #src: "slot-module.cfg.j2"
-#      #dest: "{{ ejbca_home }}/../ejbca-custom/slot-dbprotect.cfg"
-#    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
-#  - key_label: "{{ ejbca_databaseprotection.testkey_label }}"
-#    key_size: "1024"
-#    slot_identifier: "{{ ejbca_databaseprotection.slot_identifier_type }}:{{ ejbca_databaseprotection.slot_label }}"
-#    slot_lable: "{{ ejbca_databaseprotection.slot_label }}"
-#    slot_pin: "{{ ejbca_databaseprotection.token_pin }}"
-#  - key_label: "{{ management_add_certification_authorities[0].pkcs11_token.signkey_label }}"
-#    key_size: "{{ management_add_certification_authorities[0].keyspec }}"
-#    slot_identifier: "{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ management_add_certification_authorities[0].tokenpass }}"
-#  - key_label: "{{ management_add_certification_authorities[0].pkcs11_token.defaultkey_label }}"
-#    key_size: "{{ management_add_certification_authorities[0].keyspec }}"
-#    slot_identifier: "{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ management_add_certification_authorities[0].tokenpass }}"
-#  - key_label: "{{ management_add_certification_authorities[0].pkcs11_token.testkey_label }}"
-#    key_size: "1024"
-#    slot_identifier: "{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ management_add_certification_authorities[0].tokenpass }}"
-#  - key_label: "{{ management_add_certification_authorities[1].pkcs11_token.signkey_label }}"
-#    key_size: "{{ management_add_certification_authorities[1].keyspec }}"
-#    slot_identifier: "{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ management_add_certification_authorities[1].tokenpass }}"
-#  - key_label: "{{ management_add_certification_authorities[1].pkcs11_token.defaultkey_label }}"
-#    key_size: "{{ management_add_certification_authorities[1].keyspec }}"
-#    slot_identifier: "{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ management_add_certification_authorities[1].tokenpass }}"
-#  - key_label: "{{ management_add_certification_authorities[1].pkcs11_token.testkey_label }}"
-#    key_size: "1024"
-#    slot_identifier: "{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_type }}:{{ management_add_certification_authorities[1].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ management_add_certification_authorities[1].tokenpass }}"
-#  - key_label: "{{ ejbca_peer_crypto_token[0].ocsp_key_label }}"
-#    key_size: "{{ ejbca_peer_crypto_token[0].ocsp_key_size }}"
-#    slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier}}"
-#    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
-#  - key_label: "{{ ejbca_peer_crypto_token[0].ra_key_label }}"
-#    key_size:  "{{ ejbca_peer_crypto_token[0].ra_key_size }}"
-#    slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier }}"
-#    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
-#  - key_label: "{{ ejbca_peer_crypto_token[0].sign_key_label }}"
-#    key_size:  "{{ ejbca_peer_crypto_token[0].sign_key_size }}"
-#    slot_identifier: "{{ ejbca_peer_crypto_token[0].slot_identifier }}"
-#    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
-# List of HSM keys that should be generated using clientToolBox
-# key_label: Key label
-# key_size: RSA key size, name of ECC curve or DSA key using syntax DSAnnnn
-# slot_identifier: Slot identifier
-# slot_pin: Slot PIN
-# slot_conf: Dict of parameters if slot config file is used
-# src: Slot config template
-# dest: Slot config destination
-#sub_generate_hsm_keys:
-#  - key_label: "{{ sub_add_certification_authorities[0].pkcs11_token.signkey_label }}"
-#    key_size: "{{ sub_add_certification_authorities[0].keyspec }}"
-#    slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ sub_add_certification_authorities[0].tokenpass }}"
-#  - key_label: "{{ sub_add_certification_authorities[0].pkcs11_token.defaultkey_label }}"
-#    key_size: "{{ sub_add_certification_authorities[0].keyspec }}"
-#    slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ sub_add_certification_authorities[0].tokenpass }}"
-#  - key_label: "{{ sub_add_certification_authorities[0].pkcs11_token.testkey_label }}"
-#    key_size: "1024"
-#    slot_identifier: "{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_type }}:{{ sub_add_certification_authorities[0].pkcs11_token.slot_identifier_value }}"
-#    slot_pin: "{{ sub_add_certification_authorities[0].tokenpass }}"
-
 
 # List of end entities that should be added using CLI
 # username: Username in EJBCA
@@ -648,8 +520,6 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump3/scep-config/device.yaml'
   - src: 'scep-firewall.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/scep-config/firewall.yaml'
-  #- src: 'role-ra-inTune-Connector.yaml.j2'
-    #dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-inTune-Connector.yaml'
   - src: 'role-userEnrollment.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-userEnrollment.yaml'
   - src: 'role-ra-est.yaml.j2'
@@ -659,8 +529,6 @@ configdump_files:
     # Files for External VA
   - src: 'service-oscpService.yaml.j2'
     dest: '{{ ejbca_home }}/dump/va/services/oscpService.yaml'
-  #- src: 'service-oscp-keyupdate.yaml.j2'
-  #  dest: '{{ ejbca_home }}/dump/va/services/oscp-keyupdate.yaml'
     # Files for External RA
   - src: 'role-ra-peer-connection.yaml.j2'
     dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'

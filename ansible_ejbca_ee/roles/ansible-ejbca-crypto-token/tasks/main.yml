@@ -1,0 +1,6 @@
+---
+# tasks file for roles/ansible-ejbca-crypto-token
+
+- name: Create crypto tokens in EJBCA
+  include_tasks: add_crypto_token.yml
+  no_log: true

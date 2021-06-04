@@ -4,23 +4,15 @@
 - name: Database Protection Keys
   block:
 
-    - name: Test that HSM slots are available for Database Protection
-      include_tasks: hsm_test.yml
+    - name: Generate Keys for Database Protection
+      include_role:
+        name: ansible-ejbca-ctb-keygen
       loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
       no_log: true
-      tags: hsm_test
-
-    - name: Generate key on HSM for Database Protection
-      include_tasks: clienttoolbox_key_generation.yml
-      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
-      loop_control:
-        label: "{{ key_item.0.slot_identifier_value }}"
-        loop_var: key_item
-      #no_log: true
-      tags: clienttoolbox_key_generation
+      tags: hsm_test, clienttoolbox_key_generation
 
   when: 
     - ejbca_databaseprotection[0] is defined
@@ -32,70 +24,45 @@
 - name: Management & Root CA Keys
   block:
 
-    - name: Test that HSM slots are available for Management & Root CA's
-      include_tasks: hsm_test.yml
+    - name: Generate Keys for Management & Root CA's
+      include_role:
+        name: ansible-ejbca-ctb-keygen 
       loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
       no_log: true
-      tags: hsm_test
-
-    - name: Generate key on HSM for Management & Root CA's
-      include_tasks: clienttoolbox_key_generation.yml
-      loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
-      loop_control:
-        label: "{{ key_item.0.caname }}"
-        loop_var: key_item
-      no_log: true
-      tags: clienttoolbox_key_generation
+      tags: hsm_test, clienttoolbox_key_generation
   
   when: management_add_certification_authorities[0] is defined
 
 - name: Sub CA Keys
   block:
 
-    - name: Test that HSM slots are available for Sub CA's
-      include_tasks: hsm_test.yml
+    - name: Generate Keys for Sub CA's
+      include_role:
+        name: ansible-ejbca-ctb-keygen
       loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
       no_log: true
-      tags: hsm_test
-
-    - name: Generate key on HSM for Sub CA's
-      include_tasks: clienttoolbox_key_generation.yml      
-      loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
-      loop_control:
-        label: "{{ key_item.0.caname }}"
-        loop_var: key_item
-      no_log: true
-      tags: clienttoolbox_key_generation
+      tags: hsm_test, clienttoolbox_key_generation
 
   when: sub_add_certification_authorities[0] is defined
 
 - name: Key Binding Keys
   block:
 
-    - name: Test that HSM slots are available for Key Bindings
-      include_tasks: hsm_test.yml
+    - name: Generate Keys for Key Bindings
+      include_role:
+        name: ansible-ejbca-ctb-keygen
       loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
       no_log: true
-      tags: hsm_test
-      when: ("PKCS11CryptoToken" in key_item.0.tokentype)
-
-    - name: Generate key on HSM for Key Bindings
-      include_tasks: clienttoolbox_key_generation.yml      
-      loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
-      loop_control:
-        label: "{{ key_item.0.slot_identifier_value }}"
-        loop_var: key_item
-      no_log: true
-      tags: clienttoolbox_key_generation
+      tags: hsm_test, clienttoolbox_key_generation
       when: ("PKCS11CryptoToken" in key_item.0.tokentype)
 
   when: ejbca_keybinding[0] is defined
@@ -112,7 +79,8 @@
   block:
 
     - name: Create crypto tokens for Management & Root CA's
-      include_tasks: add_crypto_token.yml
+      include_role: 
+        name: ansible-ejbca-crypto-token
       loop: "{{ management_add_certification_authorities }}"
       no_log: true
 
@@ -164,7 +132,8 @@
   block:
 
     - name: Create crypto tokens for Sub CA's
-      include_tasks: add_crypto_token.yml
+      include_role: 
+        name: ansible-ejbca-crypto-token
       loop: "{{ sub_add_certification_authorities }}"
       no_log: true
 
@@ -213,13 +182,18 @@
 
   when: sub_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
 
-- name: Create Key Binding 
-  include_tasks: add_keybinding_ca.yml
+- name: Create Key Binding for Peering
+  include_role:
+    name: ansible-ejbca-key-binding
+  vars:
+    key_bindings: "{{ ejbca_keybinding }}"
+    auth_key_bind: true
   when: 
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
 - name: Create Peer Connector
-  include_tasks: add_peer_conn.yml
+  include_role:
+    name: ansible-ejbca-peer-connector
   when: use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
 - name: Add External VA setup to EJBCA

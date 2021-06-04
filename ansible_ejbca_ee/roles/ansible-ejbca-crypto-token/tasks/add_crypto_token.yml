@@ -12,10 +12,10 @@
 #  debug:
 #    var: item
 
-- name: Create cryptotoken for {{ item.caname }}
+- name: Create cryptotoken for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}
   command: >
     {{ ejbca_sh }} cryptotoken create 
-    --token {{ item.caname }} 
+    --token {% if item.crypto_token_name is defined %}"{{ item.crypto_token_name }}"{% else %}"{{ item.caname }}"{% endif %} 
     --pin {{ item.tokenpass }} 
     --autoactivate {{ item.cryptotoken_enable_auto_activate }} 
     --type {% if "soft" == item.tokentype %}"SoftCryptoToken"{% elif "org.cesecore.keys.token.PKCS11CryptoToken" == item.tokentype or "PKCS11CryptoToken" == item.tokentype %}"PKCS11CryptoToken" 
@@ -28,4 +28,4 @@
   register: add_cryptotoken
   failed_when: add_cryptotoken.rc >= 2
   #changed_when: keybinding_cryptotoken.rc == 0
-  when: item.caname not in cryptoToken_list.stdout
+  when: (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or (item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
