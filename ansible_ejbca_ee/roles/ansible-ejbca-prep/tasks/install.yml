@@ -75,7 +75,7 @@
   register: ejbca_src_dir
   changed_when: false
 
-- name: Copy and unpack EJBCA from Ansible controller
+- name: Upload and unpack EJBCA from Ansible controller
   unarchive:
     src: "{{ ejbca_remote_dir }}"
     dest: /opt
