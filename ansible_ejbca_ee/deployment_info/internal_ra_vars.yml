@@ -41,9 +41,13 @@ ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-jav
 # Maria DB JDBC driver SHA256 hash
 ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 
-ejbca_version: 7.5.0
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_RA.zip
-ejbca_src_dir_name: ejbca_ee_7_5_0_RA
+# EJBCA version and deployment info
+ejbca_version: 7.5.0.2
+# If enabled Ansible controller is used as software repository
+use_local_repository: false
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_5_0_2_RA.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_2_RA.zip
+ejbca_src_dir_name: ejbca_ee_7_5_0_2_RA
 ejbca_type: RA
 
 # Location to write the CRL files on server

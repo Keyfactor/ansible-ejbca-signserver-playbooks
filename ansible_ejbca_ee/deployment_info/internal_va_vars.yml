@@ -43,10 +43,13 @@ wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7e
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
-
-ejbca_version: 7.5.0
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_VA.zip
-ejbca_src_dir_name: ejbca_ee_7_5_0_VA
+# EJBCA version and deployment info
+ejbca_version: 7.5.0.2
+# If enabled Ansible controller is used as software repository
+use_local_repository: false
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_5_0_2_VA.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_2_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_5_0_2_VA
 ejbca_type: VA
 
 # Location to write the CRL files on server

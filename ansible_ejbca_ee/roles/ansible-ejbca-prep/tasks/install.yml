@@ -75,12 +75,23 @@
   register: ejbca_src_dir
   changed_when: false
 
+- name: Copy and unpack EJBCA from Ansible controller
+  unarchive:
+    src: "{{ ejbca_remote_dir }}"
+    dest: /opt
+  when: 
+    - not ejbca_src_dir.stat.exists
+    - use_local_repository|bool
+  register: unpacked_local_ejbca
+
 - name: Download and unpack EJBCA EE archive
   unarchive:
     src: "{{ ejbca_software_url }}"
     dest: /opt
     remote_src: yes
-  when: not ejbca_src_dir.stat.exists
+  when: 
+    - not ejbca_src_dir.stat.exists
+    - not use_local_respository|bool
   register: unpacked_ejbca
 
 - name: Create symlink to installed version
