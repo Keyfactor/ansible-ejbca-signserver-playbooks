@@ -3,23 +3,15 @@
 - name: Database Protection Keys
   block:
 
-    - name: Test that HSM slots are available for Database Protection
-      include_tasks: hsm_test.yml
+    - name: Generate Keys for Database Protection
+      include_role:
+        name: ansible-ejbca-ctb-keygen
       loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
       no_log: true
-      tags: hsm_test
-
-    - name: Generate key on HSM for Database Protection
-      include_tasks: clienttoolbox_key_generation.yml
-      loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
-      loop_control:
-        label: "{{ key_item.0.slot_identifier_value }}"
-        loop_var: key_item
-      no_log: true
-      tags: clienttoolbox_key_generation
+      tags: hsm_test, clienttoolbox_key_generation
 
   when: 
     - ejbca_databaseprotection[0] is defined
@@ -30,25 +22,17 @@
 
 - name: Suborindated CA Keys
   block:
-
-    - name: Test that HSM slots are available for Suborindated CA's
-      include_tasks: hsm_test.yml
+ 
+    - name: Generate Keys for Suborindated CA's
+      include_role:
+        name: ansible-ejbca-ctb-keygen 
       loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
       no_log: true
-      tags: hsm_test
+      tags: hsm_test, clienttoolbox_key_generation
 
-    - name: Generate key on HSM for Suborindated CA's
-      include_tasks: clienttoolbox_key_generation.yml
-      loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
-      loop_control:
-        label: "{{ key_item.0.caname }}"
-        loop_var: key_item
-      no_log: true
-      tags: clienttoolbox_key_generation
-  
   when: add_certification_authorities[0] is defined
 
 - name: Check deployment
@@ -66,7 +50,8 @@
   block:
 
     - name: Create crypto tokens for Suborindated CA's
-      include_tasks: add_crypto_token.yml
+      include_role: 
+        name: ansible-ejbca-crypto-token
       loop: "{{ add_certification_authorities }}"
       no_log: true
 

@@ -9,8 +9,6 @@
   vars:
     ejbca_src_dir: "{{ ejbca_src_dir_name }}"
     ejbca_software_url: "{{ ejbca_software_ee_url }}"
-    ejbca_group: ejbca
-    ejbca_user: ejbca
   roles:
     - ansible-ejbca-upgrade
 
@@ -22,11 +20,9 @@
     - include_vars: customer_info/customer_vars.yml
   vars:
     ejbca_src_dir: "{{ ejbca_src_dir_name }}"
-    ejbca_software_url: "{{ ejbca_software_ee_url }}"
-    ejbca_group: ejbca
-    ejbca_user: ejbca
-    - ansible-ejbca-complete-upgrade
+    ejbca_software_url: "{{ ejbca_software_ee_url }}"    
   roles:
+    - ansible-ejbca-complete-upgrade
 
 - hosts: ejbcaRaServers
   become: yes
@@ -37,8 +33,6 @@
   vars:
     ejbca_src_dir: "{{ ejbca_src_dir_name }}_RA"
     ejbca_software_url: "{{ ejbca_software_ra_url }}"
-    ejbca_group: ejbcara
-    ejbca_user: ejbcara
   roles:
     - ansible-ejbca-upgrade
 
@@ -51,8 +45,6 @@
   vars:
     ejbca_src_dir: "{{ ejbca_src_dir_name }}_RA"
     ejbca_software_url: "{{ ejbca_software_ra_url }}"
-    ejbca_group: ejbcara
-    ejbca_user: ejbcara
   roles:
     - ansible-ejbca-complete-upgrade
 
@@ -65,8 +57,6 @@
   vars:
     ejbca_src_dir: "{{ ejbca_src_dir_name }}_VA"
     ejbca_software_url: "{{ ejbca_software_va_url }}"
-    ejbca_group: ejbcava
-    ejbca_user: ejbcava
   roles:
     - ansible-ejbca-upgrade
 
@@ -79,7 +69,5 @@
   vars:
     ejbca_src_dir: "{{ ejbca_src_dir_name }}_VA"
     ejbca_software_url: "{{ ejbca_software_va_url }}"
-    ejbca_group: ejbcava
-    ejbca_user: ejbcava
   roles:
     - ansible-ejbca-complete-upgrade

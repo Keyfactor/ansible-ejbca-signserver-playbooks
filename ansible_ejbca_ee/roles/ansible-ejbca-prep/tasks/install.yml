@@ -7,7 +7,6 @@
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
 
-
 - name: Install OpenJDK Development, unzip CentOS/RHEL 8
   package:
     name: "{{ ejbca_packages_8 }}"
@@ -76,12 +75,23 @@
   register: ejbca_src_dir
   changed_when: false
 
+- name: Upload and unpack EJBCA from Ansible controller
+  unarchive:
+    src: "{{ ejbca_remote_dir }}"
+    dest: /opt
+  when: 
+    - not ejbca_src_dir.stat.exists
+    - use_local_repository|bool
+  register: unpacked_local_ejbca
+
 - name: Download and unpack EJBCA EE archive
   unarchive:
     src: "{{ ejbca_software_url }}"
     dest: /opt
     remote_src: yes
-  when: not ejbca_src_dir.stat.exists
+  when: 
+    - not ejbca_src_dir.stat.exists
+    - not use_local_respository|bool
   register: unpacked_ejbca
 
 - name: Create symlink to installed version

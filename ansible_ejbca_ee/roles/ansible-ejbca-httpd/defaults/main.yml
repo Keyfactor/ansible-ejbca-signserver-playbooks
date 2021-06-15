@@ -12,10 +12,8 @@ ejbca_user: wildfly
 
 enable_firewalld_for_httpd: true
 
-add_mgmt_ca: true
-
 httpd_identity_info:
-  id_name: ocsp01.solitude.skyrim
+  id_name: "{{ inventory_hostname }}"
   id_ca_cert_file: ManagementCA.crt
   
 httpd_packages:

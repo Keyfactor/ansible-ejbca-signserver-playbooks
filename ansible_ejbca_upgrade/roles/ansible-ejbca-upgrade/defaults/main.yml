@@ -5,7 +5,10 @@ ejbca_root_dir: /opt
 ejbca_home: "{{ ejbca_root_dir }}/ejbca"
 wildfly_install_dir: /opt
 wildfly_home: "{{ wildfly_install_dir }}/wildfly"
-ejbca_src_link_dir: "{{  ejbca_root_dir }}/ejbca"
+ejbca_src_link_dir: "{{ ejbca_root_dir }}/ejbca"
+ejbca_group: wildfly
+ejbca_user: wildfly
+
 
 ejbca_force_build_ear: false
 

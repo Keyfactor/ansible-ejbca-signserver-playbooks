@@ -1,0 +1,5 @@
+---
+# tasks file for roles/ansible-ejbca-cli-key-gen
+
+- name: Generate key using CLI on crypto token
+  include_tasks: create_keys.yml

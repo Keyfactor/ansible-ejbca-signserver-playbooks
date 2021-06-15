@@ -1,0 +1,70 @@
+---
+
+- name: check if key binding exists
+  command: "{{ ejbca_sh }} keybind list"
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_exists
+  failed_when: keybinding_exists.rc >= 2
+  changed_when: false
+
+#- debug:
+#    var: keybinding_exists
+
+#- debug:
+#    msg: "Key is not created for {{item.item.name}}"
+#  loop: "{{ keybinding_exists.results }}"
+#  loop_control:
+#    label: "{{ item.stdout }}"
+#  when: item.item.name not in item.stdout
+
+- name: Create key binding 
+  command: >
+    {{ ejbca_sh }} keybind create 
+    --name {{ item.0.name }} 
+    --type OcspKeyBinding 
+    --token {{ item.0.crypto_token_name }} 
+    --status ACTIVE 
+    --alias {{ item.1.key_label }} 
+    --sigalg {{ item.0.signature_algorithm }} 
+    --cert null 
+    -untilNextUpdate {{ item.0.until_next_update| default('60') }}
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_create
+  loop: "{{ key_bindings |subelements('crypto_token') }}"
+  when: item.0.name not in keybinding_exists.stdout
+
+- name: Create CSR for key binding 
+  command: >
+    {{ ejbca_sh }} keybind gencsr 
+    --name {{ item.name }} 
+    -f /var/tmp/{{ item.name }}.csr
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_create_csr
+  loop: "{{ key_bindings }}"
+  when: item.name not in keybinding_exists.stdout
+
+- name: Copy certificate to localhost
+  become: no
+  fetch:
+    src: "/var/tmp/{{ item.name }}.csr"
+    dest: "{{ ejbca_csr_dir_output }}/"
+    flat: yes
+  loop: "{{ key_bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+  when: item.name not in keybinding_exists.stdout
+
+- name: Cleanup the cert files in /var/tmp
+  file:
+    path: "/var/tmp/{{ item.name }}.csr"
+    state: absent
+  loop: "{{ key_bindings }}"
+  no_log: true
+  when: item.name not in keybinding_exists.stdout

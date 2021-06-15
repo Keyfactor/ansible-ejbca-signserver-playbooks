@@ -35,13 +35,21 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
-# EJBCA version and deployment info
-ejbca_version: 7.4.3.3
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_4_3_3.zip
-ejbca_src_dir_name: ejbca_ee_7_4_3_3
-ejbca_type: CA
+# Maria DB JDBC driver download URL
 ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+# Maria DB JDBC driver SHA256 hash
 ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+
+
+# EJBCA version and deployment info
+ejbca_version: 7.5.0.2
+# If enabled Ansible controller is used as software repository
+use_local_repository: false
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_5_0_2.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_2.zip
+ejbca_src_dir_name: ejbca_ee_7_5_0_2
+ejbca_type: CA
+
 # Location to write the CRL files on server
 ejbca_crl_dir_enabled: true
 ejbca_crl_dir:
@@ -51,15 +59,12 @@ ejbca_crl_dir:
 ant_version: apache-ant-1.10.9-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
 
-wildfly_version: 23.0.0.Final
+wildfly_version: 23.0.2.Final
 wildfly_checksum: sha256:08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01 #tar.gz file
-#wildfly_checksum: sha256:0ec1c475212258bca43c5351197a4b5b3d050b2b4d53f3f331e530ea424aa819 #zip file
 wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.6
-wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-#wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c #WF 22
-wildfly_jboss_client_checksum: sha256:6d41c7f3ba33cbcfb1a5a639eccc1d04c494f855f15324e175736c4ac184336d #WF 23
+wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
 wildfly_download_url: "http://172.16.170.133:8080/ejbca/wildfly-22.0.1.Final.tar.gz"
 wildfly_download_file: "{{ wildfly_name }}.tar.gz"
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
