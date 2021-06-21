@@ -6,11 +6,6 @@
   pre_tasks:
     - include_vars: deployment_info/internal_ca_subdorinate_vars.yml
   vars:
-    # Deploy Management, Root, and Sub CA all on a single EJBCA node. This is the original task setup for this playbook. 
-    deploy_mgmt_root_sub: false
-    # Deploy a CA that is subordinated to a Root CA that could be external or on the same EJBCA node.
-    # The current outcome is to manually sign the CSR.
-    deploy_subordinate_ca: true
     # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
     # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
     # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
@@ -23,4 +18,4 @@
     configdump_directory_structure: "{{ sub_configdump_dir_structure }}"
     configdump_import_files: "{{ sub_configdump_files }}"
   roles:
-    - ansible-ejbca-ca-ee
+    - ansible-ejbca-deploy-pki-ext-signed-sub-1

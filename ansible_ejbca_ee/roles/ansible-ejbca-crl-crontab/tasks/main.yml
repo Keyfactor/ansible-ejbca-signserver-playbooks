@@ -1,0 +1,7 @@
+---
+# tasks file for roles/ansible-ejbca-crl-crontab
+
+- name: Create a Crontab to download CRL's for hosting on webserver
+  include_tasks: config_crontab.yml
+  when: 
+    - enable_crl_crontab|bool

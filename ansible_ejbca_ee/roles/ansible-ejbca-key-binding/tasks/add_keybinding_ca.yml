@@ -3,7 +3,8 @@
 - name: Create cryptotoken for key binding
   include_role: 
     name: ansible-ejbca-crypto-token
-  loop: "{{ key_bindings }}"
+  vars:
+    crypto_tokens: "{{ key_bindings }}"
   no_log: true
   when: 
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool

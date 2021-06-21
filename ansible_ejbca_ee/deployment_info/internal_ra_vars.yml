@@ -5,18 +5,20 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "3Jun2021-Skyrim-SA"
+superAdminCn: "21Jun2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
-wildfly_version: 23.0.2.Final
+wildfly_version: 24.0.0.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
 wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
-wildfly_galleon_version: 4.2.6
-wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
+wildfly_galleon_version: 4.2.8
+#wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
+wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
+#wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
+wildfly_jboss_client_checksum: sha256:fb633ed945d21de548b266f09b9467295571e429a301eae456713424cbc23464 # WF 24
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -42,12 +44,12 @@ ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-jav
 ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 
 # EJBCA version and deployment info
-ejbca_version: 7.5.0.2
+ejbca_version: 7.6.0
 # If enabled Ansible controller is used as software repository
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_5_0_2_RA.zip
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_2_RA.zip
-ejbca_src_dir_name: ejbca_ee_7_5_0_2_RA
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_6_0_RA.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_6_0_RA.zip
+ejbca_src_dir_name: ejbca_ee_7_6_0_RA
 ejbca_type: RA
 
 # Location to write the CRL files on server

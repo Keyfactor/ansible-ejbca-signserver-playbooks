@@ -1,0 +1,20 @@
+---
+# tasks file for roles/ansible-ejbca-scp-publisher
+
+- name: Setup SCP publishing
+  include_tasks: setup_scp_publishing.yml
+  tags: setup_scp_publishing
+  when: 
+    - management_known_hosts[0] is defined
+
+- name: Setup localhost SCP publishing receiving users
+  include_tasks: setup_localhost_scp_users.yml
+  tags: setup_localhost_scp_users
+  when:
+    -  management_scp_localhost_receiving_users[0] is defined
+
+- name: Setup localhost SCP publishing archive directories
+  include_tasks: setup_localhost_scp_archives.yml
+  tags: setup_localhost_scp_archives
+  when: 
+    - management_scp_localhost_archive_dirs[0] is defined

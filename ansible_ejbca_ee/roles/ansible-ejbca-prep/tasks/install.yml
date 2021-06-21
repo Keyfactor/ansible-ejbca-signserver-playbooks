@@ -91,7 +91,7 @@
     remote_src: yes
   when: 
     - not ejbca_src_dir.stat.exists
-    - not use_local_respository|bool
+    - not use_local_repository|bool
   register: unpacked_ejbca
 
 - name: Create symlink to installed version

@@ -1,0 +1,28 @@
+---
+# tasks file for roles/ansible-ejbca-crypto-token
+
+- name: Query keys on {{ item.0.crypto_token_name }}
+  command: >
+    {{ ejbca_sh }} cryptotoken listkeys --token {% if key_item.0.crypto_token_name is defined %}"{{ key_item.0.crypto_token_name }}"{% else %}"{{ key_item.0.caname }}"{% endif %}
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: check_cryptoToken_keys
+  changed_when: 'key_item.1.key_label not in check_cryptoToken_keys.stdout'
+
+#- name: Debug
+#  debug:
+#    var: item
+
+- name: Generate key if it does not exist for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}:{{ key_item.0.slot_identifier_value }} - {{ key_item.1.key_label }}:{{ key_item.1.key_size }}
+  command: >
+    {{ ejbca_sh }} cryptotoken generatekey 
+    --token {% if key_item.0.crypto_token_name is defined %}"{{ key_item.0.crypto_token_name }}"{% else %}"{{ key_item.0.caname }}"{% endif %} 
+    --alias {{ key_item.1.key_label }} 
+    --keyspec {{ key_item.1.key_size }}
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: add_key_to_cryptotoken
+  failed_when: add_key_to_cryptotoken.rc >= 2
+  #changed_when: keybinding_cryptotoken.rc == 0
+  when: check_cryptoToken_keys.changed

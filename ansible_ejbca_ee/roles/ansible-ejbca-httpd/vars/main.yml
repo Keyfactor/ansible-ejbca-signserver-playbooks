@@ -1,4 +1,5 @@
 ---
+# roles/ansible-ejbca-va-httpd/vars/main.yml
 
 httpd_conf_files_8:
   - src: httpd.conf.j2
@@ -26,3 +27,5 @@ httpd_conf_files_7:
   - src: 80-7.conf.j2
     dest: /etc/httpd/conf.d/80.conf
 
+pass_33: "{{ lookup('password', '/dev/null length=33 chars=ascii_letters') }}"
+pass_15: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"

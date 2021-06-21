@@ -20,4 +20,4 @@
     # are sourced from the include_vars above.
     add_certification_authorities: "{{ policy_add_certification_authorities }}"
   roles:
-    - ansible-ejbca-ca-ee
+    - ansible-ejbca-deploy-pki-ext-signed-sub-1

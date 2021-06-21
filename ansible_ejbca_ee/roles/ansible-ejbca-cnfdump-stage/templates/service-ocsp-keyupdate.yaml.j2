@@ -1,0 +1,26 @@
+Object Type: Service
+Version: 1
+Name: OCSP-KeyUpdate-{{ item.name }}
+Worker Type: Remote Internal Keybinding Updater
+Worker Properties:
+  CAs to Check:
+  - Any CA
+{% if 'ocsp' == item.type %}
+  Peer System: {{ item.name }}
+{% endif %}
+  Time Before Certificate Expires: 1
+  Time Unit of Certificate Expiry: DAYS
+  Renew Keys: true
+Interval Type: Periodical Interval
+Interval Properties:
+  Periodical Value: 4
+  Periodical Unit: HOURS
+Action Type: No Action
+Action Properties: {
+  }
+Description: ''
+Active: true
+Hidden: false
+Pin to Specific Nodes: [
+  ]
+Run on All Nodes: false

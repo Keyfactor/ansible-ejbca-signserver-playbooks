@@ -50,7 +50,12 @@
       when: adding_csr_end_entity.rc == 1
 
     - name: Sign CSR for key binding 
-      command: "{{ ejbca_home }}/bin/ejbca.sh createcert --username {{ item.name }}  --password {{ entity_pass }} -c {{ identity_batch_output_dir }}/{{ item.name }}.csr -f /var/tmp/{{ item.name }}.crt"
+      command: >
+        {{ ejbca_home }}/bin/ejbca.sh createcert 
+        --username {{ item.name }}  
+        --password {{ entity_pass }} 
+        -c {{ identity_batch_output_dir }}/{{ item.name }}.csr 
+        -f /var/tmp/{{ item.name }}.crt
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"

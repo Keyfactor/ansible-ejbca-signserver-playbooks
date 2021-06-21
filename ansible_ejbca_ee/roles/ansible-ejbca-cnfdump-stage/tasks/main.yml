@@ -1,0 +1,5 @@
+---
+# tasks file for roles/ansible-ejbca-cnfdump-stage
+
+- name: Prepare configdump template files
+  include_tasks: config_configdump.yml

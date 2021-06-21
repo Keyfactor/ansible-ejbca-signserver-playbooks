@@ -19,26 +19,19 @@
     - ejbca_va_keybinding[0] is defined
 
 - name: Check deployment
-  include_tasks: check_deployment.yml
+  include_role: 
+    name: ansible-ejbca-restart-wildfly
   tags: check_deployment
   when: management_import_certification_authorities[0] is defined
 
 - name: Create crypto tokens for OCSP Signers
   include_role: 
     name: ansible-ejbca-crypto-token
-  loop: "{{ ejbca_va_keybinding }}"
+  vars:
+    crypto_tokens: "{{ ejbca_va_keybinding }}"
   no_log: true
   when:
     - ejbca_va_keybinding[0] is defined
-
-- name: Generate OCSP Signer keys on soft crypto token
-  include_role:
-    name: ansible-ejbca-cli-key-gen
-  loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
-  loop_control:
-        label: "{{ item.0.slot_identifier_value }}"
-  no_log: true
-  when: ( "SoftCryptoToken" in item.0.tokentype ) 
 
 - name: Create OCSP Key Binding
   include_role:
@@ -46,4 +39,4 @@
   vars:
     key_bindings: "{{ ejbca_va_keybinding }}"
     ocsp_key_bind: true
-  when: 
+  when: ejbca_va_keybinding[0] is defined

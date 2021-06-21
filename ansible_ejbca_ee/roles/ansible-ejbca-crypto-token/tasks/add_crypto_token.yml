@@ -1,4 +1,5 @@
 ---
+# tasks file for roles/ansible-ejbca-crypto-token
 
 - name: Query crypto tokens
   command: "{{ ejbca_sh }} cryptotoken list"
@@ -28,4 +29,12 @@
   register: add_cryptotoken
   failed_when: add_cryptotoken.rc >= 2
   #changed_when: keybinding_cryptotoken.rc == 0
-  when: (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or (item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
+  when: 
+    - (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or (item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
+
+#- name: Debug add_cryptotoken
+#  debug:
+#    var: add_cryptotoken
+#  when: 
+#    - add_cryptotoken is defined
+#    - add_cryptotoken.rc >= 1

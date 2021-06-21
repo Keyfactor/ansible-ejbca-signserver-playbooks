@@ -45,7 +45,7 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
     creates: "{{ ejbca_home }}/modules/statedump"
-  when: ejbca_build_statedump | bool
+  when: ejbca_build_statedump|bool
   register: unpacked_statedump
 
 - name: Create the directories for CRL & AIA 

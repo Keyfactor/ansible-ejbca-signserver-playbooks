@@ -1,0 +1,8 @@
+---
+# tasks file for roles/ansible-ejbca-conf-ca-exts
+
+- name: Configure CA settings
+  include_tasks: config_ca_extensions.yml
+  loop: "{{ add_certification_authorities }}"
+  no_log: true
+  tags: configure_cas_extentions

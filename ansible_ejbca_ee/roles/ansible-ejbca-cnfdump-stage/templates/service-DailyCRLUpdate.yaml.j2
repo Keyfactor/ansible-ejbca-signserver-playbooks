@@ -1,0 +1,20 @@
+Object Type: Service
+Version: 1
+Name: DailyCRLUpdate
+Worker Type: CRL Updater
+Worker Properties:
+  CAs to Check:
+  - Any CA
+Interval Type: Periodical Interval
+Interval Properties:
+  Periodical Value: {{ crl_service_time_int|default('1') }}
+  Periodical Unit: {{ crl_service_time_unit|default('HOURS') }}
+Action Type: No Action
+Action Properties: {
+  }
+Description: ''
+Active: true
+Hidden: false
+Pin to Specific Nodes: [
+  ]
+Run on All Nodes: false

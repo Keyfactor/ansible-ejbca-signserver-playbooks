@@ -9,8 +9,6 @@ superAdminCn: "31Mar2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 
-
-
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
 # create Peer connection, and create an auth key binding
 use_external_va: true
@@ -43,7 +41,6 @@ ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-jav
 # Maria DB JDBC driver SHA256 hash
 ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 
-
 # EJBCA version and deployment info
 ejbca_version: 7.5.0.2
 # If enabled Ansible controller is used as software repository
@@ -69,14 +66,16 @@ ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}
 #wildfly_version: 21.0.2.Final
 #wildfly_checksum: sha256:e809c1abe943f827da675aaa0338a7b836dac8c3f02423e734775a4b3ec972ac
 #wildfly_standalone_file: standalone-21.xml.datasource.j2
-wildfly_version: 23.0.2.Final
+wildfly_version: 24.0.0.Final
 wildfly_checksum: sha256:08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01 #tar.gz file
 wildfly_standalone_file: standalone-23.xml.datasource.j2
 wildfly_use_galleon: true
-wildfly_galleon_version: 4.2.6
-wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
-wildfly_download_url: "http://172.16.170.133:8080/ejbca/wildfly-22.0.1.Final.tar.gz"
+wildfly_galleon_version: 4.2.8
+#wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
+wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
+#wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
+wildfly_jboss_client_checksum: sha256:fb633ed945d21de548b266f09b9467295571e429a301eae456713424cbc23464 # WF 24
+wildfly_download_url: "http://172.16.170.133:8080/ejbca/wildfly-24.0.0.Final.tar.gz"
 wildfly_download_file: "{{ wildfly_name }}.tar.gz"
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
@@ -262,12 +261,14 @@ ejbca_peerConnector:
     type: ocsp
     state: ENABLED
     enabled: "{{ use_external_va }}"
+    remote_key_update: true
   - name: RA-01
     url: "https://ra01.{{ organizationDomainName }}/ejbca/peer/v1"
     keybinding: peerClient-ra
     type: ra
     state: ENABLED
     enabled: "{{ use_external_ra }}"
+    remote_key_update: true
 
 
 
@@ -420,7 +421,8 @@ sub_add_certification_authorities:
     certprofile: "SubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     #rootDn: "External"
-    rootDn: "{{ organizationNameShort }}-Policy-CA1-G1"
+    rootDn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    root_ca_name: "{{ organizationNameShort }}-Policy-CA1-G1"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "5y"
@@ -463,7 +465,7 @@ sub_add_certification_authorities:
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca1_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
-    slot_identifier_value: "Sub1_Protect_SLOT"
+    slot_identifier_value: "Sub_CA_SLOT"
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -482,7 +484,8 @@ sub_add_certification_authorities:
     certprofile: "SubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA2 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     #rootDn: "External"
-    rootDn: "{{ organizationNameShort }}-Policy-CA1-G1"
+    rootDn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    root_ca_name: "{{ organizationNameShort }}-Policy-CA1-G1"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "5y"
@@ -598,7 +601,14 @@ httpd_cert_files:
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-Key.pem"
     dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
-    dest: "/etc/pki/tls/certs/trusted-ca.crt"
+    dest: "/etc/pki/tls/certs/chain.crt"
+
+# CA chains to add to the HTTPD trusted CA certificate file for certauth
+# caname: Name of the CA in EJBCA
+# fullchain: Must be set to true for this to work by getting the issuing CA chain and then adding that chain to the file
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+    fullchain: true
 
 mgmt_configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
@@ -668,8 +678,8 @@ authkeybind_configdump_dir_structure:
 
 authkeybind_configdump_files:
 # Files for External VA
-  - src: 'service-oscpService.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/va/services/oscpService.yaml'
+  - src: 'service-ocspService.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/services/ocspService.yaml'
 # Files for External RA
   - src: 'role-ra-peer-connection.yaml.j2'
     dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'
