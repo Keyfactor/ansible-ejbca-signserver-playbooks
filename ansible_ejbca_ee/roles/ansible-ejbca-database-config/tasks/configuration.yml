@@ -1,0 +1,18 @@
+---
+
+- name: Stop Wildfly
+  systemd:
+    name: wildfly
+    state: stopped
+
+- name: Copy Wildfly standalone template
+  template:
+    src: "{{ datasource_template }}"
+    dest: "{{ wildfly_home }}/standalone/configuration/standalone.xml"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+
+- name: Start Wildfly
+  systemd:
+    name: wildfly
+    state: started

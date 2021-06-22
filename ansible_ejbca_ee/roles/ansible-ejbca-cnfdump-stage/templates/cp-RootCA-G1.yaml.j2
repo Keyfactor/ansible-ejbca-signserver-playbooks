@@ -9,10 +9,8 @@ Available Elliptic Curves:
 Available Bit Lengths:
 - 3072
 - 4096
-Signature Algorithm: {% if management_add_certification_authorities[0] is defined %}{{ management_add_certification_authorities[1].signalg }}{% else %}{{ add_certification_authorities[1].signalg }}
-{% endif %} 
-Validity: {% if management_add_certification_authorities[0] is defined %}{{ management_add_certification_authorities[1].validity_yml }}{% else %}{{ add_certification_authorities[1].validity_yml }}
-{% endif %} 
+Signature Algorithm: SHA256WithRSA
+Validity: 25y
 Description: ''
 Overridable Extension OIDs: [
   ]

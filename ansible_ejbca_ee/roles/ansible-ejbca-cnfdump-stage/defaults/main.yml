@@ -37,9 +37,13 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
   - src: 'extended-key-usages.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
+  - src: 'cp-EccRootCa-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/EccRootCA-{{ organizationNameShort }}-G1.yaml'
     # Files for the 2nd dump import
   - src: 'cp-SubCA-G1.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-EccSubCa-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/EccSubCA-{{ organizationNameShort }}-G1.yaml'
   - src: 'cp-HashiCorp-SubCA-G1.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/HashiCorp-SubCA-G1.yaml'
   - src: 'cp-tlsPeerConnector.yaml.j2'

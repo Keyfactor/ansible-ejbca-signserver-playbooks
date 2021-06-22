@@ -1,0 +1,5 @@
+---
+# tasks file for roles/ansible-ejbca-database-config
+
+- name: Reconfigure Wildfly Database
+  include_tasks: configuration.yml

@@ -1,0 +1,7 @@
+---
+
+- hosts: ejbcaVaServers
+  become: yes
+  become_method: sudo
+  roles:
+    - roles/ansible-ejbca-database-config

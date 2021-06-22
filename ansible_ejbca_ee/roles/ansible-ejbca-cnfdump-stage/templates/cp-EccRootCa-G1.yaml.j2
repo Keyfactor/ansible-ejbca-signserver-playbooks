@@ -1,7 +1,7 @@
 Object Type: Certificate Profile
 Version: 1
-Name: EccSubCA-{{ organizationNameShort }}-G1
-Type: Sub CA
+Name: EccRootCA-{{ organizationNameShort }}-G1
+Type: Root CA
 Available Key Algorithms:
 - ECDSA
 Available Elliptic Curves:
@@ -41,15 +41,15 @@ Available Bit Lengths:
 - 256
 - 257
 Signature Algorithm: SHA384withECDSA
-Validity: 10y
+Validity: 25y
 Description: ''
 Overridable Extension OIDs: [
   ]
 Non-overridable Extension OIDs: [
   ]
 Allow Validity Override: true
-Path Length Constraint Used: true
-Path Length Constraint: 0
+Path Length Constraint Used: false
+Authority Key Identifier Used: false
 Key Usage:
 - Digital Signature
 - Key Certificate Sign
@@ -59,12 +59,12 @@ Extended Key Usage: [
   ]
 Subject Alternative Name Used: false
 Issuer Alternative Name Used: false
-CRL Distribution Point Used: true
-CRL Use CA Defined Settings: true
+CRL Distribution Point Used: false
+CRL Use CA Defined Settings: false
 CRL Issuer: ''
-Authority Information Access Used: true
-OCSP Service Locator URL Is CA Defined: true
-OCSP Issuer URL Is CA Defined: true
+Authority Information Access Used: false
+OCSP Service Locator URL Is CA Defined: false
+OCSP Issuer URL Is CA Defined: false
 CVC Access Rights (Inspection System): [
 ]
 LDAP DN Order: false

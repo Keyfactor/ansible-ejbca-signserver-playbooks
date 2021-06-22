@@ -1,0 +1,20 @@
+---
+# defaults file for roles/ansible-ejbca-database-config
+
+wildfly_elytron_pass_dir: /opt/elytron
+wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
+
+datasource_template: roles/ansible-ejbca-prep/templates/standalone-22.xml.datasource.j2
+
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    database_connection_type: mariadb
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
+    host: 127.0.0.1
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"

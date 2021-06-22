@@ -1,8 +1,11 @@
-organizationName: Solitude
+organizationName: TechDays2021
 organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
+
+# EJBCA version and deployment info
+ejbca_version: 7.6.0
 
 # List of certification authorities that should be added using CLI
 # caname: CA name
@@ -23,15 +26,15 @@ countryName: US
 # defaultkey_label: Default (encryption) key label
 # testkey_label: Test key label
 # The order must be Management CA and then Root CA
-management_add_certification_authorities:
-  - caname: "TechDays21-Root-CA-G1"
+root_add_certification_authorities:
+  - caname: "TechDays2021-Root-CA01-G1"
     certprofile: "RootCA-{{ organizationNameShort }}-G1"
-    dn: "CN=TechDays 2021 Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    dn: "CN=TechDays 2021 Root CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     subjectaltname: ""
     validity: "9125"
     validity_yml: "25y"
     policy: "null"
-    signalg: "SHA512WithRSA"
+    signalg: "SHA256WithRSA"
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
@@ -64,8 +67,8 @@ management_add_certification_authorities:
     cryptotoken_enable_auto_activate: true
     tokentype: "soft"
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
-    slot_identifier_type: "SLOT_LABEL"
-    slot_identifier_value: "Root_CA_SLOT"
+    slot_identifier_type: ""
+    slot_identifier_value: ""
     crypto_token:
       - key_label: "signKey0001"
         key_size: 4096
@@ -79,6 +82,62 @@ management_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
+  - caname: "TechDays2021-Root-CA02-G1"
+    certprofile: "EccRootCA-{{ organizationNameShort }}-G1"
+    dn: "CN=TechDays 2021 Root CA02 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    subjectaltname: ""
+    validity: "9125"
+    validity_yml: "25y"
+    policy: "null"
+    signalg: "SHA384WithECDSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "soft"
+    tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
+    slot_identifier_type: ""
+    slot_identifier_value: ""
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: secp384r1
+        key_type: "ECDSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 4096
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: secp384r1
+        key_type: "ECDSA"
+        type: test
+
 
 # List of certification authorities that should be added using CLI
 # caname: CA name
@@ -99,16 +158,16 @@ management_add_certification_authorities:
 # defaultkey_label: Default (encryption) key label
 # testkey_label: Test key label
 sub_add_certification_authorities:
-  - caname: "{{ organizationNameShort }}-Sub-CA"
+  - caname: "TechDays2021-Sub-CA01-G1"
     certprofile: "SubCA-{{ organizationNameShort }}-G1"
-    dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    rootDn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    root_ca_name: "{{ organizationNameShort }}-Root-CA"
+    dn: "CN={{ organizationName }} Issuing CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    rootDn: "CN={{ organizationName }} Root CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    root_ca_name: "TechDays2021-Root-CA01-G1"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
     policy: "null"
-    signalg: "SHA384WithRSA"
+    signalg: "SHA256WithRSA"
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
@@ -141,8 +200,8 @@ sub_add_certification_authorities:
     cryptotoken_enable_auto_activate: true
     tokentype: "soft"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
-    slot_identifier_type: "SLOT_LABEL"
-    slot_identifier_value: "Sub_CA_SLOT"
+    slot_identifier_type: ""
+    slot_identifier_value: ""
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -156,3 +215,98 @@ sub_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
+  - caname: "TechDays2021-Sub-CA02-G1"
+    certprofile: "EccSubCA-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Issuing CA02 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    rootDn: "CN={{ organizationName }} Root CA02 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    root_ca_name: "TechDays2021-Root-CA02-G1"
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: "10y"
+    policy: "null"
+    signalg: "SHA384WithECDSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    crlPeriod: 259200000
+    crlPeriod_yml: 3d
+    crlIssueInterval: 86400000
+    crlIssueInterval_yml: 1d
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: false
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "soft"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
+    slot_identifier_type: ""
+    slot_identifier_value: ""
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: secp384r1
+        key_type: "ECDSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: secp384r1
+        key_type: "ECDSA"
+        type: test
+
+# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+deploy_with_configdump: true
+configdump_directory_structure: "{{ configdump_dir_structure }}"
+configdump_import_files: "{{ configdump_files }}"
+
+
+configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/techdays2021-1/certificate-profiles"
+  - "{{ ejbca_home }}/dump/techdays2021-1/extended-key-usage"
+  - "{{ ejbca_home }}/dump/techdays2021-1/certification-authorities"
+  - "{{ ejbca_home }}/dump/techdays2021-2/custom-certificate-extensions"
+  - "{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles"
+  - "{{ ejbca_home }}/dump/techdays2021-2/certification-authorities"
+  - "{{ ejbca_home }}/dump/techdays2021-2/services"
+  - "{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles"
+  - "{{ ejbca_home }}/dump/techdays2021-3/certification-authorities"  
+  - "{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/techdays2021-3/services"
+
+configdump_files:
+  - src: 'cp-RootCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-1/certificate-profiles/RootCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-EccRootCa-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-1/certificate-profiles/EccRootCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'extended-key-usages.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-1/extended-key-usage/extended-key-usages.yaml'
+    # Files for the 2nd dump import
+  - src: 'cp-SubCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-EccSubCa-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles/EccSubCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'service-DailyCRLUpdate.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-2/services/DailyCRLUpdate.yaml'
+
