@@ -52,13 +52,13 @@ External VA - Edit _deployment_info/internal_va_vars.yml_ and _inventory_ and ru
 
 >ansible-playbook -i inventory deployVa.yml --ask-become-pass
 
-###Switching the Datasource
+### Switching the Datasource
 To use the Database source failover/failback use the following commands:
 
-####Failover 
+#### Failover 
 >ansible-playbook -i inventory -e failover_wildfly_db=true configureDB.yml 
 
-####Failback
+#### Failback
 >ansible-playbook -i inventory -e failback_wildfly_db=true configureDB.yml 
 
 
