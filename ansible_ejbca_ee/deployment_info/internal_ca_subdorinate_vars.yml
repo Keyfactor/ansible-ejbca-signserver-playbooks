@@ -89,6 +89,7 @@ appsrv_datasources:
     #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
     database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
+    backup_host:
     port: 3306
     database: ejbca
     user: ejbca-usr

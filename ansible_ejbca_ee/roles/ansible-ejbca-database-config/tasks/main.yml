@@ -1,5 +1,14 @@
 ---
 # tasks file for roles/ansible-ejbca-database-config
 
-- name: Reconfigure Wildfly Database
-  include_tasks: configuration.yml
+- name: Failover Wildfly Datasource to secondary database
+  include_tasks: failover_db.yml
+  when:
+    - failover_wildfly_db is defined
+    - failover_wildfly_db|bool
+
+- name: Failback Wildfly Datasource to primary database
+  include_tasks: failback_db.yml
+  when:
+    - failback_wildfly_db is defined
+    - failback_wildfly_db|bool

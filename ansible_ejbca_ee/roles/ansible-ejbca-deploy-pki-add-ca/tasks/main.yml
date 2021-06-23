@@ -232,15 +232,9 @@
     - sub_add_certification_authorities[0] is defined
     - not deploy_with_configdump|bool
 
-#- name: Import configdump of profiles, services, & publishers
-#  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-3"
-#  args:
-#    chdir: "{{ ejbca_home }}/dist/configdump"
-#  become: yes 
-#  become_user: "{{ ejbca_user }}"
-
-
-
-
-
-
+- name: Import configdump of profiles, services, & publishers
+  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-3"
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
