@@ -21,7 +21,7 @@
       msg: "Automatic restart is disabled. Application server must be restarted for generated HSM keys to be available."
     when: not wildfly_manage_service
     failed_when: true
-  when: checking_existing_keys is defined and checking_existing_keys.changed
+  when: checking_existing_keys is defined and checking_existing_keys.changed or restart_wildfly is defined and restart_wildfly|bool
 
 - name: Ensure EJBCA EAR file is deployed
   wait_for:
@@ -29,4 +29,4 @@
     timeout: 180
     path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
     state: present
-  when: checking_existing_keys is defined and checking_existing_keys.changed
+  when: checking_existing_keys is defined and checking_existing_keys.changed or restart_wildfly is defined and restart_wildfly|bool

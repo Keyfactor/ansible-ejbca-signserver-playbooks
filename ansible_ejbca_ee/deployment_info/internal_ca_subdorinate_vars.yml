@@ -147,6 +147,10 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 #cesecore.properties
 core_disable_audit_log_to_db: true
 
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
+
 #Enable/Disable DB integrity protection
 databaseprotection_enablesign_AuditRecordData: false
 databaseprotection_enableverify_AuditRecordData: false
@@ -612,9 +616,6 @@ httpd_trusted_cas:
     fullchain: true
 
 mgmt_configdump_dir_structure:
-  - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
-  - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
-  - "{{ ejbca_home }}/dump/dump1/certification-authorities"
   - "{{ ejbca_home }}/dump/dump2/custom-certificate-extensions"
   - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
   - "{{ ejbca_home }}/dump/dump2/certification-authorities"

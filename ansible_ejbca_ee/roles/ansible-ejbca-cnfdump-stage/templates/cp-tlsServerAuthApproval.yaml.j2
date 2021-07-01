@@ -48,3 +48,7 @@ Publishers:
 - validationAuthorityPeerPub-{{ item.name }}
 {% endif %}
 {% endif %}
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

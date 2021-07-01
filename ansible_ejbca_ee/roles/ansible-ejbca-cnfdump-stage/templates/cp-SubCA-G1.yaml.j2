@@ -44,3 +44,7 @@ CVC Access Rights (Inspection System): [
 LDAP DN Order: false
 Available CAs:
 - Any CA
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

@@ -281,7 +281,6 @@ deploy_with_configdump: true
 configdump_directory_structure: "{{ configdump_dir_structure }}"
 configdump_import_files: "{{ configdump_files }}"
 
-
 configdump_dir_structure:
   - "{{ ejbca_home }}/dump/techdays2021-1/certificate-profiles"
   - "{{ ejbca_home }}/dump/techdays2021-1/extended-key-usage"
@@ -309,4 +308,42 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles/EccSubCA-{{ organizationNameShort }}-G1.yaml'
   - src: 'service-DailyCRLUpdate.yaml.j2'
     dest: '{{ ejbca_home }}/dump/techdays2021-2/services/DailyCRLUpdate.yaml'
-
+  - src: 'cp-tlsPeerConnector.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles/tlsPeerConnector.yaml'
+  - src: 'ee-tlsPeerConnMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-2/end-entity-profiles/tlsPeerConnMgmt.yaml'
+    # Files for the 3rd dump import
+  - src: 'ee-tlsServerOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
+  - src: 'ee-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/ocspSigner.yaml'
+  - src: 'ee-tlsServerMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/tlsServerMgmt.yaml'
+  - src: 'ee-userAuthentication.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/userAuthentication.yaml'
+  - src: 'cp-tlsServerMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsServerMgmtCA.yaml'
+  - src: 'cp-AdminNoCDPMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/AdminNoCDPMgmtCA.yaml'
+  - src: 'cp-tlsClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsClientAuth.yaml'
+  - src: 'cp-tlsServerAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsServerAuth.yaml'
+  - src: 'cp-tlsServerClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsServerClientAuth.yaml'
+  - src: 'cp-adminMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/adminMgmtCA.yaml'
+  - src: 'cp-DigitalSignature-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/DigitalSignature-2048.yaml'
+  - src: 'cp-Authentication-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/Authentication-2048.yaml'
+  - src: 'cp-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/ocspSigner.yaml'
+  - src: 'cp-ocspSignerEcc-15d.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/ocspSignerEcc-15d.yaml'
+    # Files for External VA
+  - src: 'service-ocspService.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/services/ocspService.yaml'
+    # Files for External RA
+  - src: 'role-ra-peer-connection.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'

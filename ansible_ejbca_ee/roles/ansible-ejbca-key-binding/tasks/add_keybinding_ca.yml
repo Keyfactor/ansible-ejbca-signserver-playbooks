@@ -1,15 +1,28 @@
 ---
 
-- name: Create cryptotoken for key binding
+- name: Create cryptotoken for Authentication Key Binding
   include_role: 
     name: ansible-ejbca-crypto-token
-  vars:
-    crypto_tokens: "{{ key_bindings }}"
+    tasks_from: add_crypto_token
+  loop: "{{ key_bindings }}"
+  #vars:
+  #  crypto_tokens: "{{ key_bindings }}"
   no_log: true
   when: 
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
-- name: Query Key Binding
+- name: Generate keys for Authentication Key Binding on crypto token
+  include_role:
+    name: ansible-ejbca-crypto-token
+    tasks_from: generate_keys
+  loop: "{{ key_bindings |subelements('crypto_token') }}"
+  loop_control:
+    label: "{{ key_item.0.slot_identifier_value }}"
+    loop_var: key_item
+  no_log: true
+  tags: key_generation
+
+- name: Query Authentication Key Binding
   command: "{{ ejbca_sh }} keybind list"
   no_log: true
   become: yes
@@ -52,7 +65,7 @@
     - item.0.name not in keybinding_list.stdout
     - item.0.enabled|bool
 
-- name: Create CSR for key binding
+- name: Create CSR for Authentication Key Binding
   command: >
     {{ ejbca_sh }} keybind gencsr 
     --name {{ item.name }} 

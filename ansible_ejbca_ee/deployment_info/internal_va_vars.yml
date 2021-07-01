@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "21Jun2021-Skyrim-SA"
+superAdminCn: "1Jul2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"
@@ -35,7 +35,7 @@ ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042
 # Wildfly Configuration Info
 wildfly_version: 24.0.0.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.8
 #wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
@@ -138,6 +138,10 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
 ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
 
 # List of OCSP Signers to create on the External VA
 ejbca_va_keybinding:

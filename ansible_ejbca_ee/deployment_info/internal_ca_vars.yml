@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "21Jun2021-Skyrim-SA"
+superAdminCn: "1Jul2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
@@ -67,7 +67,7 @@ ejbca_crl_dir:
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
 wildfly_version: 24.0.0.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.8
 #wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
@@ -153,6 +153,10 @@ ejbca_databaseprotection:
         key_size: 1024
         key_type: "RSA"
         type: test
+
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
 
 # Super Admin accounts to create
 management_add_end_entities:

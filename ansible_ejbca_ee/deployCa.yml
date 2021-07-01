@@ -13,4 +13,3 @@
     - ansible-ejbca-prep
     - ansible-ejbca-deploy-pki-sample
     - ansible-ejbca-httpd
-

@@ -43,7 +43,7 @@
     --pool-use-strict-min={{ use_strict_min| default('false') }} 
     {% if wildfly_enable_kerberos is sameas true %} 
     --elytron-enabled=true 
-    --authentication-context=ds-context 
+    --authentication-context=ejbca.ds-context 
     --idle-timeout-minutes=2 
     {% else %} 
     --user-name={{ item.user }}
