@@ -89,7 +89,7 @@ root_add_certification_authorities:
     validity: "9125"
     validity_yml: "25y"
     policy: "null"
-    signalg: "SHA384WithECDSA"
+    signalg: "SHA256WithECDSA"
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
@@ -224,7 +224,7 @@ sub_add_certification_authorities:
     validity: "3650"
     validity_yml: "10y"
     policy: "null"
-    signalg: "SHA384WithECDSA"
+    signalg: "SHA256WithECDSA"
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
@@ -282,65 +282,65 @@ configdump_directory_structure: "{{ configdump_dir_structure }}"
 configdump_import_files: "{{ configdump_files }}"
 
 configdump_dir_structure:
-  - "{{ ejbca_home }}/dump/techdays2021-1/certificate-profiles"
-  - "{{ ejbca_home }}/dump/techdays2021-1/extended-key-usage"
-  - "{{ ejbca_home }}/dump/techdays2021-1/certification-authorities"
-  - "{{ ejbca_home }}/dump/techdays2021-2/custom-certificate-extensions"
-  - "{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles"
-  - "{{ ejbca_home }}/dump/techdays2021-2/certification-authorities"
-  - "{{ ejbca_home }}/dump/techdays2021-2/services"
-  - "{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles"
-  - "{{ ejbca_home }}/dump/techdays2021-3/certification-authorities"  
-  - "{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles"
-  - "{{ ejbca_home }}/dump/techdays2021-3/services"
+  - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
+  - "{{ ejbca_home }}/dump/dump1/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/custom-certificate-extensions"
+  - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump2/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/services"
+  - "{{ ejbca_home }}/dump/dump3/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump3/certification-authorities"  
+  - "{{ ejbca_home }}/dump/dump3/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump3/services"
 
 configdump_files:
   - src: 'cp-RootCA-G1.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-1/certificate-profiles/RootCA-{{ organizationNameShort }}-G1.yaml'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/RootCA-{{ organizationNameShort }}-G1.yaml'
   - src: 'cp-EccRootCa-G1.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-1/certificate-profiles/EccRootCA-{{ organizationNameShort }}-G1.yaml'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/EccRootCA-{{ organizationNameShort }}-G1.yaml'
   - src: 'extended-key-usages.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-1/extended-key-usage/extended-key-usages.yaml'
+    dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
     # Files for the 2nd dump import
   - src: 'cp-SubCA-G1.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
   - src: 'cp-EccSubCa-G1.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles/EccSubCA-{{ organizationNameShort }}-G1.yaml'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/EccSubCA-{{ organizationNameShort }}-G1.yaml'
   - src: 'service-DailyCRLUpdate.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-2/services/DailyCRLUpdate.yaml'
+    dest: '{{ ejbca_home }}/dump/dump2/services/DailyCRLUpdate.yaml'
   - src: 'cp-tlsPeerConnector.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-2/certificate-profiles/tlsPeerConnector.yaml'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsPeerConnector.yaml'
   - src: 'ee-tlsPeerConnMgmt.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-2/end-entity-profiles/tlsPeerConnMgmt.yaml'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsPeerConnMgmt.yaml'
     # Files for the 3rd dump import
   - src: 'ee-tlsServerOrg.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
   - src: 'ee-ocspSigner.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/ocspSigner.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/ocspSigner.yaml'
   - src: 'ee-tlsServerMgmt.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/tlsServerMgmt.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerMgmt.yaml'
   - src: 'ee-userAuthentication.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/end-entity-profiles/userAuthentication.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userAuthentication.yaml'
   - src: 'cp-tlsServerMgmtCA.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsServerMgmtCA.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerMgmtCA.yaml'
   - src: 'cp-AdminNoCDPMgmtCA.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/AdminNoCDPMgmtCA.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/AdminNoCDPMgmtCA.yaml'
   - src: 'cp-tlsClientAuth.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsClientAuth.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuth.yaml'
   - src: 'cp-tlsServerAuth.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsServerAuth.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuth.yaml'
   - src: 'cp-tlsServerClientAuth.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/tlsServerClientAuth.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuth.yaml'
   - src: 'cp-adminMgmtCA.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/adminMgmtCA.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/adminMgmtCA.yaml'
   - src: 'cp-DigitalSignature-2048.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/DigitalSignature-2048.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/DigitalSignature-2048.yaml'
   - src: 'cp-Authentication-2048.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/Authentication-2048.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Authentication-2048.yaml'
   - src: 'cp-ocspSigner.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/ocspSigner.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
   - src: 'cp-ocspSignerEcc-15d.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/techdays2021-3/certificate-profiles/ocspSignerEcc-15d.yaml'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSignerEcc-15d.yaml'
     # Files for External VA
   - src: 'service-ocspService.yaml.j2'
     dest: '{{ ejbca_home }}/dump/va/services/ocspService.yaml'

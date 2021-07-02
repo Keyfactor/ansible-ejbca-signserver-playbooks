@@ -71,14 +71,14 @@
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       vars:
-        dump_dest: "{{ ejbca_home }}/dump/techdays2021-1/certification-authorities/{{ item.caname }}.yaml"
+        dump_dest: "{{ ejbca_home }}/dump/dump1/certification-authorities/{{ item.caname }}.yaml"
       loop: "{{ root_add_certification_authorities }}"
       loop_control:
         label: "{{ item.caname }}"
       no_log: true
 
     - name: Intialize Management & Root CA's with configdump
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-1 --initialize"
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1 --initialize"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -91,7 +91,7 @@
   block:
 
     - name: Import configdump of Root CA templates and EKU's
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-1"
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -165,12 +165,12 @@
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       vars:
-        dump_dest: "{{ ejbca_home }}/dump/techdays2021-2/certification-authorities/{{ item.caname }}.yaml"
+        dump_dest: "{{ ejbca_home }}/dump/dump2/certification-authorities/{{ item.caname }}.yaml"
       loop: "{{ sub_add_certification_authorities }}"
       #no_log: true
 
     - name: Intialize Sub CA's with configdump
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-2 --initialize"
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2 --initialize"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -184,7 +184,7 @@
   block:
 
     - name: Import configdump of profiles and services
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-2"
+      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -233,9 +233,9 @@
     - sub_add_certification_authorities[0] is defined
     - not deploy_with_configdump|bool
 
-- name: Import configdump of profiles, services, & publishers
-  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-3"
-  args:
-    chdir: "{{ ejbca_home }}/dist/configdump"
-  become: yes 
-  become_user: "{{ ejbca_user }}"
+#- name: Import configdump of profiles, services, & publishers
+#  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-3"
+#  args:
+#    chdir: "{{ ejbca_home }}/dist/configdump"
+#  become: yes 
+#  become_user: "{{ ejbca_user }}"
