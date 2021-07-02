@@ -1,6 +1,6 @@
 ---
 
-- name: Stage Management & Root CA to create with configdump
+- name: Stage CA to create with configdump
   template:
     src: ca-template.yml.j2
     dest: "{{ dump_dest|default( ejbca_home + '/dump/subs/certification-authorities/' + item.caname + '.yaml') }}"
