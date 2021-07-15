@@ -1,21 +1,10 @@
 ---
 
-- name: Get the {{ item.caname }} chain file
-  command: >
-    {{ ejbca_sh }} ca getcacert 
-    --caname {{ item.caname }}
-    {% if item.fullchain is defined and item.fullchain is sameas true %}
-    -f {{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt
-    --include-full-chain 
-    {% else %}
-    -f {{ identity_batch_output_dir }}/{{ item.caname }}.crt
-    {% endif %}
-  become: yes
-  become_user: "{{ ejbca_user }}"
-  register: ejbca_get_ca_chain
-  failed_when: ejbca_get_ca_chain.rc >= 2
-  changed_when: ejbca_get_ca_chain.rc == 0
-  tags: ejbca-cli-cacert
+- name: Check if local directory {{ ejbca_cacrt_dir_output }} exists
+  stat:
+    path: "{{ ejbca_cacrt_dir_output }}"
+  register: ejbca_cacrt_dir_output_exists
+  changed_when: false
 
 - name: Create local directory for {{ ejbca_cacrt_dir_output }}
   become: no
@@ -23,17 +12,59 @@
     path: "{{ ejbca_cacrt_dir_output }}"
     state: directory
   delegate_to: localhost
+  when: not ejbca_cacrt_dir_output_exists.stat.exists
 
-- name: Copy {{ item.caname }} Chain file to localhost
-  become: no
-  fetch:
-    src: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt{% else %}{{ identity_batch_output_dir }}/{{ item.caname }}.crt{% endif %}'
-    dest: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}-fullchain.crt{% else %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}.crt{% endif %}'
-    flat: yes
-  tags: ejbca-cli-cacert
+- name: Find what cert files are already downloaded
+  find:
+    path: "{{ ejbca_cacrt_dir_output }}"
+    file_type: file
+    recurse: yes
+    patterns: "*.crt"
+  register: find_local_ca_certs
 
-- name: Cleanup the {{ item.caname }} Chain files
-  file:
-    path: '{% if item.fullchain is defined and item.fullchain is sameas true %}"{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt"{% else %}"{{ identity_batch_output_dir }}/{{ item.caname }}.crt"{% endif %}'
-    state: absent
-  tags: ejbca-cli-cacert
+- name: Combine files into a list
+  set_fact:
+    local_ca_cert_files: "{{ local_ca_cert_files + [item.path | basename] }}"
+  loop: "{{ find_local_ca_certs.files if find_local_ca_certs is iterable else [] }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: 
+    - find_local_ca_certs is defined
+
+- name: Debug find_local_ca_certs
+  debug:
+    var: find_local_ca_certs
+
+- name: Export CA file
+  block:
+
+    - name: Get the {{ item.caname }} chain file
+      command: >
+        {{ ejbca_sh }} ca getcacert 
+        --caname {{ item.caname }}
+        {% if item.fullchain is defined and item.fullchain is sameas true %}
+        -f {{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt
+        --include-full-chain 
+        {% else %}
+        -f {{ identity_batch_output_dir }}/{{ item.caname }}.crt
+        {% endif %}
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: ejbca_get_ca_chain
+      failed_when: ejbca_get_ca_chain.rc >= 2
+      changed_when: ejbca_get_ca_chain.rc == 0
+      tags: ejbca-cli-cacert
+
+    - name: Copy {{ item.caname }} Chain file to Ansible controller
+      become: no
+      fetch:
+        src: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt{% else %}{{ identity_batch_output_dir }}/{{ item.caname }}.crt{% endif %}'
+        dest: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}-fullchain.crt{% else %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}.crt{% endif %}'
+        flat: yes
+      tags: ejbca-cli-cacert
+
+    - name: Cleanup the {{ item.caname }} Chain files on remote host
+      file:
+        path: '{% if item.fullchain is defined and item.fullchain is sameas true %}"{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt"{% else %}"{{ identity_batch_output_dir }}/{{ item.caname }}.crt"{% endif %}'
+        state: absent
+      tags: ejbca-cli-cacert

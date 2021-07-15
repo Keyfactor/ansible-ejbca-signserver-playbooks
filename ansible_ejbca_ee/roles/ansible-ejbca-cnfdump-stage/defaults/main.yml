@@ -169,3 +169,11 @@ configdump_files:
     # Files for External RA
   - src: 'role-ra-peer-connection.yaml.j2'
     dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'
+
+configdump_approval_dir_structure:  
+  - "{{ ejbca_home }}/dump/dumpApp/approval-profiles"
+
+configdump_approval_files:
+  - src: 'ap-tlsCertificateApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dumpApp/approval-profiles/tlsCertificateApproval.yaml'
+

@@ -56,3 +56,6 @@ AIA CA Issuer URIs:
 Finish User: {{ item.finish_user  | default('true') }}
 CA Healthcheck Enabled: {{ item.ca_healthcheck_enabled  | default('true') }}
 Request Processor: {{ item.request_processor  | default('null') }}
+{% if ejbca_version >= '7.7' %}
+Microsoft CA Compatible Mode Used: {{ item.ms_ca_compat_mode  | default('false') }}
+{% endif %}

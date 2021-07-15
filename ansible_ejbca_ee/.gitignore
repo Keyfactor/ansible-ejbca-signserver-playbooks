@@ -3,8 +3,7 @@
 *.retry
 *.swp
 peerCertSerialNums/*
-ejbcaCSR/*
-ejbcaCaCerts/*
+ejbca*/*
 devsec*
 *AzureTest*
 deployment_info/custom*

@@ -253,11 +253,24 @@
     - use_external_va is defined
     - use_external_va|bool
 
-- name: Import Approval Profiles
+- name: Configure SCP Publisher
+  include_role:
+    name: ansible-ejbca-scp-publisher
+  when: 
+    - management_known_hosts[0] is defined or management_scp_localhost_receiving_users[0] is defined or management_scp_localhost_archive_dirs[0] is defined
+
+- name: Import Approval Profiles for EJBCA <= 7.5.0.2
   include_role:
     name: ansible-ejbca-legacy-app-profs
   when: 
     - ( ejbca_version is version('7.5.0.2', '<='))
+
+- name: Import Approval Profiles for EJBCA >= 7.6.0
+  include_role:
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: stage_app_profile
+  when: 
+    - ( ejbca_version is version('7.6.0', '>='))
 
 - name: Import configdump of profiles, services, & publishers
   command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump3"
@@ -307,12 +320,6 @@
     tasks_from: config_crontab
   when: 
     - enable_crl_crontab|bool
-
-- name: Configure SCP Publisher
-  include_role:
-    name: ansible-ejbca-scp-publisher
-  when: 
-    - management_known_hosts[0] is defined or management_scp_localhost_receiving_users[0] is defined or management_scp_localhost_archive_dirs[0] is defined
 
 - name: Copy superadmin.p12 to local server
   fetch:

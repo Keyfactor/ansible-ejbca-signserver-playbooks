@@ -13,7 +13,7 @@
     dest: "{{ softhsm_backup_dir_output }}/softhsmBackup.tar.gz"
     flat: yes
 
-- name: Remove the SoftHsm archive (Cleanup)
+- name: Remove the SoftHsm archive on remote host (Cleanup)
   file:
     path: /var/tmp/softhsmBackup.tar.gz
     state: absent

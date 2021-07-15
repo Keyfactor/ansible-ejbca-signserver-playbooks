@@ -12,4 +12,5 @@
     - ansible-ejbca-pkc11-client
     - ansible-ejbca-prep
     - ansible-ejbca-deploy-pki-sample
+    - ansible-ejbca-crl-import-export
     - ansible-ejbca-httpd

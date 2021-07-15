@@ -19,3 +19,7 @@ Wildcard Certificate Issuance for http-01 Challenge Allowed: true
 Agree to new Terms of service allowed: true
 Require External Account Binding: false
 {% endif %}
+{% if ejbca_version >= '7.7' %}
+Approval Profile for newAccount: -1
+Approval Profile for keyChange: -1
+{% endif %}

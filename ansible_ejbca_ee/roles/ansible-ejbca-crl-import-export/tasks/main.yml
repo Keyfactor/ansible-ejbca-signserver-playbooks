@@ -1,0 +1,77 @@
+---
+# tasks file for roles/ansible-ejbca-crl-import-export
+
+- name: Check if local directory {{ ejbca_crl_dir_output }} exists
+  stat:
+    path: "{{ ejbca_crl_dir_output }}"
+  register: ejbca_crl_dir_output_exists
+  changed_when: false
+  tags: ejbca-cli-cacrl
+
+- name: Create local directory for {{ ejbca_crl_dir_output }}
+  become: no
+  file:
+    path: "{{ ejbca_crl_dir_output }}"
+    state: directory
+  delegate_to: localhost
+  when: not ejbca_crl_dir_output_exists.stat.exists
+  tags: ejbca-cli-cacrl
+
+- name: Export CRL files
+  block:
+
+    - name: Create temp CRL directory
+      file:
+        path: /var/tmp/exportcrl
+        state: directory
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+      tags: ejbca-cli-cacrl
+
+    - name: Export CRL files 
+      include_tasks: export_crl_ejbca.yml
+      loop: "{{ ejbca_ca_import }}"
+      loop_control:
+        label: "{{ item.caname }}"
+      when:
+        - ejbca_type is defined
+        - ejbca_type == "CA"
+      tags: ejbca-cli-cacrl
+
+    - name: Cleanup the CA CRL files on remote EJBCA
+      file:
+        path: /var/tmp/exportcrl
+        state: absent
+      tags: ejbca-cli-cacrl
+
+  when:
+    - ejbca_type is defined
+    - ejbca_type == "CA"
+
+- name: Import CRL files
+  block:
+
+    - name: Create CRL import directory
+      file:
+        path: /var/tmp/importcrl
+        state: directory
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+      tags: ejbca-cli-cacrl
+
+    - name: Import CRL files 
+      include_tasks: import_crl.yml
+      loop: "{{ ejbca_ca_import }}"
+      loop_control:
+        label: "{{ item.caname }}"
+      tags: ejbca-cli-cacrl
+
+    - name: Cleanup the CA CRL files on remote EJBCA
+      file:
+        path: /var/tmp/importcrl
+        state: absent
+      tags: ejbca-cli-cacrl
+
+  when:
+    - ejbca_type is defined
+    - ejbca_type == "RA" or ejbca_type == "VA"
