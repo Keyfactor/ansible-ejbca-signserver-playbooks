@@ -1,7 +1,7 @@
-organizationName: TechDays2021
+organizationName: DevSecOps
 organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
-organizationDomainName: solitude.skyrim
+organizationDomainName: devsecops.test
 countryName: US
 
 # EJBCA version and deployment info
@@ -27,7 +27,7 @@ ejbca_version: 7.6.0
 # testkey_label: Test key label
 # The order must be Management CA and then Root CA
 root_add_certification_authorities:
-  - caname: "TechDays2021-Root-CA01-G1"
+  - caname: "DevSecOps-Root-CA01-G1"
     certprofile: "RootCA-{{ organizationNameShort }}-G1"
     dn: "CN=TechDays 2021 Root CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     subjectaltname: ""
@@ -82,7 +82,7 @@ root_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
-  - caname: "TechDays2021-Root-CA02-G1"
+  - caname: "DevSecOps-Root-CA02-G1"
     certprofile: "EccRootCA-{{ organizationNameShort }}-G1"
     dn: "CN=TechDays 2021 Root CA02 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     subjectaltname: ""
@@ -158,11 +158,11 @@ root_add_certification_authorities:
 # defaultkey_label: Default (encryption) key label
 # testkey_label: Test key label
 sub_add_certification_authorities:
-  - caname: "TechDays2021-Sub-CA01-G1"
+  - caname: "DevSecOps-Sub-CA01-G1"
     certprofile: "SubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "CN={{ organizationName }} Root CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    root_ca_name: "TechDays2021-Root-CA01-G1"
+    root_ca_name: "DevSecOps-Root-CA01-G1"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -215,11 +215,11 @@ sub_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
-  - caname: "TechDays2021-Sub-CA02-G1"
+  - caname: "DevSecOps-Sub-CA02-G1"
     certprofile: "EccSubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA02 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "CN={{ organizationName }} Root CA02 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    root_ca_name: "TechDays2021-Root-CA02-G1"
+    root_ca_name: "DevSecOps-Root-CA02-G1"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"

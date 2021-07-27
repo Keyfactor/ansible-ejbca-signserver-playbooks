@@ -1,43 +1,6 @@
 ---
 # tasks file for roles/ansible-ejbca-deploy-pki-add-ca
 
-# TODO Remove once using crypto token is all in place
-#- name: Management & Root CA Keys
-#  block:
-#
-#    - name: Generate Keys for Root CA's
-#      include_role:
-#        name: ansible-ejbca-ctb-keygen 
-#      loop: "{{ root_add_certification_authorities |subelements('crypto_token') }}"
-#      loop_control:
-#        label: "{{ key_item.0.caname }}"
-#        loop_var: key_item
-#      no_log: true
-#      tags: hsm_test, clienttoolbox_key_generation
-#      when:
-#        - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype)
-#  
-#  when: 
-#    - root_add_certification_authorities[0] is defined
-#
-#- name: Sub CA Keys
-#  block:
-#
-#    - name: Generate Keys for Sub CA's
-#      include_role:
-#        name: ansible-ejbca-ctb-keygen
-#      loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
-#      loop_control:
-#        label: "{{ key_item.0.caname }}"
-#        loop_var: key_item
-#      no_log: true
-#      tags: hsm_test, clienttoolbox_key_generation
-#      when:
-#        - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype)
-#
-#  when:
-#    - sub_add_certification_authorities[0] is defined
-
 - name: Prepare configdump template files
   include_role: 
     name: ansible-ejbca-cnfdump-stage
@@ -63,8 +26,6 @@
         loop_var: key_item
       no_log: true
       tags: key_generation
-      #when:
-      #  - ("soft" in key_item.0.tokentype)
 
     - name: Stage Management & Root CA to create with configdump
       include_role:
@@ -103,8 +64,6 @@
         tasks_from: add_crypto_token
       loop: "{{ root_add_certification_authorities }}"
       no_log: true
-      #when:
-      #  - ("soft" in item.tokentype)
 
     - name: Generate keys for Management & Root CA's on crypto token
       include_role:
@@ -116,8 +75,6 @@
         loop_var: key_item
       no_log: true
       tags: key_generation
-      #when:
-      #  - ("soft" in key_item.0.tokentype)
 
     - name: Initialize Management & Root CAs with CLI commands
       include_role:
@@ -157,8 +114,6 @@
         loop_var: key_item
       no_log: true
       tags: key_generation
-      #when:
-      #  - ("soft" in key_item.0.tokentype)
 
     - name: Stage Sub CA's to create with configdump
       include_role:
@@ -167,7 +122,7 @@
       vars:
         dump_dest: "{{ ejbca_home }}/dump/dump2/certification-authorities/{{ item.caname }}.yaml"
       loop: "{{ sub_add_certification_authorities }}"
-      #no_log: true
+      no_log: true
 
     - name: Intialize Sub CA's with configdump
       command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2 --initialize"
@@ -196,8 +151,6 @@
         tasks_from: add_crypto_token
       loop: "{{ sub_add_certification_authorities }}"
       no_log: true
-      #when:
-      #  - ("soft" in item.tokentype)
 
     - name: Generate keys for Suborindated CA's on crypto token
       include_role:
@@ -209,8 +162,6 @@
         loop_var: key_item
       no_log: true
       tags: key_generation
-      #when:
-      #  - ("soft" in key_item.0.tokentype)
       
     - name: Initialize Sub CA's with CLI commands
       include_role:
@@ -232,10 +183,3 @@
   when: 
     - sub_add_certification_authorities[0] is defined
     - not deploy_with_configdump|bool
-
-#- name: Import configdump of profiles, services, & publishers
-#  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/techdays2021-3"
-#  args:
-#    chdir: "{{ ejbca_home }}/dist/configdump"
-#  become: yes 
-#  become_user: "{{ ejbca_user }}"
