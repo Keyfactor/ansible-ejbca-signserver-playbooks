@@ -1,5 +1,5 @@
 ---
-# roles/ansible-ejbca-va-httpd/vars/main.yml
+# roles/ansible-ejbca-httpd/vars/main.yml
 
 httpd_conf_files_8:
   - src: httpd.conf.j2

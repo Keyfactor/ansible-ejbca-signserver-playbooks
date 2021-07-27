@@ -31,9 +31,9 @@
   when: 
     - find_local_ca_certs is defined
 
-- name: Debug find_local_ca_certs
-  debug:
-    var: find_local_ca_certs
+#- name: Debug find_local_ca_certs
+#  debug:
+#    var: find_local_ca_certs
 
 - name: Export CA file
   block:

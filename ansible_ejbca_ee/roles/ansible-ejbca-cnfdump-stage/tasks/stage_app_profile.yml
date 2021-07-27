@@ -21,7 +21,12 @@
     label: "{{ item.dest }}"
 
 - name: Import Approval Profiles with configdump
-  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dumpApp"
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    --overwrite update 
+    --non-interactive continue 
+    -l {{ ejbca_home }}/dump/dumpApp
   args:
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes 

@@ -1,7 +1,10 @@
 ---
 
 - name: Export Managment CA cert to file
-  command: "{{ ejbca_sh }} ca getcacert --caname ManagementCA -f /var/tmp/managementca.crt"
+  command: >
+    {{ ejbca_sh }} ca getcacert 
+    --caname ManagementCA 
+    -f /var/tmp/managementca.crt
   args:
     chdir: "{{ ejbca_home }}"
     creates: /var/tmp/managementca.crt

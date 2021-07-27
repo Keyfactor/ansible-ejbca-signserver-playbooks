@@ -5,14 +5,14 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "13Jul2021-Skyrim-SA"
+superAdminCn: "17Jul2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"
 
 # Maria DB configuration info
 mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
-mariadb_binlog_formatt: ROW
+mariadb_binlog_format: ROW
 mariadb_databases:
   - name: ejbca
     collation: "utf8_general_ci"
@@ -23,7 +23,7 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "%"
   - name: ejbca-usr
-    password: ejbca
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
     priv: "ejbca.*:ALL"
     host: "localhost"
 
@@ -49,9 +49,9 @@ wildfly_disable_infinispan: true
 ejbca_version: 7.7.0
 # If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_6_0_VA.zip
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_6_0-RC1_VA.zip
-ejbca_src_dir_name: ejbca_ee_7_6_0-RC1_VA
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_7_0_VA.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_7_0_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_7_0_VA
 ejbca_type: VA
 
 # Location to write the CRL files on server
@@ -61,7 +61,7 @@ ejbca_crl_dir_enabled: false
 web_httpserver_external_privhttps: 443
 web_reqcertindb: false
 
-ant_version: apache-ant-1.10.10-bin.tar.gz
+ant_version: apache-ant-1.10.11-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
 
 # EJBCA VA property files

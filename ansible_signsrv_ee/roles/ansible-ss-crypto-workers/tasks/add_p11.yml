@@ -1,7 +1,8 @@
 ---
 
 - name: Check if PCKS11 Slot - {{ item.name }} exists in SignServer
-  command: "{{ signsrv_home }}/bin/signserver getstatus brief {{ item.name }}"
+  command: >
+    {{ signsrv_home }}/bin/signserver getstatus brief {{ item.name }}
   args:
     chdir: "{{ signsrv_home }}"
   environment:
@@ -17,6 +18,19 @@
   debug:
     msg: "The crypto toke is offline and Ansible will try to activate it"
   when: ('Offline' in check_p11_exists.stdout)
+
+- name: Check if the test key exists on the crypto token
+  command: >
+    {{ signsrv_home }}/bin/signserver testkey {{ item.name }} {{ item.testkey_alias }}
+  args:
+    chdir: "{{ signsrv_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: check_p11_worker_keys_no_exist
+  failed_when: false
+  changed_when: false
 
 - name: Add Crypto Token to SignServer
   block:
@@ -81,6 +95,40 @@
   
   when: check_p11_exists.rc != 0
 
+- name: Active Crypto Token and create test key
+  block:
+    - name: Activate the {{ item.name }} crypto token
+      command: "{{ signsrv_home }}/bin/signserver activatecryptotoken {{ item.name }} {{ item.slot_pin }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      no_log: true
+      register: activate_crypto_token
+      failed_when: false
+
+    - name: Activation for crypto token failed
+      debug:
+        msg: Crypto token activation failed with {{ activate_crypto_token.stdout }}
+      when: activate_crypto_token.rc >= 3
+      failed_when: true
+  
+    - name: Create a test key on the crypto tokens
+      command: "{{ signsrv_home }}/bin/signserver generatekey {{ item.id }} -alias {{ item.testkey_alias }} -keyalg {{ item.testkey_keyalg }} -keyspec {{ item.testkey_keyspec }}"
+      args:
+        chdir: "{{ signsrv_home }}"
+      environment:
+        APPSRV_HOME: "{{ wildfly_home }}"
+      become: yes
+      become_user: "{{ signsrv_user }}"
+      no_log: true
+
+  when: 
+    - ('Offline' in check_p11_exists.stdout)
+    - ('SUCCESS' not in check_p11_keys_no_exist.stdout_lines[-1])
+
 - name: Active Crypto Token
   block:
     - name: Activate the {{ item.name }} crypto token
@@ -92,5 +140,14 @@
       become: yes
       become_user: "{{ signsrv_user }}"
       no_log: true
+      register: activate_crypto_token
+      failed_when: false
+
+    - name: Activation for crypto token failed
+      debug:
+        msg: Crypto token activation failed with {{ activate_crypto_token.stdout }}
+      when: activate_crypto_token.rc >= 3
+      failed_when: true
   
-  when: ('Offline' in check_p11_exists.stdout)
+  when: 
+    - ('Offline' in check_p11_exists.stdout)

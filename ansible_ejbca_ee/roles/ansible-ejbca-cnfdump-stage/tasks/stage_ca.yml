@@ -7,4 +7,16 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
     mode: 0664
-  #no_log: true
+  no_log: true
+
+- name: Stage CA configdump to update with Publishers
+  copy:
+    src: "{{ dump_dest|default( ejbca_home + '/dump/subs/certification-authorities/' + item.caname + '.yaml') }}"
+    dest: "{{ ejbca_home }}/dump/addPubToCA/certification-authorities/{{ item.caname }}.yaml"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0664  
+    remote_src: yes
+  when:
+    - add_publshers_to_cas is defined
+    - add_publshers_to_cas|bool

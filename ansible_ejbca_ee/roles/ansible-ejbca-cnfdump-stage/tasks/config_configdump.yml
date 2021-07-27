@@ -33,3 +33,14 @@
   loop: "{{ configdump_import_files }}"
   loop_control:
     label: "{{ item.dest }}"
+
+- name: Create CA publisher directory structure
+  file:
+    path: "{{ ejbca_home }}/dump/addPubToCA/certification-authorities"
+    state: directory
+    mode: 0750
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  when:
+    - add_publshers_to_cas is defined
+    - add_publshers_to_cas|bool

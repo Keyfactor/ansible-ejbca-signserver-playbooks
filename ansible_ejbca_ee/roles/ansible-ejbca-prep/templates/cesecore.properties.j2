@@ -1,6 +1,6 @@
 #{{ ansible_managed | comment }}
 
-allow.external-dynamic.configuration={{ core_allow_external_dynamic_configuration| default('false') }}
+allow.external-dynamic.configuration={{ core_allow_external_dynamic_configuration| default('true') }}
 #password.encryption.key={{ core_password_encryption_key| default('changeit') }}
 #ca.keystorepass={{ core_ca_keystorepass| default('changeit') }}
 #ca.rngalgorithm={{ core_ca_rngalgorithm| default('SHA1PRNG') }}

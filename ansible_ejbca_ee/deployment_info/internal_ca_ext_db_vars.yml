@@ -30,23 +30,6 @@ configdump_import_files: "{{ configdump_files }}"
 # should use this option to add the publisher to the CA.
 add_publshers_to_cas: true
 
-# Maria DB settings for using MariaDB database
-mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
-mariadb_binlog_format: ROW
-mariadb_databases:
-  - name: ejbca
-    collation: "utf8_general_ci"
-    encoding: "utf8"
-mariadb_users:
-  - name: ejbca-usr
-    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
-    priv: "ejbca.*:ALL"
-    host: "%"
-  - name: ejbca-usr
-    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
-    priv: "ejbca.*:ALL"
-    host: "localhost"
-
 # Maria DB JDBC driver download URL
 ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
 # Maria DB JDBC driver SHA256 hash
@@ -88,11 +71,11 @@ appsrv_datasources:
     database_connection_type: mariadb 
     database_driver_class: org.mariadb.jdbc.Driver
     database_jar_filename: mariadb-java-client.jar
-    host: 127.0.0.1
+    host: 172.16.170.133
     backup_host: ejbca01.solitude.skyrim
     port: 3306
-    database: ejbca
-    user: ejbca-usr
+    database: ejbca-ca
+    user: ejbca-ca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
 

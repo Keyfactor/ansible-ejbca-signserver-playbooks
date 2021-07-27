@@ -7,3 +7,4 @@ ejbca*/*
 devsec*
 *AzureTest*
 deployment_info/custom*
+test_*

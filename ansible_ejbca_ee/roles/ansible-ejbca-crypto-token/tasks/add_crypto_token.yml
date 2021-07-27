@@ -8,10 +8,13 @@
   become_user: "{{ ejbca_user }}"
   register: cryptoToken_list
   changed_when: false
+  failed_when: false
 
-#- name: Debug
-#  debug:
-#    var: item
+- debug:
+    msg: "Failed to query Crypto Tokens with message: {{ cryptoToken_list.stdout }}"
+  when:
+    - cryptoToken_list.rc >= 1
+  failed_when: true
 
 - name: Create cryptotoken for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}
   command: >
@@ -27,14 +30,14 @@
   become: yes
   become_user: "{{ ejbca_user }}"
   register: add_cryptotoken
-  failed_when: add_cryptotoken.rc >= 2
+  failed_when: false
   #changed_when: keybinding_cryptotoken.rc == 0
   when: 
     - (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or (item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
 
-#- name: Debug add_cryptotoken
-#  debug:
-#    var: add_cryptotoken
-#  when: 
-#    - add_cryptotoken is defined
-#    - add_cryptotoken.rc >= 1
+- name: Debug add_cryptotoken
+  debug:
+    msg: "Failed to create the crypto token: {{ add_cryptotoken.stdout }}"
+  when: 
+    - add_cryptotoken.rc >= 2
+  failed_when: true

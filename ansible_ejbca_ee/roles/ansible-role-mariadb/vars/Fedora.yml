@@ -2,6 +2,7 @@
 ---
 
 mariadb_packages:
+  - MariaDB-client
   - MariaDB-common
   - MariaDB-server
   - python3-PyMySQL

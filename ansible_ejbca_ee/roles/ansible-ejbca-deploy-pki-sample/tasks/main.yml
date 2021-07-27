@@ -11,7 +11,7 @@
     name: ansible-ejbca-restart-wildfly
   vars:
     restart_wildfly: true
-  tags: check_deployment  
+  tags: check_deployment
 
 - name: Use Configdump to create the Management & Root CA's
   block:
@@ -48,7 +48,13 @@
       no_log: true
 
     - name: Intialize Management & Root CA's with configdump
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1 --initialize"
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump1 
+        --initialize
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -61,7 +67,12 @@
   block:
 
     - name: Import configdump of Root CA templates and EKU's
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1"
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump1
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -137,10 +148,16 @@
       vars:
         dump_dest: "{{ ejbca_home }}/dump/dump2/certification-authorities/{{ item.caname }}.yaml"
       loop: "{{ sub_add_certification_authorities }}"
-      #no_log: true
+      no_log: true
 
     - name: Intialize Sub CA's with configdump
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2 --initialize"
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump2 
+        --initialize
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -154,7 +171,12 @@
   block:
 
     - name: Import configdump of profiles and services
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump2
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -243,7 +265,12 @@
         - item.remote_key_update|bool
 
     - name: Create external VA services and publisher with configdump
-      command: "./configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/va
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -273,14 +300,32 @@
     - ( ejbca_version is version('7.6.0', '>='))
 
 - name: Import configdump of profiles, services, & publishers
-  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump3"
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    --overwrite update 
+    --non-interactive continue 
+    -l {{ ejbca_home }}/dump/dump3
   args:
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes 
   become_user: "{{ ejbca_user }}"
 
+- name: Update CA's to use Publishers using configdump
+  include_role:
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: add_publishers_to_ca
+  when: 
+    - add_publshers_to_cas is defined
+    - add_publshers_to_cas|bool
+
 - name: Create external RA role with configdump
-  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/ra"
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    --overwrite update 
+    --non-interactive continue 
+    -l {{ ejbca_home }}/dump/ra
   args:
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes 

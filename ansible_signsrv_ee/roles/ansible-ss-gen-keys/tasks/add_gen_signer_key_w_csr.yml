@@ -16,6 +16,7 @@
   debug:
     var: check_p11_keys_no_exist
   when: check_p11_keys_no_exist.rc == 1
+  failed_when: true
 
 - name: Create a new key on Crypto Token & Generate CSR to download to host
   block:

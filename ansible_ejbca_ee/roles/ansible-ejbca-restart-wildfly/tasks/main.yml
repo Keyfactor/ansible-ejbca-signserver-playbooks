@@ -30,3 +30,4 @@
     path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
     state: present
   when: checking_existing_keys is defined and checking_existing_keys.changed or restart_wildfly is defined and restart_wildfly|bool
+  
