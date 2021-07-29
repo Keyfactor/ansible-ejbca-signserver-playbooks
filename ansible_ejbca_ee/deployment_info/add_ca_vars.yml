@@ -341,9 +341,3 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
   - src: 'cp-ocspSignerEcc-15d.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSignerEcc-15d.yaml'
-    # Files for External VA
-  - src: 'service-ocspService.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/va/services/ocspService.yaml'
-    # Files for External RA
-  - src: 'role-ra-peer-connection.yaml.j2'
-    dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'
