@@ -52,6 +52,29 @@ External VA - Edit _deployment_info/internal_va_vars.yml_ and _inventory_ and ru
 
 >ansible-playbook -i inventory deployVa.yml --ask-become-pass
 
+Create a password file protected with Ansible Vault
+
+>touch deployment_info/custom_enc_ca_vars.yml
+>ansible-vault create deployment_info/custom_enc_ca_vars.yml
+
+Edit the password file to add/remove variables
+
+>ansible-vault edit deployment_info/custom_enc_ca_vars.yml
+
+Use the Ansible Vault password file
+
+>ansible-playbook --ask-vault-pass -i inventory -e @deployment_info/custom_enc_ca_vars.yml deployCa.yml
+
+### Switching the Datasource
+To use the Database source failover/failback use the following commands:
+
+#### Failover 
+>ansible-playbook -i inventory -e failover_wildfly_db=true configureDB.yml 
+
+#### Failback
+>ansible-playbook -i inventory -e failback_wildfly_db=true configureDB.yml 
+
+
 Example Playbook
 ----------------
 
@@ -64,11 +87,13 @@ This example is taken from `deployCa.yml` and is tested on CentOS 8 with FIPS mo
   become: yes
   become_method: sudo
   roles:
-    - ansible-role-hostname
+    - ansible-hostname
     - ansible-role-mariadb
     - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
     - ansible-ejbca-prep
-    - ansible-ejbca-ca-ee
+    - ansible-ejbca-deploy-pki-sample
+    - ansible-ejbca-crl-import-export
     - ansible-ejbca-httpd
 ```
 
@@ -134,7 +159,7 @@ Add
 vars:
     ansible_python_interpreter: /usr/bin/python3
 ```
-to deployEJBCA.yml
+to deployCa.yml
 
 2. Also seen on CentOS8 is that Apache enables TLSv1.3 by default, and FireFox does not work with client certificate authentication using TLSv1.3. This results in EJBCA Admin UI being unreachable. The TLS config in Apache in available on the target, after the installation, in /etc/httpd/conf.d/ssl.conf
 The setting in question is _SSLProtocol -all +TLSv1.2_ and You can enable this setting in the playbook in the file ./roles/ansible-ejbca-httpd/templates/ssl2.conf.j2.

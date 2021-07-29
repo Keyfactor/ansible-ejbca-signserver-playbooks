@@ -9,7 +9,7 @@ mariadb_users: []
 mariadb_root_password: ''
 
 mariadb_mirror: yum.mariadb.org
-mariadb_version: '10.4'
+mariadb_version: '10.5'
 
 mariadb_configure_swappiness: true
 mariadb_swappiness: '10'

@@ -12,4 +12,14 @@
 
 - name: Create Database tables and indexes
   include_tasks: create_db_apply_indexes.yml
-  when: management_database_indexes.apply_indexes|bool
+  when: 
+    - management_database_indexes.apply_indexes|bool
+
+- name: Configure Database protection
+  include_tasks: conf_db_protection.yml
+  when:
+    - ejbca_databaseprotection[0] is defined
+    - databaseprotection_enablesign_AuditRecordData is defined
+    - databaseprotection_enablesign_AuditRecordData|bool
+    - databaseprotection_enableverify_AuditRecordData is defined
+    - databaseprotection_enableverify_AuditRecordData|bool

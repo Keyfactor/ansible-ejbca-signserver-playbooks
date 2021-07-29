@@ -13,14 +13,21 @@ organizationName: Solitude
 organizationNameShort: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 
-ejbca_jdbc_driver: https://downloads.mariadb.com/Connectors/java/connector-java-2.7.0/mariadb-java-client-2.7.0.jar
+ejbca_jdbc_remote_dir: ~/Downloads/PK-Software/mariadb-java-client-2.7.2.jar
 ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
+# Maria DB JDBC driver download URL
+ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+# Maria DB JDBC driver SHA256 hash
+ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 
-ant_version: apache-ant-1.10.9-bin.tar.gz
+apache_ant_remote_dir: ~/Downloads/PK-Software/apache-ant-1.10.11-bin.tar.gz
+ant_version: apache-ant-1.10.11-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
-ant_checksum: sha256:5f8a85ddee6effe79163aa54c7bef6b60305e37200dedc1986437fb5c072a9f3
+# apache-ant-1.10.9-bin.tar.gz
+#ant_checksum: sha256:5f8a85ddee6effe79163aa54c7bef6b60305e37200dedc1986437fb5c072a9f3 
+ant_checksum: sha256:0a3dc4624c863657daa609051763f12bfd286bc6da1d61ca48959ce3b94be0e7
 
-wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_disable_infinispan: true
 
 ejbca_manage_user: true
@@ -42,11 +49,11 @@ management_database_indexes:
 
 ejbca_database_indexes:
   - index: "--file {{ ejbca_home }}/doc/sql-scripts/create-index-ejbca.sql"
-  - index: "--execute 'ALTER TABLE AuditRecordData row_format=compressed key_block_size=4;'"
-  - index: "--execute 'ALTER TABLE CertReqHistoryData row_format=compressed key_block_size=4;'"
-  - index: "--execute 'ALTER TABLE CRLData row_format=compressed key_block_size=16;'"
-  - index: "--execute 'ALTER TABLE CertificateData row_format=compressed key_block_size=8;'"
-  - index: "--execute 'ALTER TABLE UserData row_format=compressed key_block_size=4;'"
+  #- index: "--execute 'ALTER TABLE AuditRecordData row_format=compressed key_block_size=4;'"
+  #- index: "--execute 'ALTER TABLE CertReqHistoryData row_format=compressed key_block_size=4;'"
+  #- index: "--execute 'ALTER TABLE CRLData row_format=compressed key_block_size=16;'"
+  #- index: "--execute 'ALTER TABLE CertificateData row_format=compressed key_block_size=8;'"
+  #- index: "--execute 'ALTER TABLE UserData row_format=compressed key_block_size=4;'"
 
 # EJBCA CA property files
 ejbca_templated_properties_files:
@@ -56,14 +63,14 @@ ejbca_templated_properties_files:
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
   - src: ejbca.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
-  #- src: install.properties.j2
-  #  dest: "{{ ejbca_home }}/../ejbca-custom/conf/install.properties"
   - src: web.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
   - src: mail.properties.j2
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
   - src: custom.properties.j2
     dest:  "{{ ejbca_home }}/../ejbca-custom/conf/custom.properties"
+  #- src: install.properties.j2
+  #  dest: "{{ ejbca_home }}/../ejbca-custom/conf/install.properties"
 
 ejbca_force_build_ear: false
 

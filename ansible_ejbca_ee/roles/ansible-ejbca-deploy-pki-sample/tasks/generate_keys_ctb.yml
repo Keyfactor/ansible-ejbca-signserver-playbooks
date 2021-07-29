@@ -1,0 +1,56 @@
+---
+# tasks file for roles/ansible-ejbca-deploy-pki-sample
+
+- name: Management & Root CA Keys
+  block:
+
+    - name: Generate Keys for Management & Root CA's
+      include_role:
+        name: ansible-ejbca-ctb-keygen 
+      loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test, clienttoolbox_key_generation
+      when:
+        - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype)
+  
+  when: 
+    - management_add_certification_authorities[0] is defined
+
+- name: Sub CA Keys
+  block:
+
+    - name: Generate Keys for Sub CA's
+      include_role:
+        name: ansible-ejbca-ctb-keygen
+      loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test, clienttoolbox_key_generation
+      when:
+        - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype)
+
+  when:
+    - sub_add_certification_authorities[0] is defined
+
+- name: Key Binding Keys
+  block:
+
+    - name: Generate Keys for Key Bindings
+      include_role:
+        name: ansible-ejbca-ctb-keygen
+      loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.slot_identifier_value }}"
+        loop_var: key_item
+      no_log: true
+      tags: hsm_test, clienttoolbox_key_generation
+      when:
+        - ("PKCS11CryptoToken" in key_item.0.tokentype)
+
+  when: 
+    - ejbca_keybinding[0] is defined

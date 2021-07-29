@@ -30,6 +30,7 @@
     - include_vars: deployment_info/internal_va_vars.yml 
   roles:
     - ansible-ejbca-importcacrt
+    - ansible-ejbca-crl-import-export
     - ansible-ejbca-peer-in
     - ansible-ejbca-va-ocsp-bind
     - ansible-ejbca-httpd

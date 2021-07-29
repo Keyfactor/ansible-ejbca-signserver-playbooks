@@ -1,0 +1,70 @@
+Object Type: Certification Authority
+Version: 2
+Name: {{ item.caname }}
+Type of CA: X.509
+Description: {{ item.description | default('Created using configdump') }}
+Serial Number Octet Size: {{ item.serial_number_octet_size | default('20') }}
+Pre-produce OCSP Responses: {{ item.pre_produce_ocsp_responses | default('false') }}
+Store responses on-demand: {{ item.store_responses_on_demand | default('false') }}
+Certificate Profile: {{ item.certprofile }}
+Default Certificate Profile: Not used
+Use Append-Only Table: {{ item.use_append_only_table | default('false') }}
+CA Token:
+  Signature Algorithm: {{ item.signalg }}
+  Encryption Algorithm: {{ item.signalg }}
+  Crypto Token: {{ item.caname }}
+{% for val in item.crypto_token %}
+{% if 'default' == val.type %}
+  Default Key: {{ val.key_label }}
+  Key Encryption Key: {{ val.key_label }}
+{% endif %}
+{% if 'sign' == val.type %}
+  Certificate Signing Key: {{ val.key_label }}
+  CRL Signing Key: {{ val.key_label }}
+{% endif %}{% if 'test' == val.type %}  
+  Test Key: {{ val.key_label }}
+{% endif %}{% endfor %}
+  Key Sequence Format: Numeric
+  Key Sequence: '00000'
+Enforce Unique Public Keys: {{ item.enforce_unique_public_keys | default('true') }}
+Enforce key renewal: {{ item.enforce_key_renewal | default('false') }}
+Enforce Unique DN: {{ item.enforce_unique_dn | default('true') }}
+User Storage: {{ item.user_storage | default('true') }}
+Certificate Storage: {{ item.certificate_storage | default('true') }}
+Accept Revocations for Non-Existing Entries: {{ item.accept_revocations_for_non_existing_entries | default('false') }}
+Subject DN: {{ item.dn }}
+Signed By: {{ item.root_ca_name | default('Self Signed') }}
+Validity: {{ item.validity_yml}}
+Use UTF-8 in Policy Notice Text: {{ item.use_utf8_in_policy_notice_text | default('false') }}
+LDAP DN Order: {{ item.useLdapDnOrder | default('false') }}
+Authority Key Id Used: true
+CRL Number Used: true
+CA Issuer URI:
+- {{ item.authorityInformationAccess | default('') }}
+Partitioned CRL Used: {{ item.partitioned_crl_used | default('false') }}
+CRL Expiration Period: {{ item.crlPeriod_yml }}
+CRL Issue Interval: {{ item.crlIssueInterval_yml }}
+CRL Overlap Time: {{ item.crl_overlap_time_yml }}
+Delta CRL Period: {{ item.delta_crl_period }}
+{% if ejbca_version >= '7.5' %}
+Generate CRL Upon Revocation: {{ item.generate_crl_upon_revocation | default('false') }}
+{% endif %}
+Default CRL Distribution Point: {{ item.defaultCRLDP }}
+OCSP Service Default URI: {{ item.defaultOCSPServiceLocator }}
+AIA CA Issuer URIs:
+- {{ item.certificateAiaDefaultCaIssuerUri }}
+Finish User: {{ item.finish_user  | default('true') }}
+CA Healthcheck Enabled: {{ item.ca_healthcheck_enabled  | default('true') }}
+Request Processor: {{ item.request_processor  | default('null') }}
+{% if ejbca_version >= '7.7' %}
+Microsoft CA Compatible Mode Used: {{ item.ms_ca_compat_mode  | default('false') }}
+{% endif %}
+{% if item.publishers is defined and item.publishers|length > 1 %}
+CRL Publishers:
+{% for pub in item.publishers %}
+  - {{ pub }}
+{% endfor %}
+{% elif item.publishers is defined %} 
+CRL Publishers:
+  - {{ item.publishers[0] }}
+{% endif %}

@@ -59,7 +59,6 @@ ejbca_peer_crypto_token:
     ra_key_size: "3072"
     ra_key_label: peerKeyBindingRa0001
 
-
 ejbca_keybinding:
   - name: peerClient-ocsp
     crypto_token_name: peeringCryptoToken

@@ -1,0 +1,38 @@
+Object Type: Certificate Profile
+Version: 1
+Name: RootCA-{{ organizationNameShort }}-G1
+Type: Root CA
+Available Key Algorithms:
+- RSA
+Available Elliptic Curves:
+- ANY_EC_CURVE
+Available Bit Lengths:
+- 3072
+- 4096
+Signature Algorithm: SHA256WithRSA
+Validity: 25y
+Description: ''
+Overridable Extension OIDs: [
+  ]
+Non-overridable Extension OIDs: [
+  ]
+Allow Validity Override: true
+Path Length Constraint Used: false
+Authority Key Identifier Used: false
+Key Usage:
+- Digital Signature
+- Key Certificate Sign
+- CRL Sign
+Subject Alternative Name Used: false
+Issuer Alternative Name Used: false
+Extended Key Usage: [
+  ]
+CVC Access Rights (Inspection System): [
+]
+LDAP DN Order: false
+Available CAs:
+- Any CA
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

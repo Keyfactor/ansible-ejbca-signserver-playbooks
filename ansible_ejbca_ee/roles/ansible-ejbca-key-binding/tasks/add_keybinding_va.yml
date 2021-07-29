@@ -1,6 +1,6 @@
 ---
 
-- name: check if key binding exists
+- name: check if OCSP Key Binding exists
   command: "{{ ejbca_sh }} keybind list"
   no_log: true
   become: yes
@@ -19,7 +19,7 @@
 #    label: "{{ item.stdout }}"
 #  when: item.item.name not in item.stdout
 
-- name: Create key binding 
+- name: Create OCSP Key Binding 
   command: >
     {{ ejbca_sh }} keybind create 
     --name {{ item.0.name }} 
@@ -37,7 +37,7 @@
   loop: "{{ key_bindings |subelements('crypto_token') }}"
   when: item.0.name not in keybinding_exists.stdout
 
-- name: Create CSR for key binding 
+- name: Create CSR for OCSP key binding 
   command: >
     {{ ejbca_sh }} keybind gencsr 
     --name {{ item.name }} 

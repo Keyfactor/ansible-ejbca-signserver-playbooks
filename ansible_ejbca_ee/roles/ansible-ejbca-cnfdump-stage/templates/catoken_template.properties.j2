@@ -1,0 +1,17 @@
+#{{ ansible_managed | comment }}
+{% if "org.cesecore.keys.token.PKCS11CryptoToken" item.tokentype %}
+sharedLibrary {{ hsm_shared_library }}
+slotLabelType={{ item.slot_identifier_type }}
+slotLabelValue={{ item.slot_identifier_value }}
+{% endif %}
+
+# CA key configuration
+{% for val in item.crypto_token %}
+{% if 'default' == val.type %}
+defaultKey {{ val.key_label }}
+{% endif %}{% if 'sign' == val.type %}
+certSignKey {{ val.key_label }}
+crlSignKey {{ val.key_label }}
+{% endif %}{% if 'test' == val.type %}  
+testKey {{ val.key_label }}
+{% endif %}{% endfor %}

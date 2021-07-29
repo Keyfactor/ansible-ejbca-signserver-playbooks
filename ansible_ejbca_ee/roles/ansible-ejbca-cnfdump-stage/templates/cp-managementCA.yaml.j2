@@ -1,0 +1,53 @@
+Object Type: Certificate Profile
+Version: 1
+Name: managementCA
+Type: Root CA
+Available Key Algorithms:
+- RSA
+Available Elliptic Curves:
+- ANY_EC_CURVE
+Available Bit Lengths:
+- 3072
+- 4096
+{% if management_add_certification_authorities[0] is defined %} 
+Signature Algorithm: {{ management_add_certification_authorities[0].signalg }}
+{% elif add_certification_authorities[0] is defined %}
+Signature Algorithm: {{ add_certification_authorities[0].signalg }}
+{% else %}
+Signature Algorithm:
+{% endif %}
+{% if management_add_certification_authorities[0] is defined %}
+Validity:  {{ management_add_certification_authorities[0].validity_yml }} 
+{% elif add_certification_authorities[0] is defined %}
+Validity: {{ add_certification_authorities[0].validity_yml }}
+{% else %} 
+Validity: 10y
+{% endif %} 
+Description: ''
+Overridable Extension OIDs: [
+  ]
+Non-overridable Extension OIDs: [
+  ]
+Allow Validity Override: true
+Path Length Constraint Used: true
+Path Length Constraint: 0
+Authority Key Identifier Used: false
+Key Usage:
+- Digital Signature
+- Key Certificate Sign
+- CRL Sign
+Extended Key Usage Used: false
+Extended Key Usage: [
+  ]
+Issuer Alternative Name Used: false
+Subject Alternative Name Used: false
+Subject Alternative Name Searchable: false
+CVC Access Rights (Inspection System): [
+]
+LDAP DN Order: false
+Available CAs:
+- Any CA
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

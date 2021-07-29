@@ -1,0 +1,76 @@
+Object Type: Certificate Profile
+Version: 1
+Name: EccRootCA-{{ organizationNameShort }}-G1
+Type: Root CA
+Available Key Algorithms:
+- ECDSA
+Available Elliptic Curves:
+- P-256
+- P-384
+- prime256v1
+- secp256r1
+- secp384r1
+Available Bit Lengths:
+- 0
+- 110
+- 112
+- 113
+- 126
+- 128
+- 131
+- 160
+- 161
+- 162
+- 163
+- 167
+- 173
+- 179
+- 189
+- 190
+- 191
+- 192
+- 193
+- 224
+- 225
+- 232
+- 233
+- 236
+- 237
+- 238
+- 239
+- 256
+- 257
+Signature Algorithm: SHA256withECDSA
+Validity: 25y
+Description: ''
+Overridable Extension OIDs: [
+  ]
+Non-overridable Extension OIDs: [
+  ]
+Allow Validity Override: true
+Path Length Constraint Used: false
+Authority Key Identifier Used: false
+Key Usage:
+- Digital Signature
+- Key Certificate Sign
+- CRL Sign
+Extended Key Usage Used: false
+Extended Key Usage: [
+  ]
+Subject Alternative Name Used: false
+Issuer Alternative Name Used: false
+CRL Distribution Point Used: false
+CRL Use CA Defined Settings: false
+CRL Issuer: ''
+Authority Information Access Used: false
+OCSP Service Locator URL Is CA Defined: false
+OCSP Issuer URL Is CA Defined: false
+CVC Access Rights (Inspection System): [
+]
+LDAP DN Order: false
+Available CAs:
+- Any CA 
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

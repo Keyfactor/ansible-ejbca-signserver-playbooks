@@ -1,6 +1,6 @@
 ---
 
-- name: State Okay Repo GPG Key
+- name: Stage Okay Repo GPG Key
   copy:
     src: RPM-GPG-KEY-okayinc
     dest: /etc/pki/rpm-gpg/
@@ -45,7 +45,8 @@
     group: "{{ ejbca_group }}"
 
 - name: Check SoftHSM Slots
-  shell: "softhsm2-util --show-slots | grep {{ item.slot_name }}"
+  shell: >
+    softhsm2-util --show-slots | grep {{ item.slot_name }}
   register: show_hsm_slots
   loop: "{{ softhsm_gen_hsm_slots }}"
   changed_when: show_hsm_slots.rc != 0
@@ -53,7 +54,13 @@
   no_log: true
 
 - name: Create SoftHSM slots
-  command: "softhsm2-util --init-token --free --label {{ item.item.slot_name }} --so-pin {{ item.item.slot_so_pin }} --pin {{ item.item.slot_pin }}"
+  command: >
+    softhsm2-util 
+    --init-token 
+    --free 
+    --label {{ item.item.slot_name }} 
+    --so-pin {{ item.item.slot_so_pin }} 
+    --pin {{ item.item.slot_pin }}
   become: yes  
   become_user: "{{ ejbca_user }}" 
   loop: "{{ show_hsm_slots.results }}"

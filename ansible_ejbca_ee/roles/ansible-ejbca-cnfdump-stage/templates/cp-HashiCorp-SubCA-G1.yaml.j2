@@ -1,0 +1,45 @@
+Object Type: Certificate Profile
+Version: 1
+Name: HashiCorp-SubCA-G1
+Type: Sub CA
+Available Key Algorithms:
+- RSA
+Available Elliptic Curves:
+- ANY_EC_CURVE
+Available Bit Lengths:
+- 2048
+- 4096
+Signature Algorithm: SHA384WithRSA
+Validity: 2y
+Description: ''
+Allow Subject DN Override by End Entity Information: true
+Overridable Extension OIDs: [
+  ]
+Non-overridable Extension OIDs: [
+  ]
+Allow Validity Override: true
+Path Length Constraint Used: true
+Path Length Constraint: 0
+Key Usage:
+- Digital Signature
+- Key Certificate Sign
+- CRL Sign
+Extended Key Usage Used: false
+Extended Key Usage: [
+  ]
+Subject Alternative Name Used: false
+Issuer Alternative Name Used: false
+CRL Distribution Point Used: true
+CRL Use CA Defined Settings: true
+Authority Information Access Used: true
+OCSP Service Locator URL Is CA Defined: true
+OCSP Issuer URL Is CA Defined: true
+CVC Access Rights (Inspection System): [
+]
+LDAP DN Order: false
+Available CAs:
+- {{ organizationNameShort }}-Root-CA
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

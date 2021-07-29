@@ -19,6 +19,9 @@ softhsm_gen_hsm_slots:
   - slot_name: Sub2_CA_SLOT
     slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
+  - slot_name: Sub3_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
   - slot_name:  DB_Protect_SLOT
     slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
@@ -28,3 +31,12 @@ softhsm_gen_hsm_slots:
   - slot_name: POLICY1_CA_SLOT
     slot_so_pin: "{{ encrypted_policyca1_so_token_pin | default('foo123') }}" 
     slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+  - slot_name: POLICY2_CA_SLOT
+    slot_so_pin: "{{ encrypted_policyca2_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_policyca2_token_pin | default('foo123') }}"
+  - slot_name: LDAP_AUTH_SLOT
+    slot_so_pin: "{{ encrypted_ldap_auth_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_ldap_auth_token_pin | default('foo123') }}"
+  - slot_name: AZURE_AUTH_SLOT
+    slot_so_pin: "{{ encrypted_azure_auth_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_azure_auth_token_pin | default('foo123') }}"

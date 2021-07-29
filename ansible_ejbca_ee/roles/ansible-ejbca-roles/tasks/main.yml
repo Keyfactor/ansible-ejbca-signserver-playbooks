@@ -1,0 +1,10 @@
+---
+# tasks file for roles/ansible-ejbca-roles
+
+- name: Add administrators
+  include_tasks: add_to_role.yml
+  tags: add_administrators
+  loop: "{{ add_to_role }}"
+  loop_control:
+    label: "{{ item.match_value }}"
+  when: add_to_role[0] is defined

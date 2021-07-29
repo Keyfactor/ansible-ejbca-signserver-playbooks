@@ -25,7 +25,7 @@ mariadb_users:
     priv: "sigsrv.*:ALL"
     host: "%"
   - name: signsrv-usr
-    password: ejbca
+    password: "{{ encrypted_database_signsrvusr_password | default('ejbca') }}"
     priv: "signsrv.*:ALL"
     host: "localhost"
 

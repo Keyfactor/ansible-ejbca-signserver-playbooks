@@ -1,0 +1,14 @@
+---
+
+- name: Update CA's to use Publishers using configdump
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    --overwrite update 
+    --non-interactive continue 
+    -l {{ ejbca_home }}/dump/addPubToCA 
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
+  

@@ -2,6 +2,7 @@
 ---
 
 mariadb_packages:
+  - MariaDB-client
   - MariaDB-common
   - MariaDB-server
   - MySQL-python
@@ -15,6 +16,7 @@ rhel_mariadb_packages:
   - MySQL-python
 
 mariadb_packages_8:
+  - MariaDB-client
   - MariaDB-common
   - MariaDB-server
   - MariaDB-backup

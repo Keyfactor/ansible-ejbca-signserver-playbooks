@@ -1,0 +1,54 @@
+Object Type: Certificate Profile
+Version: 1
+Name: tlsServerAuthApproval
+Type: End Entity
+Available Key Algorithms:
+- RSA
+Available Elliptic Curves:
+- ANY_EC_CURVE
+Available Bit Lengths:
+- 2048
+- 3072
+Signature Algorithm: SHA256WithRSA
+Validity: 1y
+Description: ''
+Overridable Extension OIDs: [
+  ]
+Non-overridable Extension OIDs: [
+  ]
+Basic Constraints Used: false
+Key Usage:
+- Digital Signature
+- Key Encipherment
+Extended Key Usage Used: true
+Extended Key Usage:
+- Server Authentication
+Issuer Alternative Name Used: false
+Subject Alternative Name Used: true
+Subject Alternative Name Searchable: false
+CRL Distribution Point Used: true
+CRL Use CA Defined Settings: true
+Authority Information Access Used: true
+OCSP Service Locator URL Is CA Defined: true
+OCSP Issuer URL Is CA Defined: true
+CVC Access Rights (Inspection System): [
+  ]
+Approval Settings:
+  Add or Edit End Entity: tlsCertificateApproval
+LDAP DN Order: false
+Available CAs:
+- Any CA 
+{% if use_external_va is sameas true %}
+Publishers:
+{% if ejbca_peerConnector|length > 1 %}
+{% for item in ejbca_peerConnector if item.type == 'ocsp' %}
+- validationAuthorityPeerPub-{{ item.name }}
+{% endfor %}
+{% elif ejbca_peerConnector[0].type == 'ocsp'%}
+- validationAuthorityPeerPub-{{ item.name }}
+{% endif %}
+{% endif %}
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

@@ -59,7 +59,7 @@ SSLCryptoDevice builtin
 
   # Disallow any HTTP method that is not HEAD, GET or POST
   RewriteEngine On
-  RewriteCond %{REQUEST_METHOD} !^(HEAD|GET|POST|PUT)$ [NC]
+  RewriteCond %{REQUEST_METHOD} !^(HEAD|DELETE|GET|POST|PUT)$ [NC]
   RewriteRule .* - [F,L]
 
   # Redirecting traffic to EJBCA Admin

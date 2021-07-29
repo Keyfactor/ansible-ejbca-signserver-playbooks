@@ -1,0 +1,25 @@
+Object Type: ACME Configuration
+Version: 1
+Name: {{ organizationDomainName }}
+End Entity Profile: tlsServerAcme
+Pre-Authorization Allowed: false
+Wildcard Certificate Issuance Allowed: false
+Terms of service require new approval: true
+Site URL: https://enroll.{{ organizationDomainName }}/
+Terms of Service URL: https://enroll.{{ organizationDomainName }}/acme/terms
+DNS Resolver: 8.8.8.8
+DNS Port: 53
+DNSSEC Trust Anchor: |-
+  . IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5
+  . IN DS 20326 8 2 E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D
+Validate DNSSEC: false
+Retry After: 0
+{% if ejbca_version >= '7.5' %}
+Wildcard Certificate Issuance for http-01 Challenge Allowed: true
+Agree to new Terms of service allowed: true
+Require External Account Binding: false
+{% endif %}
+{% if ejbca_version >= '7.7' %}
+Approval Profile for newAccount: -1
+Approval Profile for keyChange: -1
+{% endif %}

@@ -1,0 +1,90 @@
+---
+# tasks file for roles/ansible-ejbca-database-config
+
+- name: Remove current Wildfly datasource
+  command: >
+    {{ wildfly_home }}/bin/jboss-cli.sh --connect 'data-source remove --name={{ item.pool_name }}'
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  no_log: true
+  loop: "{{ appsrv_datasources }}"
+  loop_control:
+    label: "{{ item.pool_name }}"
+  register: remove_current_wildfly_ds
+  failed_when: false
+
+- name: Display the error if encountered
+  debug:
+    msg: "Failed to remove the datasource {{ item.stdout }}"
+  when: item.rc != 0
+  failed_when: item.rc != 0
+  loop: "{{ remove_current_wildfly_ds.results }}"
+  loop_control:
+    label: "{{ item.item.pool_name }}"
+
+- name: Add failover Wildfly datasource
+  command: >
+    {{ wildfly_home }}/bin/jboss-cli.sh --connect 'data-source add 
+    --name={{ item.pool_name }} 
+    --driver-name="{{ item.database_jar_filename| default('mariadb-java-client.jar') }}" 
+    --connection-url="jdbc:{{ item.database_connection_type| default('mariadb') }}://{{ item.backup_host }}:{{ item.port }}{% if item.database_connection_type == "mariadb" %}/{{ item.database }}{% elif item.database_connection_type == "sqlserver" %};DatabaseName={{ item.database }}{{ item.connection_parameters }}{% endif %}" 
+    --jndi-name="{{ item.jndi_name }}" 
+    --use-ccm=true --driver-class="{{ item.database_driver_class| default('org.mariadb.jdbc.Driver') }}" 
+    --min-pool-size={{ min_pool_size| default('5')}} 
+    --max-pool-size={{ max_pool_size| default('150') }} 
+    --validate-on-match=true 
+    --background-validation=false 
+    --prepared-statements-cache-size=50 
+    --share-prepared-statements=true 
+    --transaction-isolation=TRANSACTION_READ_COMMITTED 
+    --check-valid-connection-sql="select 1;" 
+    --allow-multiple-users={{ allow_multiple_user| default('false') }} 
+    --pool-prefill={{ prefill| default('true') }} 
+    --pool-use-strict-min={{ use_strict_min| default('false') }} 
+    {% if wildfly_enable_kerberos is sameas true %} 
+    --elytron-enabled=true 
+    --authentication-context=ejbca.ds-context 
+    --idle-timeout-minutes=2 
+    {% else %} 
+    --user-name={{ item.user }}
+    --credential-reference={store=defaultCS, alias=dbPassword} 
+    {% endif %}
+    '
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  no_log: true
+  loop: "{{ appsrv_datasources }}"
+  loop_control:
+    label: "{{ item.pool_name }}"
+  register: add_failover_wildfly_ds
+  failed_when: false
+
+- name: Display the error if encountered
+  debug:
+    msg: "Failed to add the datasource {{ item.stdout }}"
+  when: item.rc != 0
+  failed_when: item.rc != 0
+  loop: "{{ add_failover_wildfly_ds.results }}"
+  loop_control:
+    label: "{{ item.item.pool_name }}"
+
+- name: Reload Wildfly after adding the failover datasource
+  command: >
+    {{ wildfly_home }}/bin/jboss-cli.sh --connect ':reload'
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: reload_wildfly_ds
+  failed_when: false
+
+- name: Display the error if encountered
+  debug:
+    msg: "Failed to reload Wildfly {{ reload_wildfly_ds.stdout }}"
+  when: reload_wildfly_ds.rc != 0
+  failed_when: reload_wildfly_ds.rc != 0
+
+- name: Verify Wildfly is reloaded
+  wait_for:
+    delay: 15
+    timeout: 60
+    path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"
+    state: present

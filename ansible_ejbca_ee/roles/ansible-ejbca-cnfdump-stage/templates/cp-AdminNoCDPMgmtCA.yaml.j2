@@ -1,0 +1,35 @@
+Object Type: Certificate Profile
+Version: 1
+Name: AdminNoCDPMgmtCA
+Type: End Entity
+Available Key Algorithms:
+- RSA
+Available Elliptic Curves:
+- ANY_EC_CURVE
+Available Bit Lengths:
+- 2048
+- 3072
+Signature Algorithm: SHA256WithRSA
+Validity: 1mo
+Description: ''
+Overridable Extension OIDs: [
+  ]
+Non-overridable Extension OIDs: [
+  ]
+Key Usage:
+- Digital Signature
+Extended Key Usage Used: true
+Extended Key Usage:
+- Client Authentication
+Subject Alternative Name Used: true
+Subject Alternative Name Searchable: false
+Issuer Alternative Name Used: false
+CVC Access Rights (Inspection System): [
+  ]
+LDAP DN Order: false
+Available CAs:
+- ManagementCA
+{% if ejbca_version >= '7.6' %}
+Account Binding Namespace: [
+  ]
+{% endif %}

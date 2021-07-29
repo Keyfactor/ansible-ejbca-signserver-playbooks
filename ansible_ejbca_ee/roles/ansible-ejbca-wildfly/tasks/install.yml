@@ -19,7 +19,7 @@
     path: "{{ wildfly_dir }}"
   register: wildfly_src_dir
 
-- name: Download wildfly tar file
+- name: Download wildfly {{ wildfly_version }} tar file
   get_url:
     url: '{{ wildfly_download_url }}'
     dest: '{{ wildfly_download_dir }}/{{ wildfly_download_file }}'
@@ -29,7 +29,7 @@
     - not wildfly_src_dir.stat.exists
     - not wildfly_use_galleon|bool
 
-- name: Download wildfly Galleon
+- name: Download wildfly Galleon {{ wildfly_galleon_version }}
   get_url:
     url: '{{ wildfly_galleon_download_url }}'
     dest: '{{ wildfly_download_dir }}/{{ wildfly_galleon_download_file }}'
@@ -54,7 +54,7 @@
         state: present
   when: wildfly_manage_user
 
-- name: Unarchive downloaded wildfly tar file
+- name: Unarchive downloaded wildfly {{ wildfly_version }} tar file
   unarchive:
     src: '{{ wildfly_download_dir }}/{{ wildfly_download_file }}'
     dest: '{{ wildfly_install_dir }}'
@@ -67,7 +67,7 @@
     - not wildfly_src_dir.stat.exists
     - not wildfly_use_galleon|bool
 
-- name: Unarchive downloaded wildfly Galleon file
+- name: Unarchive downloaded wildfly Galleon {{ wildfly_galleon_version }} file
   unarchive:
     src: '{{ wildfly_download_dir }}/{{ wildfly_galleon_download_file }}'
     dest: '{{ wildfly_galleon_install_dir }}'
@@ -80,7 +80,7 @@
     - not wildfly_src_dir.stat.exists
     - wildfly_use_galleon|bool
 
-- name: Install wildfly using Galleon
+- name: Install wildfly {{ wildfly_version }} using Galleon {{ wildfly_galleon_version }}
   command: "{{ wildfly_galleon_bin }}/bin/galleon.sh install wildfly:current#{{ wildfly_version }} --dir={{ wildfly_dir }} --default-configs=standalone/standalone.xml --layers=cdi,core-tools,datasources,deployment-scanner,ee,-jsonb,ejb,io,jaxrs,jpa,jsf,logging,mail,management,webservices,legacy-security"
   when: 
     - not wildfly_src_dir.stat.exists
@@ -97,7 +97,7 @@
     - wildfly_create_symlink
     - not wildfly_src_dir.stat.exists
 
-- name: Download wildfly jboss-client.jar
+- name: Download wildfly {{ wildfly_version }} jboss-client.jar
   get_url:
     url: '{{ wildfly_jboos_client_download_url }}'
     dest: '{{ wildfly_dir }}/bin/client/{{ wildfly_jboos_client_file }}'

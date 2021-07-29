@@ -67,7 +67,11 @@
         mode: 0700
 
     - name: Create credential store
-      command: "{{ wildfly_home }}/bin/elytron-tool.sh credential-store --create --location {{ wildfly_home }}/standalone/configuration/credentials --password {{ cred_pass }}"
+      command: >
+        {{ wildfly_home }}/bin/elytron-tool.sh credential-store 
+        --create 
+        --location {{ wildfly_home }}/standalone/configuration/credentials 
+        --password "{{ cred_pass }}"
       become: yes  
       become_user: "{{ signsrv_user }}"
       args:
@@ -77,7 +81,12 @@
       no_log: true
 
     - name: Add Database password to credential store
-      command: "{{ wildfly_home }}/bin/elytron-tool.sh credential-store --location {{ wildfly_home }}/standalone/configuration/credentials --password {{ cred_pass }} --add {{ item.credential_ref }} --secret {{ item.password }}"
+      command: >
+        {{ wildfly_home }}/bin/elytron-tool.sh credential-store 
+        --location {{ wildfly_home }}/standalone/configuration/credentials 
+        --password "{{ cred_pass }}" 
+        --add {{ item.credential_ref }} 
+        --secret "{{ item.password }}"
       become: yes  
       become_user: "{{ signsrv_user }}"
       environment:

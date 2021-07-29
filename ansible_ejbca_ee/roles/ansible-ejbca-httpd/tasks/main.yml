@@ -1,5 +1,5 @@
 ---
-# tasks file for ansible-ejbca-va-httpd
+# tasks file for ansible-ejbca-httpd
 
 - name: Install HTTPD
   include_tasks: install.yml

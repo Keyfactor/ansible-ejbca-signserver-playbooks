@@ -1,0 +1,39 @@
+---
+
+- name: Check if {{ item.caname }} is already in EJBCA
+  command: >
+    {{ ejbca_sh }} ca listcas
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: check_list_of_cas_for_crl
+  failed_when: check_list_of_cas_for_crl.rc >= 2
+  changed_when: check_list_of_cas_for_crl.rc == 0
+
+- name: Import CA if it is not in EJBCA
+  block:
+
+    - name: Upload {{ item.caname }} CRL file to import
+      copy:
+        src: "{{ ejbca_crl_dir_output }}/{{ item.caname }}.crl"
+        dest: "/var/tmp/importcrl/{{ item.caname }}.crl"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+
+    - name: Import {{ item.caname }} CRL
+      command: >
+        {{ ejbca_sh }} ca importcrl
+        --caname {{ item.caname }}
+        -f /var/tmp/importcrl/{{ item.caname }}.crl 
+        -o {{ item.operations_mode|default('ADAPTIVE') }}
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: import_ca_crl_file
+      failed_when: import_ca_crl_file.rc >= 2
+      changed_when: import_ca_crl_file.rc == 0
+
+    - debug:
+        msg: "Importing CA CRL failed with message: {{ import_ca_crl_file.stdout }}"
+      when: import_ca_crl_file.rc == 1
+
+  when: item.caname in check_list_of_cas_for_crl.stdout
+

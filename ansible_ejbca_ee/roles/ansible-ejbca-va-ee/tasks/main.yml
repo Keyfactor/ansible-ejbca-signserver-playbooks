@@ -1,44 +1,52 @@
 ---
 # tasks file for primekey
 
-- name: OCSP Key Binding Keys
-  block:
-
-    - name: Generate Keys for Key Bindings
-      include_role:
-        name: ansible-ejbca-ctb-keygen
-      loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
-      loop_control:
-        label: "{{ key_item.0.slot_identifier_value }}"
-        loop_var: key_item
-      no_log: true
-      tags: hsm_test, clienttoolbox_key_generation
-      when: ("PKCS11CryptoToken" in key_item.0.tokentype)
-
-  when: 
-    - ejbca_va_keybinding[0] is defined
+# TODO Remove once crypto token creation is in place
+#- name: OCSP Key Binding Keys
+#  block:
+#
+#    - name: Generate Keys for Key Bindings
+#      include_role:
+#        name: ansible-ejbca-ctb-keygen
+#      loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
+#      loop_control:
+#        label: "{{ key_item.0.slot_identifier_value }}"
+#        loop_var: key_item
+#      no_log: true
+#      tags: hsm_test, clienttoolbox_key_generation
+#      when: ("PKCS11CryptoToken" in key_item.0.tokentype)
+#
+#  when: 
+#    - ejbca_va_keybinding[0] is defined
 
 - name: Check deployment
-  include_tasks: check_deployment.yml
+  include_role: 
+    name: ansible-ejbca-restart-wildfly
+  vars:
+    restart_wildfly: true
   tags: check_deployment
-  when: management_import_certification_authorities[0] is defined
 
 - name: Create crypto tokens for OCSP Signers
   include_role: 
     name: ansible-ejbca-crypto-token
+    tasks_from: add_crypto_token
   loop: "{{ ejbca_va_keybinding }}"
   no_log: true
   when:
     - ejbca_va_keybinding[0] is defined
 
-- name: Generate OCSP Signer keys on soft crypto token
+- name: Generate keys for OCSP Signers on crypto token
   include_role:
-    name: ansible-ejbca-cli-key-gen
+    name: ansible-ejbca-crypto-token
+    tasks_from: generate_keys
   loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
   loop_control:
-        label: "{{ item.0.slot_identifier_value }}"
+    label: "{{ key_item.0.caname }}"
+    loop_var: key_item
   no_log: true
-  when: ( "SoftCryptoToken" in item.0.tokentype ) 
+  tags: key_generation
+  when:
+    - ejbca_va_keybinding[0] is defined
 
 - name: Create OCSP Key Binding
   include_role:
@@ -47,3 +55,4 @@
     key_bindings: "{{ ejbca_va_keybinding }}"
     ocsp_key_bind: true
   when: 
+    - ejbca_va_keybinding[0] is defined

@@ -10,7 +10,12 @@
   changed_when: list_peer_connectors.rc == 0
 
 - name: Create Peer Connectors
-  command: "{{ ejbca_sh }} peer create --name '{{ item.name }}' --state {{ item.state| default('ENABLED') }} --url {{ item.url }} --akb '{{ item.keybinding }}' "
+  command: >
+    {{ ejbca_sh }} peer create 
+    --name '{{ item.name }}' 
+    --state {{ item.state| default('ENABLED') }} 
+    --url {{ item.url }} 
+    --akb '{{ item.keybinding }}'
   no_log: false
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -18,7 +23,9 @@
   loop: "{{ ejbca_peerConnector }}"
   loop_control:
     label: "{{ item.name }}"
-  when: ( item.name not in list_peer_connectors.stdout ) and ( item.enabled|bool )
+  when: 
+    - ( item.name not in list_peer_connectors.stdout )
+    - ( item.enabled|bool )
 
 #- debug:
 #    var: create_peer_connectors
@@ -57,11 +64,18 @@
   no_log: true
 
 - name: Query Peer Connection with SQL hack EJBCA <= 7.3.1.4
-  command: /usr/bin/mysql -u root --password="{{ mariadb_root_password }}" "{{ management_database_indexes.database_name }}" -s -e 'SELECT data FROM PeerData WHERE id = "{{ item.id }}";'
+  command: >
+    /usr/bin/mysql 
+    -u root 
+    --password="{{ mariadb_root_password }}" 
+    "{{ management_database_indexes.database_name }}" 
+    -s 
+    -e 'SELECT data FROM PeerData WHERE id = "{{ item.id }}";'
   loop: "{{ peer_connection_info }}"
   loop_control:
     label: "{{ item.id }}"
-  when: ( "ra" in item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
+  when: 
+    - ( "ra" in item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
   register: peer_sql_hack_check
   no_log: true
 
@@ -74,7 +88,13 @@
 #  when: item.stdout is defined
 
 - name: Enable Process incoming requests in Peer Connection with SQL hack EJBCA <= 7.3.1.4
-  command: /usr/bin/mysql -u root --password="{{ mariadb_root_password }}" "{{ management_database_indexes.database_name }}" -s -e 'update PeerData set data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<java version=\"1.8.0_252\" class=\"java.beans.XMLDecoder\">\n <object class=\"org.cesecore.util.Base64PutHashMap\">\n  <void method=\"put\">\n   <string>authenticationKeyBindingId</string>\n   <int>{{ item.stdout.split('<int>')[1].split('</int>')[0]  }}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsEnabled</string>\n   <string>true</string>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMin</string>\n   <int>{{ra_peer_min_parallel_reqs| int}}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMax</string>\n   <int>{{ra_peer_max_parallel_reqs| int}}</int>\n  </void>\n </object>\n</java>\n" where id = "{{ item.item.id }}";'
+  command: >
+    /usr/bin/mysql 
+    -u root 
+    --password="{{ mariadb_root_password }}" 
+    "{{ management_database_indexes.database_name }}" 
+    -s 
+    -e 'update PeerData set data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<java version=\"1.8.0_252\" class=\"java.beans.XMLDecoder\">\n <object class=\"org.cesecore.util.Base64PutHashMap\">\n  <void method=\"put\">\n   <string>authenticationKeyBindingId</string>\n   <int>{{ item.stdout.split('<int>')[1].split('</int>')[0]  }}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsEnabled</string>\n   <string>true</string>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMin</string>\n   <int>{{ ra_peer_min_parallel_reqs| int| default('2') }}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMax</string>\n   <int>{{ ra_peer_max_parallel_reqs| int| default('50') }}</int>\n  </void>\n </object>\n</java>\n" where id = "{{ item.item.id }}";'
   loop: "{{ peer_sql_hack_check.results }}"
   loop_control:
     label: "{{ item.item.id }}"
@@ -87,11 +107,15 @@
 #    var: peer_connection_info
 
 - name: Enable Process incoming requests in Peer Connection EJBCA >= 7.4.0
-  command: "{{ ejbca_sh }} peer edit --id {{ item.id }} --process-incoming-requests true --max-parallel-requests {{ ra_peer_max_parallel_reqs }} --min-parallel-requests {{ ra_peer_min_parallel_reqs }}"
+  command: >
+    {{ ejbca_sh }} peer edit 
+    --id {{ item.id }} 
+    --process-incoming-requests true 
+    --max-parallel-requests {{ ra_peer_max_parallel_reqs|default('50') }} 
+    --min-parallel-requests {{ ra_peer_min_parallel_reqs|default('2') }}
   become: yes
   become_user: "{{ ejbca_user }}"
   loop: "{{ peer_connection_info }}"
-  #when: ( '"ra" in item.type' ) and ( ejbca_version is version('7.4.0', '>=') )
   when: ('ra' in item.type) and (ejbca_version is version('7.4.0', '>='))
   register: peer_con_ra_res
   #no_log: true

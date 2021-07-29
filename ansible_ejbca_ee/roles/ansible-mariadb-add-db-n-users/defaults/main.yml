@@ -1,0 +1,7 @@
+---
+# defaults file for roles/ansible-mariadb-add-db-n-users
+
+mariadb_login_user: root
+mariadb_login_user_password: "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
+mariadb_login_host: localhost
+mariadb_login_host_port: 3306

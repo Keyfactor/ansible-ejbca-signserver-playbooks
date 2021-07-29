@@ -16,7 +16,17 @@
 
 - block:
   - name: Add {{ item.username }} Entity to CA
-    command: "{{ ejbca_sh }} ra addendentity --username '{{ item.username }}' --password '{{  item.password }}' --dn '{{ item.full_dn }}' --altname '{{ item.altname }}' --caname '{{ item.caname }}' --type 1 --token {{ item.token }} --certprofile '{{ item.certprofile }}' --eeprofile '{{ item.eeprofile }}'"
+    command: >
+      {{ ejbca_sh }} ra addendentity 
+      --username '{{ item.username }}' 
+      --password '{{  item.password }}' 
+      --dn {% if item.full_dn is defined %}'{{ item.full_dn }}'{% else %}'{{ item.dn }}'{% endif %}
+      {% if item.altname is defined %}--altname '{{ item.altname }}'{% endif %}
+      --caname '{{ item.caname }}' 
+      --type 1 
+      --token {{ item.token }} 
+      --certprofile '{{ item.certprofile }}' 
+      --eeprofile '{{ item.eeprofile }}'
     args:
       chdir: "{{ ejbca_home }}"
     become_user: "{{ ejbca_user }}"
@@ -24,9 +34,18 @@
     register: ra_addIdent_result
     tags: certreq-cli-batch
     no_log: true
+    failed_when: ra_addIdent_result.rc >= 2
+    changed_when: ra_addIdent_result.rc == 0
+
+  - debug:
+      msg: "Adding end entity failed with message: {{ ra_addIdent_result.stdout }}"
+    when: ra_addIdent_result.rc == 1
 
   - name: Set password for {{ item.username }}
-    command: "{{ ejbca_sh }} ra setclearpwd --username '{{ item.username }}' '{{ item.password }}'"
+    command: >
+      {{ ejbca_sh }} ra setclearpwd 
+      --username '{{ item.username }}' 
+      --password '{{ item.password }}'
     args:
       chdir: "{{ ejbca_home }}"
     become_user: "{{ ejbca_user }}"
@@ -34,9 +53,18 @@
     register: ra_setpwd_result
     tags: certreq-cli-batch
     no_log: true
+    failed_when: ra_setpwd_result.rc >= 2
+    changed_when: ra_setpwd_result.rc == 0
+
+  - debug:
+      msg: "Adding end entity password failed with message: {{ ra_setpwd_result.stdout }}"
+    when: ra_setpwd_result.rc == 1
 
   - name: Create certs for {{ item.username }}
-    command: "{{ ejbca_sh }} batch --username {{ item.username }} -dir {{ identity_batch_output_dir }}"
+    command: >
+      {{ ejbca_sh }} batch 
+      --username {{ item.username }} 
+      -dir {% if item.token is defined and 'PEM' == item.token %}{{ identity_batch_output_dir }}{% else %}{{ ejbca_home }}/p12/{% endif %}
     args:
       chdir: "{{ ejbca_home }}"
     become_user: "{{ ejbca_user }}"
@@ -44,12 +72,20 @@
     register: ra_batch_result
     tags: certreq-cli-batch
     no_log: true
+    failed_when: ra_batch_result.rc >= 2
+    changed_when: ra_batch_result.rc == 0
+
+  - debug:
+      msg: "Adding end entity password failed with message: {{ ra_batch_result.stdout }}"
+    when: ra_batch_result.rc == 1
 
   - name: Determine {{ item.username }} certificate serial number
     command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
     no_log: true
     register: cert_serialNumber
     tags: certreq-cli-batch
+    when: 
+      - (ejbca_type == "RA") or (ejbca_type == "VA")
 
   - name: Create fact for RA {{ item.username }} certificate serial number
     set_fact: 
@@ -64,7 +100,12 @@
       - ejbca_type == "RA"
 
   - name: Add serial number to Peering Admin Role
-    command: "{{ ejbca_sh }} roles addrolemember --role 'RA-Peer-Connection' --caname '{{ item.caname }}' --with CertificateAuthenticationToken:WITH_SERIALNUMBER --value '{{ cert_serialNumber.stdout.split('=')[1] }}'"
+    command: >
+      {{ ejbca_sh }} roles addrolemember 
+      --role 'RA-Peer-Connection' 
+      --caname '{{ item.caname }}' 
+      --with CertificateAuthenticationToken:WITH_SERIALNUMBER 
+      --value '{{ cert_serialNumber.stdout.split('=')[1] }}'
     args:
       chdir: "{{ ejbca_home }}"
     #loop: "{{ ra_peer_cert_serial_numbers }}"
@@ -102,6 +143,8 @@
       dest: "{{ ejbca_csr_dir_output }}/{{ item.name }}.crt"
       flat: yes
     tags: certreq-cli-batch
+    when:
+      - item.token == 'PEM' 
 
   - name: Copy {{ item.username }} key file to localhost
     become: no
@@ -110,6 +153,8 @@
       dest: "{{ ejbca_csr_dir_output }}/{{ item.name }}.key"
       flat: yes
     tags: certreq-cli-batch
+    when:
+      - item.token == 'PEM' 
 
   - name: Copy {{ item.username }} CA chain file to localhost
     become: no
@@ -118,6 +163,8 @@
       dest: "{{ ejbca_csr_dir_output }}/{{ item.caname }}.crt"
       flat: yes
     tags: certreq-cli-batch
+    when:
+      - item.token == 'PEM' 
 
   - name: Write RA cert serial numbers to file for use with EJBCA VA or RA playbooks 
     become: no
@@ -148,6 +195,8 @@
       path: "{{ identity_batch_output_dir }}/pem/"
       state: absent
     tags: certreq-cli-batch
+    when:
+      - item.token == 'PEM'
 
   when: "'does not exist' in endentity_exists.stdout"
   #when: endentity_exists.rc == 1

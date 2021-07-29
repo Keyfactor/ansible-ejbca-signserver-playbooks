@@ -1,7 +1,7 @@
 ---
 
-- name: Check if end entity exists
-  command: "{{ ejbca_sh }} ra findendentity {{  item.name }}"
+- name: Check if {{ item.name }} end entity exists
+  command: "{{ ejbca_sh }} ra findendentity {{ item.name }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_method: sudo
@@ -49,8 +49,13 @@
         msg: "Adding end entity failed with message: {{ adding_csr_end_entity.stdout }}"
       when: adding_csr_end_entity.rc == 1
 
-    - name: Sign CSR for key binding 
-      command: "{{ ejbca_home }}/bin/ejbca.sh createcert --username {{ item.name }}  --password {{ entity_pass }} -c {{ identity_batch_output_dir }}/{{ item.name }}.csr -f /var/tmp/{{ item.name }}.crt"
+    - name: Sign CSR for {{ item.name }} 
+      command: >
+        {{ ejbca_home }}/bin/ejbca.sh createcert 
+        --username {{ item.name }}  
+        --password {{ entity_pass }} 
+        -c {{ identity_batch_output_dir }}/{{ item.name }}.csr 
+        -f /var/tmp/{{ item.name }}.crt
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"

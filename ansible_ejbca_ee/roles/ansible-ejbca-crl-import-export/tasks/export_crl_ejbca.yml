@@ -1,0 +1,41 @@
+---
+
+- name: Check if {{ item.caname }} exists in EJBCA
+  command: >
+    {{ ejbca_sh }} ca listcas
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: check_list_of_cas
+  failed_when: check_list_of_cas.rc >= 2
+  changed_when: check_list_of_cas.rc == 0
+  tags: ejbca-cli-cacrl
+
+- name: Export CA CRL if it is in EJBCA
+  block:
+
+    - name: Export {{ item.caname }} CRL file
+      command: >
+        {{ ejbca_sh }} ca getcrl
+        --caname {{ item.caname }}
+        -pem 
+        -f /var/tmp/exportcrl/{{ item.caname }}.crl        
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: export_ca_crl_file
+      failed_when: export_ca_crl_file.rc >= 2
+      changed_when: export_ca_crl_file.rc == 0
+      tags: ejbca-cli-cacrl
+
+    - debug:
+        msg: "Exporting CA CRL failed with message: {{ export_ca_crl_file.stdout }}"
+      when: export_ca_crl_file.rc == 1
+
+    - name: Copy {{ item.caname }} CRL file to Ansible controller
+      become: no
+      fetch:
+        src: "/var/tmp/exportcrl/{{ item.caname }}.crl"
+        dest: "{{ ejbca_crl_dir_output }}/{{ item.caname }}.crl"
+        flat: yes
+      tags: ejbca-cli-cacrl
+
+  when: item.caname in check_list_of_cas.stdout

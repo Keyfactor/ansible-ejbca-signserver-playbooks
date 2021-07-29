@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "3Jun2021-Skyrim-SA"
+superAdminCn: "17Jul2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
@@ -18,9 +18,21 @@ use_external_ra: true
 # If enabled configures a Peer connectiona nd key binding for Sign Server
 use_external_ss: false
 
+# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+deploy_with_configdump: true
+configdump_directory_structure: "{{ configdump_dir_structure }}"
+configdump_import_files: "{{ configdump_files }}"
+
+# Add publishers to the CA's in EJBCA. CA's created before the publisher is added to EJBCA and want to leverage the publisher
+# should use this option to add the publisher to the CA.
+add_publshers_to_cas: true
+
 # Maria DB settings for using MariaDB database
 mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
-mariadb_binlog_formatt: ROW
+mariadb_binlog_format: ROW
 mariadb_databases:
   - name: ejbca
     collation: "utf8_general_ci"
@@ -31,7 +43,7 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "%"
   - name: ejbca-usr
-    password: ejbca
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
     priv: "ejbca.*:ALL"
     host: "localhost"
 
@@ -41,12 +53,12 @@ ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-jav
 ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
 
 # EJBCA version and deployment info
-ejbca_version: 7.5.0.2
-# If enabled Ansible controller is used as software repository
+ejbca_version: 7.7.0
+# If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_5_0_2.zip
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_2.zip
-ejbca_src_dir_name: ejbca_ee_7_5_0_2
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_7.0.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_7_0.zip
+ejbca_src_dir_name: ejbca_ee_7_7_0
 ejbca_type: CA
 
 # Location to write the CRL files on server
@@ -57,13 +69,15 @@ ejbca_crl_dir:
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-wildfly_version: 23.0.2.Final
+wildfly_version: 24.0.0.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_use_galleon: true
-wildfly_galleon_version: 4.2.6
-wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
+wildfly_galleon_version: 4.2.8
+#wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
+wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
+#wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
+wildfly_jboss_client_checksum: sha256:fb633ed945d21de548b266f09b9467295571e429a301eae456713424cbc23464 # WF 24
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -75,6 +89,7 @@ appsrv_datasources:
     database_driver_class: org.mariadb.jdbc.Driver
     database_jar_filename: mariadb-java-client.jar
     host: 127.0.0.1
+    backup_host: ejbca01.solitude.skyrim
     port: 3306
     database: ejbca
     user: ejbca-usr
@@ -142,6 +157,10 @@ ejbca_databaseprotection:
         key_size: 1024
         key_type: "RSA"
         type: test
+
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
 
 # Super Admin accounts to create
 management_add_end_entities:
@@ -325,6 +344,8 @@ management_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
+    publishers:
+      - validationAuthorityPeerPub-OCSP-01
   - caname: "{{ organizationNameShort }}-Root-CA"
     certprofile: "RootCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
@@ -380,6 +401,8 @@ management_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
+    publishers:
+      - validationAuthorityPeerPub-OCSP-01
 
 # List of certification authorities that should be added using CLI
 # caname: CA name
@@ -457,7 +480,9 @@ sub_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
-
+    publishers:
+      - validationAuthorityPeerPub-OCSP-01
+      
 # CA DN in Web format and filename used to configure cronjob for downloading CRL's and hosting them on webserver
 certification_authorities_crl_files:
   - crlfilename: "{{ organizationNameShort | lower }}-mgmtca.crl"
@@ -486,6 +511,14 @@ enable_ejbca_protocols:
   - name: 'REST Crypto Token Management'
   - name: Webdist
   - name: 'Web Service'
+
+# CRL Update Service Worker Settings
+crl_service_time_int: 1
+crl_service_time_unit: HOURS
+
+# Configure the RA Peering requests
+ra_peer_max_parallel_reqs: 50
+ra_peer_min_parallel_reqs: 2
 
 # Add the management CA to HTTP trust chain file. 
 add_mgmt_ca: true
@@ -523,3 +556,17 @@ httpd_trusted_cas:
     fullchain: true
   - caname: "{{ organizationNameShort }}-Sub-CA"
     fullchain: true
+
+# List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
+# This variable is also used for exporting CRL's from EJBCA CA node to import into external RA/VA's
+# caname: Name of the CA in EJBCA
+# The superadmincn can be added to each CA to add a Common Name to the superadmin role.
+# fullchain: Must be set to false for this to work by getting each CA certificate to import as an external CA
+ejbca_ca_import:
+  - caname: "ManagementCA"
+    superadmincn: "{{ superAdminCn }}"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    fullchain: false

@@ -12,7 +12,8 @@
     creates: "{{ ejbca_home }}/dist/configdump/configdump.jar"
   become_user: "{{ ejbca_user }}"
   become_method: sudo
-  when: not cfgdump_exists.stat.exists
+  when: 
+    - not cfgdump_exists.stat.exists
 
 - name: Create Dump file structure for Dump1
   file:
@@ -31,7 +32,8 @@
     group: "{{ ejbca_group }}"
     mode: 0664
   loop: "{{ configdump_ra_files_dump1 }}"
-  when: ejbca_type == "RA"
+  when: 
+    - ejbca_type == "RA"
 
 - name: Stage VA Dump template files for Dump1
   template:
@@ -41,10 +43,16 @@
     group: "{{ ejbca_group }}"
     mode: 0664
   loop: "{{ configdump_va_files_dump1 }}"
-  when: ejbca_type == "VA"
+  when: 
+    - ejbca_type == "VA"
 
 - name: Import Dump files for Dump1
-  command: "./configdump.sh import  --ignore-errors -l {{ ejbca_home }}/dump/dump1 --overwrite update --non-interactive continue"
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    -l {{ ejbca_home }}/dump/dump1 
+    --overwrite update 
+    --non-interactive continue
   args:
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes 

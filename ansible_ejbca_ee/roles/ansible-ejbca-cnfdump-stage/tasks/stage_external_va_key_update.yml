@@ -1,0 +1,9 @@
+---
+
+- name: Create External VA OCSP key update service template files to import with configdump
+  template:
+    src: "service-ocsp-keyupdate.yaml.j2"
+    dest: "{{ ejbca_home }}/dump/va/services/ocspKeyUpdate-{{ item.name }}.yaml"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0664

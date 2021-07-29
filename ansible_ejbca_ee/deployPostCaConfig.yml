@@ -8,9 +8,9 @@
   vars:
     # Use this option to generate keys for the Authkey Bindings, configure the AuthKey Binding, configure Peering.
     # Import certificate profiles, end entity profiles, publishers, and roles for the RA peer and other roles wantes
-    deploy_post_ca_config: true
+    #deploy_post_ca_config: true
     # Map in List Dictionaires for the configdump directory structure and configdump files
     configdump_directory_structure: "{{ authkeybind_configdump_dir_structure }}"
     configdump_import_files: "{{ authkeybind_configdump_files }}"
   roles:
-    - ansible-ejbca-ca-ee
+    - ansible-ejbca-deploy-pki-ext-signed-sub-4

@@ -1,0 +1,18 @@
+---
+
+- name: Add role member {{ item.match_value }} to {{ item.role }}
+  command: >
+    "{{ ejbca_sh }}" roles addrolemember
+    --role "{{ item.role }}"
+    --caname "{{ item.caname }}"
+    --with "{{ item.match_with }}"
+    --value "{{ item.match_value }}"
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: adding_rolemember
+  failed_when: (adding_rolemember.rc >= 2) or ("No such CA '" + item.caname + "'." in adding_rolemember.stdout)
+  changed_when: adding_rolemember.rc == 0
+
+- debug:
+    msg: "Adding role member failed with message: {{ adding_rolemember.stdout }}"
+  when: adding_rolemember.rc == 1

@@ -13,7 +13,10 @@
   no_log: true
 
 - name: Import certificate file to OCSP key binding
-  command: "{{ ejbca_home }}/bin/ejbca.sh keybind import --name {{ item.name }}  -f {{ identity_batch_output_dir }}/{{ item.name }}.crt"
+  command: >
+    {{ ejbca_home }}/bin/ejbca.sh keybind import 
+    --name {{ item.name }} 
+    -f {{ identity_batch_output_dir }}/{{ item.name }}.crt
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_import
@@ -21,7 +24,10 @@
   no_log: true
 
 - name: Activate OCSP key binding
-  command: "{{ ejbca_home }}/bin/ejbca.sh keybind setstatus --name {{ item.name }}  ACTIVE"
+  command: >
+    {{ ejbca_home }}/bin/ejbca.sh keybind setstatus 
+    --name {{ item.name }} 
+    ACTIVE
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_setstatus

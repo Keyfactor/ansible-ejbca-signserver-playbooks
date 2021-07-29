@@ -1,0 +1,55 @@
+---
+# tasks file for roles/ansible-mariadb-add-db-n-users
+
+- name: Remove the test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: "{{ mariadb_login_user }}"
+    login_password: "{{ mariadb_login_user_password }}"
+    login_host: "{{ mariadb_login_host }}"
+    login_port: "{{ mariadb_login_host_port }}"
+  tags: mariadb
+
+- name: Create user defined databases
+  mysql_db:
+    name: "{{ item.name }}"
+    state: present
+    login_user: "{{ mariadb_login_user }}"
+    login_password: "{{ mariadb_login_user_password }}"
+    login_host: "{{ mariadb_login_host }}"
+    login_port: "{{ mariadb_login_host_port }}"
+  loop: "{{ mariadb_databases }}"
+  loop_control: 
+    label: "{{ item.name }}"
+  register: db_creation
+  tags: mariadb
+
+- name: Remove anonymous users
+  mysql_user:
+    name: ''
+    state: absent
+    host_all: true
+    login_user: "{{ mariadb_login_user }}"
+    login_password: "{{ mariadb_login_user_password }}"
+    login_host: "{{ mariadb_login_host }}"
+    login_port: "{{ mariadb_login_host_port }}"
+  tags: mariadb
+  no_log: true
+
+- name: Create the users
+  mysql_user:
+    name: "{{ item.name }}"
+    state: present
+    password: "{{ item.password }}"
+    host: "{{ item.host|default('localhost') }}"
+    priv: "{{ item.priv }}"
+    append_privs: "{{ item.append_privs|default('no') }}"
+    login_user: "{{ mariadb_login_user }}"
+    login_password: "{{ mariadb_login_user_password }}"
+    login_host: "{{ mariadb_login_host }}"
+    login_port: "{{ mariadb_login_host_port }}"
+  loop: "{{ mariadb_users }}"
+  tags: mariadb
+  no_log: true
+  register: add_mariadb_users
