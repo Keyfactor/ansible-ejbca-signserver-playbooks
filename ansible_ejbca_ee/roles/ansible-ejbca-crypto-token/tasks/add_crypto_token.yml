@@ -22,21 +22,21 @@
     --token {% if item.crypto_token_name is defined %}"{{ item.crypto_token_name }}"{% else %}"{{ item.caname }}"{% endif %} 
     --pin {{ item.tokenpass }} 
     --autoactivate {{ item.cryptotoken_enable_auto_activate }} 
-    --type {% if "soft" == item.tokentype %}"SoftCryptoToken"{% elif "org.cesecore.keys.token.PKCS11CryptoToken" == item.tokentype or "PKCS11CryptoToken" == item.tokentype %}"PKCS11CryptoToken" 
+    --type {% if "soft" == item.tokentype %}"SoftCryptoToken"{% elif "org.cesecore.keys.token.PKCS11CryptoToken" == item.tokentype or "PKCS11CryptoToken" == item.tokentype %}"PKCS11CryptoToken"{% elif "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken" == item.tokentype or "Pkcs11NgCryptoToken" == item.tokentype %}"Pkcs11NgCryptoToken 
     --lib "{{ hsm_shared_library }}" 
     --slotlabel "{{ item.slot_identifier_value }}"
-    --slotlabeltype "{{ item.slot_identifier_type }}"{% endif %}
+    --slotlabeltype "{{ item.slot_identifier_type }}"
+    {% if item.force_used_slots is defined and item.force_used_slots is sameas true %}
+    --forceusedslots{% endif %}{% endif %}
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
   register: add_cryptotoken
   failed_when: false
-  #changed_when: keybinding_cryptotoken.rc == 0
   when: 
     - (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or (item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
 
-- name: Debug add_cryptotoken
-  debug:
+- debug:
     msg: "Failed to create the crypto token: {{ add_cryptotoken.stdout }}"
   when: 
     - add_cryptotoken.rc >= 2

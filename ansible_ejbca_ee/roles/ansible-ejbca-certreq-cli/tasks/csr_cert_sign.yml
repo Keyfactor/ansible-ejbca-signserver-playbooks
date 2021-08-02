@@ -28,7 +28,7 @@
 
     - name: Add end entity
       command: >
-        "{{ ejbca_home }}/bin/ejbca.sh" ra addendentity
+        {{ ejbca_sh }} ra addendentity
         --username "{{ item.name }}"
         --dn "{{ item.dn }}"
         --caname "{{ item.caname }}"
@@ -51,7 +51,7 @@
 
     - name: Sign CSR for {{ item.name }} 
       command: >
-        {{ ejbca_home }}/bin/ejbca.sh createcert 
+        {{ ejbca_sh }} createcert 
         --username {{ item.name }}  
         --password {{ entity_pass }} 
         -c {{ identity_batch_output_dir }}/{{ item.name }}.csr 

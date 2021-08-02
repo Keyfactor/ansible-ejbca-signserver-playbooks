@@ -9,51 +9,8 @@
   #when: item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken"
   no_log: true
 
-# TODO Is this still needed?
-#- name: Query CA ID for Root CA 
-#  command: {{ ejbca_sh }} ca info --caname {{ item.caname }}
-#  register: root_ca_id
-#  become: yes
-#  become_user: "{{ ejbca_user }}"
-#  no_log: true
-
 - name: Init Root or Self Signed Issuing CA
   block:
-
-# TODO Remove when no longer needed crypto tokens are created with CLI before init ca now
-#    - name: Create {{ item.caname }}
-#      command: >
-#       "{{ ejbca_sh }}" ca init
-#       --caname "{{ item.caname }}"
-#       --dn "{{ item.dn }}"
-#       {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}
-#       --tokenType "{{ item.tokentype }}"
-#       --tokenPass "{{ item.tokenpass }}"
-#       {% else %}
-#       --tokenName {{ item.caname }}
-#       {% endif %}
-#       --tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"
-#       {% for val in item.crypto_token %}{% if 'sign' == val.type %}
-#       --keyspec "{{ val.key_size }}"
-#       --keytype "{{ val.key_type }}" 
-#       {% endif %}{% endfor %}
-#       -s "{{ item.signalg }}" 
-#       -v "{{ item.validity }}"
-#       --policy "{{ item.policy }}"
-#       {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
-#       -certprofile "{{ item.certprofile }}"
-#      no_log: true
-#      become: yes
-#      become_user: "{{ ejbca_user }}"
-#      register: initializing_management_ca
-#      failed_when: initializing_management_ca.rc >= 2
-#      changed_when: initializing_management_ca.rc == 0
-#
-#    - debug:
-#        msg: "Initializing CA failed with message: {{ initializing_management_ca.stdout }}"
-#      when: 
-#        - initializing_management_ca.rc == 1
-
 
     - name: Create {{ item.caname }}
       command: >
@@ -75,13 +32,14 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_management_ca
-      failed_when: initializing_management_ca.rc >= 2
+      failed_when: false
       changed_when: initializing_management_ca.rc == 0
 
     - debug:
         msg: "Initializing CA failed with message: {{ initializing_management_ca.stdout }}"
       when: 
-        - initializing_management_ca.rc == 1
+        - initializing_management_ca.rc >= 2
+      failed_when: true
 
   when:
     - item.rootDn is not defined 
@@ -101,37 +59,6 @@
     #- debug:
     #    var: root_ca_id.results
     # --signedby "{{ item.stdout_lines[2].split(' ')[2] }}"
-
-# TODO Remove when no longer needed crypto tokens are created with CLI before init ca now
-#    - name: Create {{ item.caname }}
-#      command: >
-#       "{{ ejbca_sh }}" ca init
-#       --caname "{{ item.caname }}"
-#       --dn "{{ item.dn }}"
-#       {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}
-#       --tokenType "{{ item.tokentype }}"
-#       --tokenPass "{{ item.tokenpass }}"
-#       {% else %}
-#       --tokenName {{ item.caname }}
-#       {% endif %}
-#       --tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"
-#       {% for val in item.crypto_token %}{% if 'sign' == val.type %}
-#       --keyspec "{{ val.key_size }}"
-#       --keytype "{{ val.key_type }}" 
-#       {% endif %}{% endfor %}
-#       -s "{{ item.signalg }}"
-#       -v "{{ item.validity }}"
-#       --policy "{{ item.policy }}"
-#       {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
-#       -certprofile "{{ item.certprofile }}"
-#       --signedby "{{ root_ca_id.stdout }}"
-#      no_log: true
-#      become: yes
-#      become_user: "{{ ejbca_user }}"
-#      register: initializing_sub_ca
-#      failed_when: initializing_sub_ca.rc >= 2
-#      changed_when: initializing_sub_ca.rc == 0
-
 
     - name: Create {{ item.caname }}
       command: >
@@ -154,14 +81,14 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_sub_ca
-      failed_when: initializing_sub_ca.rc >= 2
+      failed_when: false
       changed_when: initializing_sub_ca.rc == 0
 
     - debug:
         msg: "Initializing Sub CA failed with message: {{ initializing_sub_ca.stdout }}"
       when: 
-        - initializing_sub_ca.rc == 1 
-      ignore_errors: yes
+        - initializing_sub_ca.rc >= 2
+      failed_when: true
 
   when: 
     - item.rootDn is defined
@@ -179,38 +106,6 @@
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
-
-# TODO Remove when no longer needed crypto tokens are created with CLI before init ca now
-#    - name: Create a CA CSR to be signed by an external CA for {{ item.caname }}
-#      command: >
-#       "{{ ejbca_sh }}" ca init
-#       --caname "{{ item.caname }}"
-#       --dn "{{ item.dn }}"
-#       {% if item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken" %}
-#       --tokenType "{{ item.tokentype }}"
-#       --tokenPass "{{ item.tokenpass }}"
-#       {% else %}
-#       --tokenName {{ item.caname }}
-#       {% endif %}
-#       --tokenprop "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"
-#       {% for val in item.crypto_token %}{% if 'sign' == val.type %}
-#       --keyspec "{{ val.key_size }}"
-#       --keytype "{{ val.key_type }}" 
-#       {% endif %}{% endfor %}
-#       -s "{{ item.signalg }}" 
-#       -v "{{ item.validity }}"
-#       --policy "{{ item.policy }}"
-#       {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
-#       --signedby "{{ item.rootDn }}"
-#       -externalcachain "/var/tmp/{{ item.external_root_cachain_file | basename }}"
-#      args:
-#        chdir: "{{ ejbca_home }}"
-#      no_log: true
-#      become: yes
-#      become_user: "{{ ejbca_user }}"
-#      register: initializing_sub_ca_csr
-#      failed_when: initializing_sub_ca_csr.rc >= 2
-#      changed_when: initializing_sub_ca_csr.rc == 0
 
     - name: Create a CA CSR to be signed by an external CA for {{ item.caname }}
       command: >
@@ -235,14 +130,14 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_sub_ca_csr
-      failed_when: initializing_sub_ca_csr.rc >= 2
+      failed_when: false
       changed_when: initializing_sub_ca_csr.rc == 0
       
     - debug:
         msg: "Initializing Sub CA generate CSR failed with message: {{ initializing_sub_ca_csr.stdout }}"
       when: 
-        - initializing_sub_ca_csr.rc == 1
-      ignore_errors: yes
+        - initializing_sub_ca_csr.rc >= 2
+      failed_when: true
 
     - name: Create local directories
       become: no
@@ -262,15 +157,3 @@
   when: 
     - item.rootDn is defined
     - item.rootDn == "External"
-
-# TODO Remove when no longer needed. Crypto tokens are created in the ansible-ejbca-crypto-token role
-#- name: Enable Auto Activate for {{ item.caname }} Crypto Token
-#  command: "{{ ejbca_sh }} cryptotoken setpin --token {{ item.caname }} {{ item.tokenpass }} {{ item.tokenpass }}"
-#  no_log: true
-#  become: yes
-#  become_user: "{{ ejbca_user }}"
-#  register: auto_activate_token_management
-#  failed_when: auto_activate_token_management.rc >= 2
-#  changed_when: auto_activate_token_management.rc == 0
-#  when: 
-#    - item.cryptotoken_enable_auto_activate|bool

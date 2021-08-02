@@ -14,7 +14,7 @@
       no_log: true
       tags: hsm_test, clienttoolbox_key_generation
       when:
-        - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype)
+        - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype) or ("org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken" in key_item.0.tokentype)
 
   when: add_certification_authorities[0] is defined
 
@@ -124,10 +124,11 @@
       tags: create_cas
 
     - name: Configure Suborindated CA's settings
-      include_tasks: config_ca_extensions.yml
+      include_role: 
+        name: ansible-ejbca-conf-ca-exts
+        tasks_from: config_ca_extensions
       loop: "{{ add_certification_authorities }}"
       no_log: true
-      tags: configure_cas_extentions
       when: 
         - item.rootDn != "External"
   
