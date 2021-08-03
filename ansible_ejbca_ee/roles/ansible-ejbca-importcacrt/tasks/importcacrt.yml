@@ -8,8 +8,14 @@
   become: yes
   become_user: "{{ ejbca_user }}"
   register: check_list_of_cas
-  failed_when: check_list_of_cas.rc >= 2
+  failed_when: false
   changed_when: check_list_of_cas.rc == 0
+
+- debug:
+    msg: "Checking CA's in EJBCA failed: {{ check_list_of_cas.stdout }}"
+  when:
+    - check_list_of_cas.rc >= 2
+  failed_when: true
 
 - name: Import CA if it is not in EJBCA
   block:
@@ -37,11 +43,13 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: import_external_ca
-      failed_when: import_external_ca.rc >= 2
+      failed_when: false
       changed_when: import_external_ca.rc == 0
 
     - debug:
         msg: "Initializing CA failed with message: {{ import_external_ca.stdout }}"
-      when: import_external_ca.rc == 1
+      when:
+        - import_external_ca.rc >= 2
+      failed_when: true
 
   when: item.caname not in check_list_of_cas.stdout

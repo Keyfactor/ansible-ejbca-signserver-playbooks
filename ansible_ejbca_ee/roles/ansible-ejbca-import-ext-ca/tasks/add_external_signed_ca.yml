@@ -26,5 +26,4 @@
     msg: "Initializing CA failed with message: {{ import_external_ca.stdout }}"
   when: 
     - import_external_ca.rc >= 2
-    #- import_external_ca.rc == 1
   failed_when: true

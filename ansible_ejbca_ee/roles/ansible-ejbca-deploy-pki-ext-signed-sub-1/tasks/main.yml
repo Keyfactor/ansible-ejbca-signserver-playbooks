@@ -4,7 +4,7 @@
 - name: Suborindated CA Keys
   block:
  
-    - name: Generate Keys for Suborindated CA's
+    - name: Generate Keys for Subordinated CA's using Client Toolbox
       include_role:
         name: ansible-ejbca-ctb-keygen 
       loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
@@ -12,9 +12,35 @@
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
       no_log: true
-      tags: hsm_test, clienttoolbox_key_generation
+      tags: hsm_test, client_toolbox_key_generation
       when:
+        - clienttoolbox_key_generation is defined
+        - clienttoolbox_key_generation|bool
         - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype) or ("org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken" in key_item.0.tokentype)
+
+    - name: Create crypto tokens for Subordinated CA's
+      include_role: 
+        name: ansible-ejbca-crypto-token
+        tasks_from: add_crypto_token
+      loop: "{{ add_certification_authorities }}"
+      no_log: true
+       when:
+        - clienttoolbox_key_generation is not defined
+        - not clienttoolbox_key_generation|bool     
+
+    - name: Generate keys for Subordinated CA's on crypto token using EJBCA CLI
+      include_role:
+        name: ansible-ejbca-crypto-token
+        tasks_from: generate_keys
+      loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: key_generation
+      when:
+        - clienttoolbox_key_generation is not defined
+        - not clienttoolbox_key_generation|bool
 
   when: add_certification_authorities[0] is defined
 

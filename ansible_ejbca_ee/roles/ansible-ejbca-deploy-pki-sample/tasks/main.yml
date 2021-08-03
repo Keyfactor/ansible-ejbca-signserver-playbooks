@@ -33,8 +33,6 @@
         loop_var: key_item
       no_log: true
       tags: key_generation
-      #when:
-      #  - ("soft" in key_item.0.tokentype)
 
     - name: Stage Management & Root CA to create with configdump
       include_role:

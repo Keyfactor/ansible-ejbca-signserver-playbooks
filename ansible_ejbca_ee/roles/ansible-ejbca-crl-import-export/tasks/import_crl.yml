@@ -28,12 +28,13 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: import_ca_crl_file
-      failed_when: import_ca_crl_file.rc >= 2
+      failed_when: false
       changed_when: import_ca_crl_file.rc == 0
 
     - debug:
         msg: "Importing CA CRL failed with message: {{ import_ca_crl_file.stdout }}"
-      when: import_ca_crl_file.rc == 1
+      when: import_ca_crl_file.rc >= 2
+      failed_when: true
 
   when: item.caname in check_list_of_cas_for_crl.stdout
 

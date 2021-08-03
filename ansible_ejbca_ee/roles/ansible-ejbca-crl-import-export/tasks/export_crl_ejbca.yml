@@ -22,13 +22,14 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: export_ca_crl_file
-      failed_when: export_ca_crl_file.rc >= 2
+      failed_when: false
       changed_when: export_ca_crl_file.rc == 0
       tags: ejbca-cli-cacrl
 
     - debug:
         msg: "Exporting CA CRL failed with message: {{ export_ca_crl_file.stdout }}"
-      when: export_ca_crl_file.rc == 1
+      when: export_ca_crl_file.rc >= 2
+      failed_when: true
 
     - name: Copy {{ item.caname }} CRL file to Ansible controller
       become: no
