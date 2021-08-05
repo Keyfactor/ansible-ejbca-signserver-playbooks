@@ -32,14 +32,8 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_management_ca
-      failed_when: false
+      failed_when: initializing_management_ca.rc >= 2
       changed_when: initializing_management_ca.rc == 0
-
-    - debug:
-        msg: "Initializing CA failed with message: {{ initializing_management_ca.stdout }}"
-      when: 
-        - initializing_management_ca.rc >= 2
-      failed_when: true
 
   when:
     - item.rootDn is not defined 
@@ -81,14 +75,8 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_sub_ca
-      failed_when: false
+      failed_when: initializing_sub_ca.rc >= 2
       changed_when: initializing_sub_ca.rc == 0
-
-    - debug:
-        msg: "Initializing Sub CA failed with message: {{ initializing_sub_ca.stdout }}"
-      when: 
-        - initializing_sub_ca.rc >= 2
-      failed_when: true
 
   when: 
     - item.rootDn is defined
@@ -96,7 +84,7 @@
 
 - name: Init CA to create a CSR to sign with an external Root CA
   block:
-    
+
     - name: Download external CA chain for creating an External CA {{ item.caname }}
       uri:
         url: "{{ item.external_root_cachain_url }}"
@@ -106,6 +94,16 @@
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
+      when: not external_root_cachain_local_repository|bool
+
+    - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
+      copy:
+        src: "{{ item.external_root_cachain_local_file }}"
+        dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+      no_log: true
+      when: external_root_cachain_local_repository|bool
 
     - name: Create a CA CSR to be signed by an external CA for {{ item.caname }}
       command: >
@@ -130,15 +128,9 @@
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_sub_ca_csr
-      failed_when: false
+      failed_when: initializing_sub_ca_csr.rc >= 2
       changed_when: initializing_sub_ca_csr.rc == 0
       
-    - debug:
-        msg: "Initializing Sub CA generate CSR failed with message: {{ initializing_sub_ca_csr.stdout }}"
-      when: 
-        - initializing_sub_ca_csr.rc >= 2
-      failed_when: true
-
     - name: Create local directories
       become: no
       file:

@@ -1,29 +1,33 @@
 ---
 
-- name: Download external CA chain for creating {{ item.caname }}
+- name: Download external signed CA certificate file for creating {{ item.caname }}
   uri:
-    url: "{{ item.external_cachain_url }}"
+    url: "{{ item.external_signed_ca_cert_file_url }}"
     validate_certs: no
-    dest: "/var/tmp/{{ item.external_cachain_file }}"
-    creates: "/var/tmp/{{ item.external_cachain_file }}"
+    dest: "/var/tmp/{{ item.external_signed_ca_cert_file }}"
+    creates: "/var/tmp/{{ item.external_signed_ca_cert_file }}"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
   no_log: true
+  when: is not external_signed_ca_cert_file_local_repository|bool 
+
+- name: Upload external signed CA certificate file from Ansible controller for creating {{ item.caname }}
+  copy:
+    src: "{{ ejbca_csr_dir_output }}/{{ item.caname }}.crt"
+    dest: "/var/tmp/{{ item.external_signed_ca_cert_file }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  no_log: true
+  when: external_signed_ca_cert_file_local_repository|bool
 
 - name: Import External CA - {{ item.caname }}
   command: >
     {{ ejbca_sh }} ca importcacert
     --caname {{ item.caname }}
-    -f /var/tmp/{{ item.external_cachain_file }}
+    -f /var/tmp/{{ item.external_signed_ca_cert_file }}
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
   register: import_external_ca
-  failed_when: false
+  failed_when: import_external_ca.rc >= 2
   changed_when: import_external_ca.rc == 0
-
-- debug:
-    msg: "Initializing CA failed with message: {{ import_external_ca.stdout }}"
-  when: 
-    - import_external_ca.rc >= 2
-  failed_when: true

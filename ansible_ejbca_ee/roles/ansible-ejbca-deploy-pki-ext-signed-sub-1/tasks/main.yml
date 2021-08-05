@@ -18,6 +18,9 @@
         - clienttoolbox_key_generation|bool
         - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype) or ("org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken" in key_item.0.tokentype)
 
+#TODO
+# Add Configdump to import crypto tokens with >= 7.6.0
+
     - name: Create crypto tokens for Subordinated CA's
       include_role: 
         name: ansible-ejbca-crypto-token
@@ -61,26 +64,8 @@
 
 - name: Use Configdump to create the CA's
   block:
-
-    - name: Create crypto tokens for Suborindated CA's
-      include_role: 
-        name: ansible-ejbca-crypto-token
-        tasks_from: add_crypto_token
-      loop: "{{ add_certification_authorities }}"
-      no_log: true
-
-    - name: Generate soft keys for Suborindated CA's on crypto token
-      include_role:
-        name: ansible-ejbca-crypto-token
-        tasks_from: generate_keys
-      loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
-      loop_control:
-        label: "{{ key_item.0.caname }}"
-        loop_var: key_item
-      no_log: true
-      tags: hsm_test, key_generation
-      when:
-        - ("soft" in key_item.0.tokentype)
+  # NOTE - This does not work today EJBCA <= 7.7.x as configdump does not support creating external signed
+  #        sub CA'S     
 
     - name: Stage Suborindated CA template to create with configdump
       include_role:
@@ -99,7 +84,7 @@
         - item.rootDn == "External"
       
     - name: Intialize Suborindated CA's with configdump
-      command: "./dist/configdump/configdump.sh import  --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/subs --initialize"
+      command: "./dist/configdump/configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/subs --initialize"
       args:
         chdir: "{{ ejbca_home }}"
       become: yes 
@@ -116,28 +101,6 @@
 
 - name: Use CLI to create the CA's
   block:
-
-    - name: Create crypto tokens for Suborindated CA's
-      include_role: 
-        name: ansible-ejbca-crypto-token
-        tasks_from: add_crypto_token
-      loop: "{{ add_certification_authorities }}"
-      no_log: true
-      when:
-        - ("soft" in item.tokentype)
-
-    - name: Generate soft keys for Suborindated CA's on crypto token
-      include_role:
-        name: ansible-ejbca-crypto-token
-        tasks_from: generate_keys
-      loop: "{{ add_certification_authorities |subelements('crypto_token') }}"
-      loop_control:
-        label: "{{ key_item.0.caname }}"
-        loop_var: key_item
-      no_log: true
-      tags: hsm_test, key_generation
-      when:
-        - ("soft" in key_item.0.tokentype)
 
     - name: Initialize Suborindated CAs with CLI commands
       include_role:

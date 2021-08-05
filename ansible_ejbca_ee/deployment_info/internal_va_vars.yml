@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "17Jul2021-Skyrim-SA"
+superAdminCn: "3Aug2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"

@@ -9,13 +9,7 @@
   become_user: "{{ ejbca_user }}"
   register: check_cryptoToken_keys
   changed_when: 'key_item.1.key_label not in check_cryptoToken_keys.stdout'
-  failed_when: false
-
-- debug:
-    msg: "Failed to query keys on the crypto token: {{ check_cryptoToken_keys.stdout }}"
-  when: 
-    - check_cryptoToken_keys.rc >= 2
-  failed_when: true
+  failed_when: check_cryptoToken_keys.rc >= 2
 
 - name: Generate key if it does not exist for {% if key_item.0.crypto_token_name is defined %}{{ key_item.0.crypto_token_name }}{% else %}{{ key_item.0.caname }}{% endif %} - {{ key_item.1.key_label }}:{{ key_item.1.key_size }}
   command: >
@@ -26,13 +20,5 @@
   become: yes
   become_user: "{{ ejbca_user }}"
   register: add_key_to_cryptotoken
-  failed_when: false
+  failed_when: add_key_to_cryptotoken.rc >= 2
   when: check_cryptoToken_keys.changed
-
-- debug:
-    msg: "Failed to create the key: {{ add_key_to_cryptotoken.stdout }}"
-  when: 
-    - add_key_to_cryptotoken.rc >= 2
-  failed_when: true
-
-

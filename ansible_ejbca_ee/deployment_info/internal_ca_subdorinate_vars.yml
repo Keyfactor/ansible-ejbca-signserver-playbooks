@@ -8,7 +8,6 @@ countryName: US
 superAdminCn: "31Mar2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
-
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
 # create Peer connection, and create an auth key binding
 use_external_va: true
@@ -276,8 +275,6 @@ ejbca_peerConnector:
     enabled: "{{ use_external_ra }}"
     remote_key_update: true
 
-
-
 # List of certification authorities that should be added using CLI
 # caname: CA name
 # certprofile: Certificate profile
@@ -301,6 +298,8 @@ mgmt_add_certification_authorities:
     certprofile: "managementCA"
     dn: "CN=ManagementCA,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "External"
+    eeprofile:
+    token: "USERGENERATED"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -336,10 +335,13 @@ mgmt_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     external_caname: IT-Root-CA
+    external_root_cachain_local_repository: false
+    external_root_cachain_local_file: ~/Downloads/certs/rootCA.crt
     external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     external_root_cachain_file: /var/tmp/rootca.pem
-    external_cachain_url: http://172.16.170.133:8080/ejbca/extMgmtCa.pem
-    external_cachain_file: extMgmtCa.pem
+    external_signed_ca_cert_file_local_repository: false
+    external_signed_ca_cert_file_url: http://172.16.170.133:8080/ejbca/extMgmtCa.pem
+    external_signed_ca_cert_file: extMgmtCa.pem
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
@@ -364,6 +366,8 @@ policy_add_certification_authorities:
     certprofile: "PolicyCA1-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "External"
+    eeprofile:
+    token: "USERGENERATED"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -399,10 +403,12 @@ policy_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     external_caname: IT-Root-CA
+    external_root_cachain_local_repository: false
+    external_root_cachain_local_file: ~/Downloads/certs/rootCA.crt
     external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
     external_root_cachain_file: /var/tmp/rootca.pem
-    external_cachain_url: http://172.16.170.133:8080/ejbca/extPolCa1.pem
-    external_cachain_file: extPolCa1.pem
+    external_signed_ca_cert_file_url: http://172.16.170.133:8080/ejbca/extPolCa1.pem
+    external_signed_ca_cert_file: extPolCa1.pem
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
@@ -428,7 +434,8 @@ sub_add_certification_authorities:
     dn: "CN={{ organizationName }} Issuing CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     #rootDn: "External"
     rootDn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    root_ca_name: "{{ organizationNameShort }}-Policy-CA1-G1"
+    eeprofile:
+    token: "USERGENERATED" 
     subjectaltname: ""
     validity: "3650"
     validity_yml: "5y"
@@ -463,10 +470,13 @@ sub_add_certification_authorities:
     finish_user: true
     ca_healthcheck_enabled: true
     request_processor: null
+    external_caname:
+    external_root_cachain_local_repository: false
+    external_root_cachain_local_file: ~/Downloads/certs/rootCA.crt
     external_root_cachain_url:
     external_root_cachain_file:
-    external_cachain_url:
-    external_cachain_file:
+    external_signed_ca_cert_file_url:
+    external_signed_ca_cert_file:
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca1_token_pin | default('foo123') }}"
@@ -491,7 +501,8 @@ sub_add_certification_authorities:
     dn: "CN={{ organizationName }} Issuing CA2 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     #rootDn: "External"
     rootDn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    root_ca_name: "{{ organizationNameShort }}-Policy-CA1-G1"
+    eeprofile:
+    token: "USERGENERATED"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "5y"
@@ -526,10 +537,13 @@ sub_add_certification_authorities:
     finish_user: true
     ca_healthcheck_enabled: true
     request_processor: null
+    external_caname:
+    external_root_cachain_local_repository: false
+    external_root_cachain_local_file: ~/Downloads/certs/rootCA.crt
     external_root_cachain_url: 
     external_root_cachain_file:
-    external_cachain_url:
-    external_cachain_file:
+    external_signed_ca_cert_file_url:
+    external_signed_ca_cert_file:
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca2_token_pin | default('foo123') }}"

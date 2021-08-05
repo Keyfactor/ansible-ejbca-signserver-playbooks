@@ -40,14 +40,8 @@
     register: ra_addIdent_result
     tags: certreq-cli-batch
     no_log: true
-    failed_when: false
+    failed_when: ra_addIdent_result.rc >= 2
     changed_when: ra_addIdent_result.rc == 0
-
-  - debug:
-      msg: "Adding end entity failed with message: {{ ra_addIdent_result.stdout }}"
-    when: 
-      - ra_addIdent_result.rc >= 2
-    failed_when: true
 
   - name: Set password for {{ item.username }}
     command: >
@@ -61,14 +55,8 @@
     register: ra_setpwd_result
     tags: certreq-cli-batch
     no_log: true
-    failed_when: false
+    failed_when: ra_setpwd_result.rc >= 2
     changed_when: ra_setpwd_result.rc == 0
-
-  - debug:
-      msg: "Adding end entity password failed with message: {{ ra_setpwd_result.stdout }}"
-    when: 
-      - ra_setpwd_result.rc >= 2
-    failed_when: true
 
   - name: Create certs for {{ item.username }}
     command: >
@@ -82,14 +70,8 @@
     register: ra_batch_result
     tags: certreq-cli-batch
     no_log: true
-    failed_when: false
+    failed_when: ra_batch_result.rc >= 2
     changed_when: ra_batch_result.rc == 0
-
-  - debug:
-      msg: "Adding end entity password failed with message: {{ ra_batch_result.stdout }}"
-    when:
-      - ra_batch_result.rc >= 2
-    failed_when: true
 
   - name: Determine {{ item.username }} certificate serial number
     command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"

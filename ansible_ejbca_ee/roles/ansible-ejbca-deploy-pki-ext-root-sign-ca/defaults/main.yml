@@ -1,5 +1,5 @@
 ---
-# defaults file for roles/ansible-ejbca-import-ext-ca
+# defaults file for roles/ansible-ejbca-deploy-pki-ext-root-sign-ca
 
 ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
 ejbca_cacrt_dir_output: "{{ playbook_dir }}/ejbcaCaCerts"

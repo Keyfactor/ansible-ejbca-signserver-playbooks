@@ -34,7 +34,7 @@
   loop: "{{ ejbca_va_keybinding }}"
   no_log: true
 
-# TODO - Figure out why this can't be set via CLI, but works by setting in the UI
+#TODO - Figure out why this can't be set via CLI, but works by setting in the UI
 #- name: Set Next Key Pair Alias 
 #  command: "{{ ejbca_sh }} keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
 #  no_log: true

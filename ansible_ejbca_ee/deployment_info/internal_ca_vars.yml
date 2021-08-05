@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "17Jul2021-Skyrim-SA"
+superAdminCn: "3Aug2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,

@@ -7,14 +7,8 @@
   become: yes
   become_user: "{{ ejbca_user }}"
   register: check_list_of_cas
-  failed_when: false
+  failed_when: check_list_of_cas.rc >= 2
   changed_when: check_list_of_cas.rc == 0
-
-- debug:
-    msg: "Failed to query CA's: {{ check_list_of_cas.stdout }}"
-  when:
-    - check_list_of_cas.rc >= 2
-  failed_when: true
 
 - name: Import External CA if it is not in EJBCA
   block:
@@ -23,29 +17,33 @@
       uri:
         url: "{{ item.external_root_cachain_url }}"
         validate_certs: no
-        dest: "/var/tmp/{{ item.external_root_cachain_file }}"
-        creates: "/var/tmp/{{ item.external_root_cachain_file }}"
+        dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
+        creates: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
+      when: not external_root_cachain_local_repository|bool
+
+    - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
+      copy:
+        src: "{{ item.external_root_cachain_local_file }}"
+        dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+      no_log: true
+      when: external_root_cachain_local_repository|bool
 
     - name: Import External CA - {{ item.external_caname }}
       command: >
         {{ ejbca_sh }} ca importcacert
         --caname {{ item.external_caname }}
-        -f /var/tmp/{{ item.external_cachain_file }}
+        -f /var/tmp/{{ item.external_root_cachain_file | basename }}
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"
       register: import_external_ca
-      failed_when: false
+      failed_when: import_external_ca.rc >= 2
       changed_when: import_external_ca.rc == 0
-
-    - debug:
-        msg: "Initializing CA failed with message: {{ import_external_ca.stdout }}"
-      when: 
-        - import_external_ca.rc >= 2
-      failed_when: true
 
   when: 
     - item.external_caname not in check_list_of_cas.stdout
