@@ -1,5 +1,8 @@
 ---
 
+#TODO
+# Add /opt/ejbca-custom/conf directory if it doesn't exist
+
 - name: Copy {{ item.caname }} Token properties file is copied over
   template:
     src: "catoken_template.properties.j2"
@@ -94,7 +97,7 @@
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
-      when: not external_root_cachain_local_repository|bool
+      when: not item.external_root_cachain_local_repository|bool
 
     - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
       copy:
@@ -103,7 +106,7 @@
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
-      when: external_root_cachain_local_repository|bool
+      when: item.external_root_cachain_local_repository|bool
 
     - name: Create a CA CSR to be signed by an external CA for {{ item.caname }}
       command: >

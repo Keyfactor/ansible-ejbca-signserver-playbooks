@@ -54,18 +54,18 @@
   when: 
     - add_certification_authorities[0] is defined or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
 
-- name: Prepare configdump template files
-  include_role: 
-    name: ansible-ejbca-cnfdump-stage
-    tasks_from: config_configdump
-  when:
-    - configdump_directory_structure is defined
-    - configdump_import_files is defined
-
 - name: Use Configdump to create the CA's
   block:
   # NOTE - This does not work today EJBCA <= 7.7.x as configdump does not support creating external signed
   #        sub CA'S     
+
+    - name: Prepare configdump template files
+      include_role: 
+        name: ansible-ejbca-cnfdump-stage
+        tasks_from: config_configdump
+      when:
+        - configdump_directory_structure is defined
+        - configdump_import_files is defined
 
     - name: Stage Suborindated CA template to create with configdump
       include_role:
