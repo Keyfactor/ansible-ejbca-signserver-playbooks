@@ -4,7 +4,7 @@ webrepo.solitude.skyrim ansible_host=72.16.170.133
 ejbcara01.solitude.skyrim ansible_host=172.16.170.6
 
 [ejbcaRootCa]
-ejbcart01.solitude.skyrim ansible_host=172.16.170.10
+ejbcart01.solitude.skyrim ansible_host=172.16.170.13
 
 [ejbcaCaServers]
 ejbca01.solitude.skyrim ansible_host=172.16.170.5

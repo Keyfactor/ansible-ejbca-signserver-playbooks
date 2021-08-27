@@ -32,7 +32,7 @@
         group: "{{ ejbca_group }}"
       no_log: true
       when: item.external_root_cachain_local_repository|bool
-
+ 
     - name: Import External CA - {{ item.external_caname }}
       command: >
         {{ ejbca_sh }} ca importcacert

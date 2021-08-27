@@ -48,9 +48,9 @@ mariadb_users:
     host: "localhost"
 
 # Maria DB JDBC driver download URL
-ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_driver: https://dlm.mariadb.com/1785291/Connectors/java/connector-java-2.7.4/mariadb-java-client-2.7.4.jar
 # Maria DB JDBC driver SHA256 hash
-ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+ejbca_jdbc_driver_checksum: sha256:f06577b19e89b33028b96cd4f031248e761de7ebc712f4ef535e268df76edb2a
 
 # EJBCA version and deployment info
 ejbca_version: 7.7.0
@@ -62,14 +62,14 @@ ejbca_src_dir_name: ejbca_ee_7_7_0
 ejbca_type: CA
 
 # Location to write the CRL files on server
-ejbca_crl_dir_enabled: true
+ejbca_crl_dir_enabled: false
 ejbca_crl_dir:
   - /opt/web/CRLs
   - /opt/web/AIA
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-wildfly_version: 24.0.0.Final
+wildfly_version: 24.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
 wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_use_galleon: true
@@ -77,7 +77,7 @@ wildfly_galleon_version: 4.2.8
 #wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
 wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
 #wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
-wildfly_jboss_client_checksum: sha256:fb633ed945d21de548b266f09b9467295571e429a301eae456713424cbc23464 # WF 24
+wildfly_jboss_client_checksum: sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -556,6 +556,23 @@ httpd_trusted_cas:
     fullchain: true
   - caname: "{{ organizationNameShort }}-Sub-CA"
     fullchain: true
+
+# Enable/Disable using the HTTPD CRL mapping to use friendly names in the CRL file that are retreived from 
+# EJBCA CRL cache in the ejbca/publicweb/crls/search.cgi
+use_httpd_crl_map: true
+
+# List of CRL files without the .crl extension and the iHash value for the CA DN used for friendly names
+# in the CRL URL and HTTPD maps the name to the hash value to retrieve the CRL from EJBCA crl cache
+# crl_name: file name without the .crl extension, e.g.: managementca
+# hash: The CA DN hashed to create the iHash value, e.g.:
+# CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an iHash of QEmnargCJtoJPXtVylHO1T85MF8
+httpd_crl_mapping_names:
+  - crl_name: managementca
+    hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
+  - crl_name: solituderootca
+    hash: K8WY8UadARfiek83i40zzB02Udw
+  - crl_name: solitudesubca
+    hash: 1vnFSu3sYhgsdaB655sZr/2j21s
 
 # List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
 # This variable is also used for exporting CRL's from EJBCA CA node to import into external RA/VA's

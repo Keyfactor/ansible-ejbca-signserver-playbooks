@@ -22,6 +22,23 @@
 {% if use_external_va is defined and use_external_va is sameas false or ejbca_type is defined and 'VA' == ejbca_type %}
     ProxyPass /ocsp        balancer://EJBCACluster/ejbca/publicweb/status/ocsp
 {% endif %}
+
+{% if use_httpd_crl_map is defined and use_httpd_crl_map is sameas true %}
+    #Vanity CRL URLs
+    RewriteMap vanityCrlLC int:tolower
+    RewriteMap vanityCrls "txt:/etc/httpd/rewriteMaps/crlmapping.txt"
+    RewriteRule "^.*/crl/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?sKIDHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+    Header unset Content-disposition env=vanityCrl
+{% endif %}
+
+{% if use_httpd_aia_directory is defined and use_httpd_aia_directory is sameas true %}
+    #AIA directory access for Base64 PEM CA Cert retrieval
+    <Directory /var/www/html/aia>
+        Require all granted
+        AddType application/x-pem-file .crt
+    </Directory>
+{% endif %}
+
     # Redirect /, /ejbca and non-proxied URLs to /ejbca/
 {% if use_external_va is defined and use_external_va is sameas false or ejbca_type is defined and 'VA' == ejbca_type %}
     RewriteCond %{THE_REQUEST} !(/ejbca/.*|/CRLs/.*|/crls/.*|/crl/.*|/AIA/.*|/aia/.*|/ocsp.*) [OR]

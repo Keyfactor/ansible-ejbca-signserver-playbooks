@@ -1,7 +1,7 @@
 ---
 
-- name: Check if {{ item.name }} end entity exists
-  command: "{{ ejbca_sh }} ra findendentity {{ item.name }}"
+- name: Check if {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} end entity exists
+  command: "{{ ejbca_sh }} ra findendentity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}"
   args:
     chdir: "{{ ejbca_home }}"
   become_method: sudo

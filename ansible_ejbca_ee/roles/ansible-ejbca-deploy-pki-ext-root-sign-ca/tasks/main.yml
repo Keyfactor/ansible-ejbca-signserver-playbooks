@@ -3,6 +3,7 @@
 
 - name: Convert DER encoded CSR to PEM
   command: openssl req -inform DER -outform PEM -in {{ ejbca_csr_dir_output }}/{{ item.caname }}_csr.der -out {{ ejbca_csr_dir_output }}/{{ item.caname }}.csr
+  become: no
   delegate_to: localhost
   loop: "{{ add_certification_authorities }}"
   loop_control:

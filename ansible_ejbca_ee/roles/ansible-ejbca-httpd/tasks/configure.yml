@@ -87,6 +87,30 @@
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
+- name: Configure friendly CRL name mapping
+  block:
+
+    - name: Create directory for mapping file
+      file:
+        path: /etc/httpd/rewriteMaps/
+        state: directory
+        mode: 0775
+        owner: root
+        group: root  
+      tags: reverse-proxy
+
+    - name: Create CRL mapping file
+      template:
+        src: crlmapping.txt.j2
+        dest: /etc/httpd/rewriteMaps/crlmapping.txt
+        owner: root
+        group: root
+        mode: 0644
+
+  when:
+    - use_httpd_crl_map is defined
+    - use_httpd_crl_map|bool
+
 - name: Create CRL & AIA directory links
   file:
     src: "{{ item.src }}"

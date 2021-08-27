@@ -1,0 +1,37 @@
+Object Type: End Entity Profile
+Version: 1
+Name: subCA
+Cleartext Password Enabled: true
+E-Mail Used: false
+Max Failed Logins Modifiable: false
+Description: ''
+Default CA: {{ organizationNameShort }}-Root-CA
+Available CAs:
+- Any CA
+Default Certificate Profile: SubCA-{{ organizationNameShort }}-G1
+Available Certificate Profiles:
+- SubCA-{{ organizationNameShort }}-G1
+- EccSubCA-{{ organizationNameShort }}-G1
+Default Token Type: User Generated
+Available Token Types:
+- User Generated
+Issuance Revocation Reason Modifiable: false
+CA Browser Forum Organization Identifier Modifiable: false
+Subject DN:
+  CN:
+  - Required: true
+  OU:
+  - Required: true
+    Modifiable: false
+    Values:
+    - Certification Authorities
+  O:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ organizationName }}
+  C:
+  - Required: true
+    Modifiable: false
+    Values:
+    - {{ countryName }}

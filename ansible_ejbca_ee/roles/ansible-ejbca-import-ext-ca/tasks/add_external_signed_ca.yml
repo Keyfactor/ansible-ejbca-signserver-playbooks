@@ -9,7 +9,7 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
   no_log: true
-  when: is not external_signed_ca_cert_file_local_repository|bool 
+  when: not external_signed_ca_cert_file_local_repository|bool 
 
 - name: Upload external signed CA certificate file from Ansible controller for creating {{ item.caname }}
   copy:
