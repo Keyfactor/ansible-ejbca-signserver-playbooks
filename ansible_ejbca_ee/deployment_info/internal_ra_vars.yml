@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "3Aug2021-Skyrim-SA"
+superAdminCn: "30Aug2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
@@ -139,6 +139,24 @@ httpd_create_aia_crl_dir: false
 httpd_identity_info:
   id_name: "{{ identity_info[0].name }}"
   id_ca_cert_file: "{{ identity_info[0].caname }}.crt"
+
+# Enable/Disable using the HTTPD CRL mapping to use friendly names in the CRL file that are retreived from 
+# EJBCA CRL cache in the ejbca/publicweb/crls/search.cgi
+use_httpd_crl_map: true
+
+# List of CRL files without the .crl extension and the iHash value for the CA DN used for friendly names
+# in the CRL URL and HTTPD maps the name to the hash value to retrieve the CRL from EJBCA crl cache
+# crl_name: file name without the .crl extension, e.g.: managementca
+# hash: The CA DN hashed to create the iHash value, e.g.:
+# CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an iHash of QEmnargCJtoJPXtVylHO1T85MF8
+# If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
+httpd_crl_mapping_names:
+  - crl_name: managementca
+    hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
+  - crl_name: solituderootca
+    hash: K8WY8UadARfiek83i40zzB02Udw
+  - crl_name: solitudesubca
+    hash: 1vnFSu3sYhgsdaB655sZr/2j21s
 
 # CA chains to add to the HTTPD trusted CA certificate file for certauth
 # caname: Name of the CA in EJBCA

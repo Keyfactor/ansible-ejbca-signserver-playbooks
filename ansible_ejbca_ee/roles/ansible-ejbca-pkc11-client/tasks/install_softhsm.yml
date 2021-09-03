@@ -9,7 +9,8 @@
     mode: 0644
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Import Okay Repo key from a file
   rpm_key:
@@ -17,7 +18,8 @@
     key: /etc/pki/rpm-gpg/RPM-GPG-KEY-okayinc
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Install SoftHSM CentOS/RHEL 8
   dnf:
@@ -26,7 +28,8 @@
     #disable_gpg_check: yes
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Install SoftHSM CentOS/RHEL 7
   yum:

@@ -68,7 +68,8 @@
     - restart httpd
   tags: reverse-proxy
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Configure the httpd conf file for CentOS/RHEL 7
   template:

@@ -6,5 +6,6 @@
     state: installed
   with_items: "{{ httpd_packages }}"
   when: (ansible_facts['distribution'] == "CentOS" ) or
-        (ansible_facts['distribution'] == "RedHat" ) 
+        (ansible_facts['distribution'] == "RedHat" ) or
+        (ansible_facts['distribution'] == "OracleLinux" )
   tags: reverse-proxy
