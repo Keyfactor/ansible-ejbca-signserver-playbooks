@@ -1,0 +1,79 @@
+---
+
+- name: Check for HSM cluster certificate
+  stat: 
+    path: '{{ cloudhsm_home}}/etc/{{ customerCA_cert }}'
+  register: customerCA_cert_check
+
+- name: Copy HSM cluster certificate issuer to virtual instance
+  copy:
+    src: '{{ hsm_config_files }}/{{ customerCA_cert }}'
+    dest: '{{ cloudhsm_home }}/etc/'
+    remote_src: no
+    owner: hsmuser
+    group: hsmuser
+  register: customerCA_cert_copy
+  when:
+    - not customerCA_cert_check.stat.exists
+
+- name: Check for Liquidsec directory
+  stat:
+    path: /home/wildfly/.liquidsec
+  register: liquidsec_dir_check
+  when: use_liquidsec|bool
+
+- block:
+  name: Configure Liquidesec
+
+  - name: Create Liquidesec directory
+    file:
+      path: /home/wildfly/.liquidsec
+      state: directory
+      owner: '{{ signsrv_user }}'
+      group: '{{ signsrv_group }}'
+
+  - name: Copy public keys
+    copy:
+      src: '{{ item.name }}'
+      dest: /home/wildfly/.liquidsec
+      owner: '{{ signsrv_user }}'
+      group: '{{ signsrv_group }}'
+    loop: '{{ public_certs }}'
+    loop_control:
+      label: "{{ item.name }}"
+    when: public_certs[0] is defined
+    
+  when:
+    - use_liquidsec|bool
+    - not liquidsec_dir_check.stat.exists
+
+- name: Stop CloudHSM client
+  service:
+    name: '{{ cloudhsm_service }}'
+    state: stopped
+
+- name: Specify the IP address of the HSM in the cluster
+  command: >
+    {{ cloudhsm_home }}/bin/configure -a {{ cloudhsm_ip }}
+
+- name: Start CloudHSM client
+  service:
+    name: '{{ cloudhsm_service }}'
+    state: started
+
+# - name: Test HSM connection
+#   command: >
+#     /opt/PrimeKey/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test
+#     /opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so 1 -password {{ keystore_pass }}
+#   become: yes
+#   become_user: '{{ signsrv_user }}'
+#   no_log: false
+#   register: hsm_connection_check
+
+# Only used with multiple HSMs in a cluster
+
+- name: Ensure the cloudhsm_mgmt_util configuration file is up to date
+ command: >
+  {{ cloudhsm_home }}/bin/configure -m
+ become: yes
+ register: cloudhsm_mgmt_verify

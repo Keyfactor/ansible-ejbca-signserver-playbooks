@@ -1,0 +1,8 @@
+---
+
+- name: Download and install CloudHSM packages
+  include_tasks: install.yml
+
+- name: Configure CloudHSM client
+  include_tasks: configure.yml
+  

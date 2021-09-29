@@ -1,0 +1,7 @@
+#------------------------------------------------------
+# AIA Vanity URL Mapping to sHash or sKIDHash values
+#------------------------------------------------------
+
+{% for aia in httpd_aia_mapping_names %}
+{{ aia.aia_name }} {{ aia.hash }}
+{% endfor %}

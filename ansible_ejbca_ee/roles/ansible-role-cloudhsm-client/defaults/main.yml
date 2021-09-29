@@ -1,0 +1,28 @@
+---
+# defaults file for roles/ansible-ss-cloudhsm
+
+cloudhsm_home: /opt/cloudhsm
+cloudhsm_client_url: https://s3.amazonaws.com/cloudhsmv2-software/CloudHsmClient/EL7/
+cloudhsm_client_file: cloudhsm-client-latest.el7.x86_64.rpm
+cloudhsm_dest: /var/tmp
+cloudhsm_pcks11_url: https://s3.amazonaws.com/cloudhsmv2-software/CloudHsmClient/EL7/
+cloudhsm_pkcs11_file: cloudhsm-client-pkcs11-latest.el7.x86_64.rpm
+cloudhsm_service: cloudhsm-client
+cloudhsm_ip: '172.16.2.209'
+hsm_config_files: '{{ playbook_dir }}/hsm_config_files'
+
+signsrv_group: wildfly
+signsrv_user: wildfly
+
+customerCA_cert: customerCA.crt
+
+test_key_size: 2048
+test_key_name: testKey0005
+sign_key_size: 2048
+sign_key_name: signKey0005
+keystore_pass: "{{ encrypted_keystore_pass }}"
+clientToolBox_file: clientToolBox.zip
+cloudhsm_tar_file: cloudhsm-May11-2020.tar.gz
+liquidsec: cloudhsm/lib/libliquidsec_pkcs11.so
+p11_path: '{{ organization_home }}/cloudhsm'
+p11crytoworker_name: P11CryptoWorker

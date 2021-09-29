@@ -150,7 +150,7 @@ web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
 ejbca_va_keybinding:
   - name: ocspSubSigningKey
     crypto_token_name: ocspCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -168,7 +168,7 @@ ejbca_va_keybinding:
     eeprofile: ocspSigner
   - name: ocspRootSigningKey
     crypto_token_name: ocspCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -186,7 +186,7 @@ ejbca_va_keybinding:
     eeprofile: ocspSigner
   - name: ocspMgmtSigningKey
     crypto_token_name: ocspCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"

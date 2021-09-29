@@ -1,0 +1,40 @@
+---
+
+- name: Check for existing {{ test_key_name }}
+  command: >
+    {{ organization_home }}/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test
+    {{ organization_home }}/cloudhsm/lib/libliquidsec_pkcs11.so 1 -password {{ keystore_pass }}
+  become: yes
+  become_user: '{{ signsrv_user }}'
+  no_log: true
+  register: checking_existing_test_key
+  changed_when: '"Signature test of key {{ test_key_name }}" not in checking_existing_test_key.stdout'
+
+- name: Check for existing {{ sign_key_name }}
+  command: >
+    {{ organization_home }}/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test
+    {{ organization_home }}/cloudhsm/lib/libliquidsec_pkcs11.so 1 -password {{ keystore_pass }}
+  become: yes
+  become_user: '{{ signsrv_user }}'
+  no_log: true
+  register: checking_existing_sign_key
+  changed_when: '"Signature test of key {{ sign_key_name }}" not in checking_existing_test_key.stdout'
+
+- name: Generate {{ test_key_name }}
+  command: >
+    {{ organization_home }}/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate
+    {{ organization_home }}/cloudhsm/p11.conf {{ test_key_size }} {{ test_key_name }} -password {{ keystore_pass }}
+  become: yes
+  become_user: '{{ signsrv_user }}'
+  no_log: false
+  when: checking_existing_test_key.changed
+
+- name: Generate {{ sign_key_name }}
+  command: >
+    {{ organization_home }}/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate
+    {{ organization_home }}/cloudhsm/p11.conf {{ sign_key_size }} {{ sign_key_name }} -password {{ keystore_pass }}
+  become: yes
+  become_user: '{{ signsrv_user }}'
+  no_log: false
+  when: checking_existing_sign_key.changed
+    

@@ -1,6 +1,6 @@
-#------------------------------------------
-# CRL Vanity URL Mapping to sKIDHash values
-#------------------------------------------
+#----------------------------------------------------
+# CRL Vanity URL Mapping to iHash or sKIDHash values
+#----------------------------------------------------
 
 {% for crl in httpd_crl_mapping_names %}
 {{ crl.crl_name }} {{ crl.hash }}

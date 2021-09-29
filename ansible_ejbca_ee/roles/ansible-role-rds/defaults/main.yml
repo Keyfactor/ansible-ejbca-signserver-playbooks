@@ -1,0 +1,43 @@
+---
+
+mariadb_packages:
+  - python3-PyMySQL
+rhel_mariadb_packages:
+  - MySQL-python
+mariadb_packages_8:
+  - python3-PyMySQL
+
+mariadb_owner: mysql
+mariadb_group: mysql
+
+mariadb_databases: []
+mariadb_users: []
+mariadb_root_password: ''
+
+mariadb_mirror: yum.mariadb.org
+mariadb_version: '10.5'
+
+mariadb_configure_swappiness: true
+mariadb_swappiness: '10'
+
+# Network configuration (network.cnf)
+
+mariadb_service: mariadb
+rhel_mariadb_service: rh-mariadb103-mariadb
+mariadb_bind_address: '127.0.0.1'
+
+# Server configuration
+mariadb_server_cnf:
+  log_error: /var/log/mariadb/mariadb.log
+
+# Custom configuration
+mariadb_custom_cnf: {}
+
+# Name of the database
+db_name: ejbca
+
+# Port to connect to RDS on
+db_port: 3306
+
+# RDS host to connect to
+db_host: localhost

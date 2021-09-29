@@ -19,5 +19,5 @@ awskms.cryptotoken.enabled={{ web_awskms_crypto| default('true') }}
 
 {% if ejbca_version >= '7.5' %}
 # Enable P11NG for EJBCA to use for CloudHSM and other PKCS11 integrations
-p11ng.cryptotoken.enabled=true
+p11ng.cryptotoken.enabled={{ web_use_p11ng| default('true') }}
 {% endif %}

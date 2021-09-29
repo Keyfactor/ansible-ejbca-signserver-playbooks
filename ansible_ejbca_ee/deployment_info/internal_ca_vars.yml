@@ -183,7 +183,7 @@ management_add_administrators:
 ejbca_keybinding:
   - name: peerClient-ocsp
     crypto_token_name: peeringCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -207,7 +207,7 @@ ejbca_keybinding:
     enabled: "{{ use_external_va }}"
   - name: peerClient-ra
     crypto_token_name: peeringCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -227,7 +227,7 @@ ejbca_keybinding:
     enabled: "{{ use_external_ra }}"
   - name: peerClient-sign
     crypto_token_name: peeringCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -327,7 +327,7 @@ management_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Management_CA_SLOT"      
@@ -384,7 +384,7 @@ management_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Root_CA_SLOT"
@@ -463,7 +463,7 @@ sub_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Sub_CA_SLOT"
