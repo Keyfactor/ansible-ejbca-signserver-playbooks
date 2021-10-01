@@ -1,0 +1,9 @@
+---
+
+- name: Create AWS S3 Publisher template files to import with configdump
+  template:
+    src: "publisher-awsS3.yaml.j2"
+    dest: "{{ ejbca_home }}/dump/awsS3/publishers/awsS3-{{ item.s3_publisher_name }}.yaml"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0664

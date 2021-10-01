@@ -6,7 +6,9 @@
 
 - name: Request TLS cert for HTTPD
   include_tasks: ca_req_cert.yml
-  when: ejbca_type == "CA"
+  when: 
+    - httpd_identity_info.id_username is defined
+    - ejbca_type == "CA"
 
 - name: Configure HTTPD web server
   include_tasks: configure.yml

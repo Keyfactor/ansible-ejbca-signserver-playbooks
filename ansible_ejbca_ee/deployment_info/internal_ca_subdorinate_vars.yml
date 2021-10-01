@@ -672,6 +672,8 @@ mgmt_configdump_files:
     dest: '{{ ejbca_home }}/dump/dump2/services/DailyCRLUpdate.yaml'
   - src: 'service-HSM_Keepalive.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump2/services/HSM_Keepalive.yaml'
+  - src: "{{ playbook_dir }}/certprofiles/tlsServer.yaml.j2"
+    dest: "{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServer.yaml"
 
 sub_configdump_dir_structure:
   - "{{ ejbca_home }}/dump/subs/certification-authorities"

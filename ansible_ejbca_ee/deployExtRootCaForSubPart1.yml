@@ -1,0 +1,15 @@
+---
+
+- hosts: ejbcaCaServers
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/internal_ext_root_sub_vars.yml
+  roles:
+    - ansible-hostname
+    - ansible-role-mariadb
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ejbca-prep
+    - ansible-ejbca-deploy-pki-ca-node-mgmt-ca
+    - ansible-ejbca-httpd

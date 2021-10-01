@@ -112,12 +112,41 @@ appsrv_datasources:
 use_softhsm: true
 use_ncipher: false
 use_safenet_lunasa: false
+# CloudHSM settings
+use_cloudhsm: false
+use_liquidsec: false
 # If true, allows running application server service via preload
 ncipher_preload: false
 # Path to the preload executable
 preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
 hsm_shared_library: /usr/lib64/libsofthsm2.so
+
+softhsm_gen_hsm_slots:
+  - slot_name: Management_CA_SLOT
+    slot_so_pin: "{{ encrypted_mgmtca_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+  - slot_name: Sub_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
+  - slot_name: Sub2_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca2_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca2_token_pin | default('foo123') }}"
+  - slot_name: Sub3_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca3_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca3_token_pin | default('foo123') }}"
+  - slot_name:  DB_Protect_SLOT
+    slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+  - slot_name: KeyBinding_SLOT
+    slot_so_pin: "{{ encrypted_peerkeybind_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+  - slot_name: LDAP_AUTH_SLOT
+    slot_so_pin: "{{ encrypted_ldap_auth_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_ldap_auth_token_pin | default('foo123') }}"
+  - slot_name: AZURE_AUTH_SLOT
+    slot_so_pin: "{{ encrypted_azure_auth_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_azure_auth_token_pin | default('foo123') }}"
 
 # EJBCA CLI password to configure for the CLI account
 ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
@@ -349,63 +378,6 @@ management_add_certification_authorities:
         type: test
     publishers:
       - validationAuthorityPeerPub-OCSP-01
-  - caname: "{{ organizationNameShort }}-Root-CA"
-    certprofile: "RootCA-{{ organizationNameShort }}-G1"
-    dn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
-    subjectaltname: ""
-    validity: "9125"
-    validity_yml: "25y"
-    policy: "null"
-    signalg: "SHA512WithRSA"
-    serial_number_octet_size: 20
-    pre_produce_ocsp_responses: false
-    store_responses_on_demand: false
-    use_append_only_table: false
-    use_utf8_in_policy_notice_text: false
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
-    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
-    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    crlPeriod: 15552000000
-    crlPeriod_yml: 6mo
-    crlIssueInterval: 0
-    crlIssueInterval_yml: 0m
-    crl_overlap_time: 600000
-    crl_overlap_time_yml: 10m
-    delta_crl_period: 0m
-    useLdapDnOrder: false
-    enforce_unique_public_keys: true
-    enforce_key_renewal: false
-    enforce_unique_dn: true
-    user_storage: true
-    certificate_storage: true
-    accept_revocations_for_non_existing_entries: false
-    finish_user: true
-    ca_healthcheck_enabled: true
-    request_processor: null
-    cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
-    tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
-    slot_identifier_type: "SLOT_LABEL"
-    slot_identifier_value: "Root_CA_SLOT"
-    crypto_token:
-      - key_label: "signKey0001"
-        key_size: 4096
-        key_type: "RSA"
-        type: sign
-      - key_label: "defaultKey0001"
-        key_size: 4096
-        key_type: "RSA"
-        type: default
-      - key_label: "testKey"
-        key_size: 1024
-        key_type: "RSA"
-        type: test
-    publishers:
-      - validationAuthorityPeerPub-OCSP-01
 
 # List of certification authorities that should be added using CLI
 # caname: CA name
@@ -538,9 +510,9 @@ httpd_identity_info:
   id_username: ca_httpd_tls
   id_password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
   id_altname: "dNSName=ca01.{{ organizationDomainName }}, dNSName=ca.{{ organizationDomainName }}, dNSName=sapi.ca.{{ organizationDomainName }}, dNSName=api.ca.{{ organizationDomainName }}"
-  id_certprofile: tlsServerClientAuth
-  id_eeprofile: "tlsServer{{ organizationName }}"
-  id_caname: "{{ organizationName }}-Sub-CA"
+  id_certprofile: tlsServerMgmtCA
+  id_eeprofile: tlsServerMgmt
+  id_caname: ManagementCA
 
 # List of HTTPD certificate files to configure for HTTPD to use for TLS
 httpd_cert_files:
@@ -550,6 +522,20 @@ httpd_cert_files:
     dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
   - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
     dest: "/etc/pki/tls/certs/chain.crt"
+
+# Used for creating a TLS certificate for the Root CA
+identity_info:
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn=root01.{{ organizationDomainName }}"
+    name: "root01.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn=root01.{{ organizationDomainName }}"
+    username: root_httpd_tls
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName=root01.{{ organizationDomainName }}"
+    certprofile: tlsServerMgmtCA
+    eeprofile: tlsServerMgmt
+    caname: ManagementCA
+    token: PEM
+    useType: ca
 
 # CA chains to add to the HTTPD trusted CA certificate file for certauth
 # caname: Name of the CA in EJBCA
@@ -615,3 +601,181 @@ ejbca_ca_import:
     fullchain: false
   - caname: "{{ organizationNameShort }}-Root-CA"
     fullchain: false
+
+# S3 Publisher settings
+install_aws_cli: true
+use_aws_s3_publisher: true
+aws_s3_publishers:
+  - s3_publisher_name: AwsS3Publisher
+    # 0=CA CN/SN/O & 1=CA SHA1 Fingerprint
+    s3_crl_file_name_format: 0
+    s3_cert_key_prefix: ''
+    # 0=DER & 1=PEM
+    s3_crl_file_format: 1
+    # Name of the folder to write the certificates to
+    s3_cert_bucket_name:
+    # 0=Serial Number, 1=SHA1 Fingerprint, 2=SHA2 Fingerprint
+    s3_cert_file_name_format: 0
+    s3_crl_key_prefix: ''
+    # Store active and revoked Certificates in separate paths
+    s3_cert_store_separate_path: true
+    # 0=DER & 1=PEM
+    s3_cert_file_format: 1
+    # Name of teh folder to write the CRLs to
+    s3_crl_bucket_name: 
+    s3_only_use_in_queue: true
+    s3_keep_published_in_queue: false
+    s3_use_queue_for_crls: true
+    s3_use_queue_for_certs: true
+    s3_use_queue_for_ocsp: false
+    s3_description: ''
+
+configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
+  - "{{ ejbca_home }}/dump/dump1/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump2/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump2/services"
+  - "{{ ejbca_home }}/dump/dump2/custom-certificate-extensions"
+  - "{{ ejbca_home }}/dump/dump3/admin-roles"
+  - "{{ ejbca_home }}/dump/dump3/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump3/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump3/services"
+  - "{{ ejbca_home }}/dump/dump3/publishers"
+  - "{{ ejbca_home }}/dump/dump3/acme-config"
+  - "{{ ejbca_home }}/dump/dump3/est-config"
+  - "{{ ejbca_home }}/dump/dump3/scep-config"
+  - "{{ ejbca_home }}/dump/va/services"
+  - "{{ ejbca_home }}/dump/va/publishers"  
+  - "{{ ejbca_home }}/dump/ra/admin-roles" 
+  - "{{ ejbca_home }}/dump/awsS3/publishers"
+  
+configdump_files:
+  - src: 'cp-managementCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
+  - src: 'extended-key-usages.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
+    # Files for the 2nd dump import
+  - src: 'cp-tlsPeerConnector.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsPeerConnector.yaml'
+  - src: 'ee-tlsPeerConnMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsPeerConnMgmt.yaml'
+  - src: 'service-DailyCRLUpdate.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/DailyCRLUpdate.yaml'
+  - src: 'service-HSM_Keepalive.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/HSM_Keepalive.yaml'
+  - src: 'ext-certTempInfo.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/custom-certificate-extensions/certTempInfo.yaml'
+    # Files for the 3rd dump import
+  - src: 'global-acme-configuration.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/acme-config/global-acme-configuration.yaml'
+  - src: 'acme-alias-1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/acme-config/acme-alias-1.yaml'
+  - src: 'ee-AdminInternal.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/AdminInternal.yaml'
+  - src: 'ee-tlsServerAcme.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerAcme.yaml'
+  - src: 'ee-tlsServerOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
+  - src: 'ee-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/ocspSigner.yaml'
+  - src: 'ee-tlsServerMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerMgmt.yaml'
+  - src: 'ee-userAuthentication.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userAuthentication.yaml'
+  - src: 'ee-userDigitalSignature.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userDigitalSignature.yaml'
+  - src: 'ee-userEncryption.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userEncryption.yaml'
+  - src: 'ee-intuneDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/intuneDevice.yaml'
+  - src: 'ee-tlsServerApprovalOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerApproval{{ organizationNameShort }}.yaml'
+  - src: 'ee-codeSigning.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/codeSigning.yaml'
+  - src: 'ee-domainController.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/domainController.yaml'
+  - src: 'ee-estDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/estDevice.yaml'
+  - src: 'ee-remoteDesktopAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/remoteDesktopAuth.yaml'
+  - src: 'ee-scepDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/scepDevice.yaml'
+  - src: 'ee-signersOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/signers{{ organizationNameShort }}.yaml'
+  - src: 'ee-timeStampingAuthority.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/timeStampingAuthority.yaml'
+  - src: 'ee-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/vpnFirewall.yaml'
+  - src: 'ee-workstations.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/workstations.yaml'
+  - src: 'cp-tlsServerMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerMgmtCA.yaml'
+  - src: 'cp-AdminNoCDPMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/AdminNoCDPMgmtCA.yaml'
+  - src: 'cp-tlsClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuth.yaml'
+  - src: 'cp-tlsServerAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuth.yaml'
+  - src: 'cp-tlsServerClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuth.yaml'
+  - src: 'cp-adminMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/adminMgmtCA.yaml'
+  - src: 'cp-DigitalSignature-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/DigitalSignature-2048.yaml'
+  - src: 'cp-Authentication-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Authentication-2048.yaml'
+  - src: 'cp-Encryption-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Encryption-2048.yaml'
+  - src: 'cp-tlsServerAuthAcme90d.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuthAcme90d.yaml'
+  - src: 'cp-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
+  - src: 'cp-ocspSignerEcc-15d.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSignerEcc-15d.yaml'
+  - src: 'cp-intuneClientAuth-1y.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/intuneClientAuth-1y.yaml'
+  - src: 'cp-tlsServerAuthApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuthApproval.yaml'
+  - src: 'cp-tlsClientAuthApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuthApproval.yaml'
+  - src: 'cp-tlsServerClientAuthApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuthApproval.yaml'
+  - src: 'cp-signerCodeSigning.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signerCodeSigning.yaml'
+  - src: 'cp-signerTimeStampAuthority.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signerTimeStampAuthority.yaml'
+  - src: 'cp-signerPdf-3y.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signerPdf-3y.yaml'
+  - src: 'cp-signer-3y.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signer-3y.yaml'
+  - src: 'cp-domainController.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/domainController.yaml'
+  - src: 'cp-remoteDesktopAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/remoteDesktopAuth.yaml'
+  - src: 'cp-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/vpnFirewall.yaml'
+  - src: 'cp-workstation.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/workstation.yaml'
+  - src: 'est-device.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/est-config/device.yam'
+  - src: 'est-firewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/est-config/firewall.yaml'
+  - src: 'scep-device.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/scep-config/device.yaml'
+  - src: 'scep-firewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/scep-config/firewall.yaml'
+  - src: 'role-userEnrollment.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-userEnrollment.yaml'
+  - src: 'role-ra-est.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-est.yaml'
+  - src: 'role-ra-vault.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-vault.yaml'
+    # Files for External VA
+  - src: 'service-ocspService.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/services/ocspService.yaml'
+    # Files for External RA
+  - src: 'role-ra-peer-connection.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'

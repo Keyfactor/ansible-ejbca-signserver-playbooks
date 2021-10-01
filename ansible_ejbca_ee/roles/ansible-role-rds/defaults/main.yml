@@ -2,8 +2,10 @@
 
 mariadb_packages:
   - python3-PyMySQL
+
 rhel_mariadb_packages:
   - MySQL-python
+  
 mariadb_packages_8:
   - python3-PyMySQL
 

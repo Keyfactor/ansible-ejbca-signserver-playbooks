@@ -146,6 +146,9 @@ ejbca_conf_healtcheck_authorizedips: 127.0.0.1
 # Set the hostname for configuring OAuth Reply URL
 web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
 
+# Set this to true to use P11NG with EJBCA 
+web_use_p11ng: true
+
 # List of OCSP Signers to create on the External VA
 ejbca_va_keybinding:
   - name: ocspSubSigningKey

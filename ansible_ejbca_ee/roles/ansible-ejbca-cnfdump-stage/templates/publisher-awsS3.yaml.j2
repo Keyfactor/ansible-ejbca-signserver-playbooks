@@ -1,0 +1,28 @@
+Object Type: Publisher
+Version: 2
+Name: {{ item.s3_publisher_name }}
+Type: org.ejbca.s3.publisher.AWSS3Publisher
+Settings:
+  # 0=CA CN/SN/O & 1=CA SHA1 Fingerprint
+  s3.crl.file.name.format: '{{ item.s3_crl_file_name_format|default('0') }}'
+  s3.cert.key.prefix: '{{ item.s3_cert_key_prefix|default('') }}'
+  # 0=DER & 1=PEM
+  s3.crl.file.format: '{{ item.s3_crl_file_format|default('1') }}'
+  # Name of the folder to write the certificates to
+  s3.cert.bucket.name: '{{ item.s3_cert_bucket_name|default('') }}'
+  # 0=Serial Number, 1=SHA1 Fingerprint, 2=SHA2 Fingerprint
+  s3.cert.file.name.format: '{{ item.s3_cert_file_name_format|default('0') }}'
+  s3.crl.key.prefix: {{ item.s3_crl_key_prefix|default('') }}''
+  # Store active and revoked Certificates in separate paths
+  s3.cert.store.separate.path: '{{ item.s3_cert_store_separate_path|default('true') }}'
+  # 0=DER & 1=PEM
+  s3.cert.file.format: '{{ item.s3_cert_file_format|default('1') }}'
+  # Name of teh folder to write the CRLs to
+  s3.crl.bucket.name: '{{ item.s3_crl_bucket_name|default('') }}'
+Only Use in Queue: {{ item.s3_only_use_in_queue|default('true') }}
+Keep Published in Queue: {{ item.s3_keep_published_in_queue|default('false') }}
+Use Queue for CRLs: {{ item.s3_use_queue_for_crls|default('true') }}
+Use Queue for Certificates: {{ item.s3_use_queue_for_certs|default('true') }}
+Use Queue for OCSP Responses: {{ item.s3_use_queue_for_ocsp|default('false') }}
+
+Description: '{{ item.s3_description|default('') }}'

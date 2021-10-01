@@ -30,6 +30,20 @@ configdump_import_files: "{{ configdump_files }}"
 # should use this option to add the publisher to the CA.
 add_publshers_to_cas: true
 
+# RDS Database settings:
+rds_admin:
+rds_admin_password:  "{{ encrypted_database_rds_admin_password | default('PrimeKeyPkI4all') }}"
+rds_db_host: awshost.rds.test
+rds_db_port: 3306
+rds_databases:
+  - name: ejbca
+    collation: "utf8_general_ci"
+    encoding: "utf8"
+rds_users:
+  - name: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    priv: 'ejbca.*': 'CREATE,ALTER,SELECT,UPDATE,INSERT,DELETE'
+
 # Maria DB JDBC driver download URL
 ejbca_jdbc_driver: https://dlm.mariadb.com/1785291/Connectors/java/connector-java-2.7.4/mariadb-java-client-2.7.4.jar
 # Maria DB JDBC driver SHA256 hash
@@ -111,6 +125,9 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
 ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# Set this to true to use P11NG with EJBCA 
+web_use_p11ng: true
 
 #Enable/Disable DB integrity protection
 databaseprotection_enablesign_AuditRecordData: true
