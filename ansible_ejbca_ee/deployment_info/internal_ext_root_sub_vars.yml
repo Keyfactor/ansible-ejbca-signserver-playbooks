@@ -112,7 +112,7 @@ appsrv_datasources:
 use_softhsm: true
 use_ncipher: false
 use_safenet_lunasa: false
-# CloudHSM settings
+# Use CloudHSM
 use_cloudhsm: false
 use_liquidsec: false
 # If true, allows running application server service via preload
@@ -120,7 +120,15 @@ ncipher_preload: false
 # Path to the preload executable
 preload_path: /opt/nfast/bin/preload
 # HSM PKCS#11 shared library location
+# SoftHSM
 hsm_shared_library: /usr/lib64/libsofthsm2.so
+# CloudHSM
+#hsm_shared_library: /opt/cloudhsm/lib/libcloudhsm_pkcs11.so
+
+# CloudHSM settings
+cloudhsm_ip: '172.16.2.209'
+hsm_config_files: '{{ playbook_dir }}/hsm_config_files'
+customerCA_cert: customerCA.crt
 
 softhsm_gen_hsm_slots:
   - slot_name: Management_CA_SLOT
@@ -651,7 +659,7 @@ configdump_dir_structure:
   - "{{ ejbca_home }}/dump/va/publishers"  
   - "{{ ejbca_home }}/dump/ra/admin-roles" 
   - "{{ ejbca_home }}/dump/awsS3/publishers"
-  
+
 configdump_files:
   - src: 'cp-managementCA.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
