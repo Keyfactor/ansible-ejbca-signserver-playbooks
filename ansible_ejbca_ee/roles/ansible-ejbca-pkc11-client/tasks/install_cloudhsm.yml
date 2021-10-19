@@ -1,0 +1,169 @@
+---
+
+- name: Check if CloudHSM directory exists
+  stat:
+    path: '{{ cloudhsm_home }}'
+  register: cloudhsm_home_check
+  
+- name: CloudHSM client installation
+  block:
+
+  - name: Download CloudHSM client package
+    get_url:
+      url: '{{ cloudhsm_client_url }}/{{ cloudhsm_client_file }}'
+      dest: '{{ cloudhsm_dest }}/{{ cloudhsm_client_file }}'
+    register: cloudhsm_client_download
+
+  - name: Install CloudHSM client package
+    shell: rpm -i {{ cloudhsm_dest }}/{{ cloudhsm_client_file }}
+
+  - name: Enable CloudHSM client service
+    service:
+      name: cloudhsm-client
+      enabled: yes
+
+  - name: Remove CloudHSM client package
+    file:
+      path: '{{ cloudhsm_dest }}/{{ cloudhsm_client_file }}'
+      state: absent
+
+  when:
+    - not cloudhsm_home_check.stat.exists
+
+# P11NG driver install
+
+- name: Check if PKCS P11NG driver exists
+  stat:
+    path: /opt/cloudhsm/lib/libcloudhsm_pkcs11.so
+  register: p11ng_driver_check
+  when: use_p11ng | bool
+
+- name: P11NG driver install
+  block:
+
+  - name: Download CloudHSM PKCS11 package
+    get_url:
+       url: '{{ cloudhsm_pkcs11_url }}/{{ cloudhsm_pkcs11_file }}'
+       dest: '{{ cloudhsm_dest }}/{{ cloudhsm_pkcs11_file }}'
+    register: cloudhsm_pcks11_download
+
+  - name: Install CloudHSM pkcs11 package
+    command: rpm -i {{ cloudhsm_dest }}/{{ cloudhsm_pkcs11_file }}
+
+  - name: Remove CloudHSM PKCS11 package
+    file:
+      path: '{{ cloudhsm_dest }}/{{ cloudhsm_pkcs11_file }}'
+      state: absent
+  
+  when:
+    - web_use_p11ng is defined
+    - web_use_p11ng | bool
+    - not p11ng_driver_check.stat.exists
+
+- name: Check if PrimeKey CloudHSM directory exists
+  stat:
+    path: /opt/PrimeKey
+  register: organization_home_check
+
+
+- name: Liquidsec library and clientToolBox unzip
+  block:
+
+  - name: Unpack PrimeKey zip
+    unarchive:
+      src: '{{ hsm_config_files }}/PrimeKey.zip'      
+      dest: "/var/tmp"
+      remote_src: true
+      owner: '{{ ejbca_user }}'
+      group: '{{ ejbca_group }}'
+      mode: 0755
+  
+  - name: Move PrimeKey directory
+    command: mv /var/tmp/opt/PrimeKey /opt/
+  
+  when: 
+    - use_liquidsec is defined
+    - use_liquidsec|bool
+    - not organization_home_check.stat.exists
+
+
+- name: Check for HSM cluster certificate
+  stat: 
+    path: '{{ cloudhsm_home}}/etc/{{ customerCA_cert }}'
+  register: customerCA_cert_check
+
+- name: Copy HSM cluster certificate issuer to virtual instance
+  copy:
+    src: '{{ hsm_config_files }}/{{ customerCA_cert }}'
+    dest: '{{ cloudhsm_home }}/etc/'
+    remote_src: no
+    owner: hsmuser
+    group: hsmuser
+  register: customerCA_cert_copy
+  when:
+    - not customerCA_cert_check.stat.exists
+
+- name: Check for Liquidsec directory
+  stat:
+    path: /home/wildfly/.liquidsec
+  register: liquidsec_dir_check
+  when: 
+    - use_liquidsec is defined
+    - use_liquidsec|bool
+
+- name: Configure Liquidesec
+  block:
+  - name: Create Liquidesec directory
+    file:
+      path: /home/wildfly/.liquidsec
+      state: directory
+      owner: '{{ ejbca_user }}'
+      group: '{{ ejbca_group }}'
+
+  - name: Copy public keys
+    copy:
+      src: '{{ item.name }}'
+      dest: /home/wildfly/.liquidsec
+      owner: '{{ ejbca_user }}'
+      group: '{{ ejbca_group }}'
+    loop: '{{ public_certs }}'
+    loop_control:
+      label: "{{ item.name }}"
+    when: public_certs[0] is defined
+    
+  when:
+    - use_liquidsec is defined
+    - use_liquidsec|bool
+    - not liquidsec_dir_check.stat.exists
+
+- name: Stop CloudHSM client
+  service:
+    name: '{{ cloudhsm_service }}'
+    state: stopped
+
+- name: Specify the IP address of the HSM in the cluster
+  command: >
+    {{ cloudhsm_home }}/bin/configure -a {{ cloudhsm_ip }}
+
+- name: Start CloudHSM client
+  service:
+    name: '{{ cloudhsm_service }}'
+    state: started
+
+# - name: Test HSM connection
+#   command: >
+#     /opt/PrimeKey/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test
+#     /opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so 1 -password {{ keystore_pass }}
+#   become: yes
+#   become_user: '{{ signsrv_user }}'
+#   no_log: false
+#   register: hsm_connection_check
+
+# Only used with multiple HSMs in a cluster
+
+- name: Ensure the cloudhsm_mgmt_util configuration file is up to date
+ command: >
+  {{ cloudhsm_home }}/bin/configure -m
+ become: yes
+ register: cloudhsm_mgmt_verify
+ failed_when: cloudhsm_mgmt_verify.rc >= 2

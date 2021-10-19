@@ -15,3 +15,8 @@
   include_tasks: install_safenet_lunasa.yml
   tags: install_safenet_lunasa
   when: use_safenet_lunasa|bool
+
+- name: Install cloudHSM Client
+  include_tasks: install_cloudhsm.yml
+  tags: install_cloudhsm
+  when: use_cloudhsm|bool

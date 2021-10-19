@@ -4,11 +4,11 @@ organizationName: Solitude
 organizationNameShort: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "04Jun2020 Skyrim Super Administrator"
+superAdminCn: "30Aug2021-Skyrim-SA"
 
-management_ca_id: 966011820
-root_ca_1_id: -1905764898
-sub_ca_1_id: -127947408
+#management_ca_id: 966011820
+#root_ca_1_id: -1905764898
+#sub_ca_1_id: -127947408
 
 signsrv_root_dir: /opt
 signsrv_home: "{{ signsrv_root_dir }}/signsrv"
@@ -29,20 +29,22 @@ mariadb_users:
     priv: "signsrv.*:ALL"
     host: "localhost"
 
-signsrv_software_url: http://172.16.170.133:8080/ejbca/signserver-ee-5.6.1.Final-bin.zip
-signsrv_version: "5.6.1"
+signsrv_software_url: http://172.16.170.133:8080/ejbca/signserver-ee-5.7.0.Final-bin.zip
+signsrv_version: "5.7.0"
 signsrv_filename: "signserver-ee-"
-signsrv_src_dir_name: signserver-ee-5.6.1.Final
-signsrv_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
-signsrv_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+signsrv_src_dir_name: signserver-ee-5.7.0.Final
+# Maria DB JDBC driver download URL
+ejbca_jdbc_driver: https://dlm.mariadb.com/1785291/Connectors/java/connector-java-2.7.4/mariadb-java-client-2.7.4.jar
+# Maria DB JDBC driver SHA256 hash
+ejbca_jdbc_driver_checksum: sha256:f06577b19e89b33028b96cd4f031248e761de7ebc712f4ef535e268df76edb2a
 
-wildfly_version: 23.0.0.Final
+wildfly_version: 24.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_use_galleon: true
-wildfly_galleon_version: 4.2.6
-wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
-wildfly_jboss_client_checksum: sha256:6d41c7f3ba33cbcfb1a5a639eccc1d04c494f855f15324e175736c4ac184336d #WF 23
+wildfly_galleon_version: 4.2.8
+wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
+wildfly_jboss_client_checksum: sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
 appsrv_datasources:
   - jndi_name: "java:/SignServerDS"
     pool_name: SignServerDS
@@ -58,7 +60,7 @@ appsrv_datasources:
 
 signsrv_admins:
   - name: "Super Admin"
-    serial: 5DE2BA602DE454AF06AF648A1477BDFDA6F48D9D
+    serial: 0CDE905DDF8D1B36F42CB9AD5C723E01BFAF399D
     issuerdn: "CN=ManagementCA, OU=Certification Authorities, O={{ organizationName }}, C={{ countryName }}"
 
 peering_enable: true

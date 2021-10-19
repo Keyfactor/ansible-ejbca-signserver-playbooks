@@ -2,7 +2,7 @@
 
 - name: Check if {{ item.external_caname }} is already in EJBCA
   command: >
-    {{ ejbca_sh }} ca importcacert listcas
+    {{ ejbca_sh }} ca listcas 
   no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -17,17 +17,27 @@
       uri:
         url: "{{ item.external_root_cachain_url }}"
         validate_certs: no
-        dest: "/var/tmp/{{ item.external_root_cachain_file }}"
-        creates: "/var/tmp/{{ item.external_root_cachain_file }}"
+        dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
+        creates: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       no_log: true
+      when: not item.external_root_cachain_local_repository|bool
 
+    - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
+      copy:
+        src: "{{ item.external_root_cachain_local_file }}"
+        dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+      no_log: true
+      when: item.external_root_cachain_local_repository|bool
+ 
     - name: Import External CA - {{ item.external_caname }}
       command: >
         {{ ejbca_sh }} ca importcacert
         --caname {{ item.external_caname }}
-        -f /var/tmp/{{ item.external_cachain_file }}
+        -f /var/tmp/{{ item.external_root_cachain_file | basename }}
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"
@@ -35,8 +45,5 @@
       failed_when: import_external_ca.rc >= 2
       changed_when: import_external_ca.rc == 0
 
-    - debug:
-        msg: "Initializing CA failed with message: {{ import_external_ca.stdout }}"
-      when: import_external_ca.rc == 1
-
-  when: item.external_caname not in check_list_of_cas.stdout
+  when: 
+    - item.external_caname not in check_list_of_cas.stdout

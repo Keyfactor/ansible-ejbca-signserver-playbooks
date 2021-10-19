@@ -16,8 +16,8 @@ wildfly_version: 23.0.2.Final
 wildfly_major_v: "{{ wildfly_version.partition('.')[0] }}"
 wildfly_checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
 wildfly_use_galleon: true
-wildfly_galleon_version: 4.2.6
-wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
+wildfly_galleon_version: 4.2.8
+wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
 wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
 
 wildfly_jboos_client_download_url: "https://repo1.maven.org/maven2/org/wildfly/wildfly-client-all/{{ wildfly_version }}/wildfly-client-all-{{ wildfly_version }}.jar"

@@ -26,10 +26,6 @@
       changed_when: export_ca_crl_file.rc == 0
       tags: ejbca-cli-cacrl
 
-    - debug:
-        msg: "Exporting CA CRL failed with message: {{ export_ca_crl_file.stdout }}"
-      when: export_ca_crl_file.rc == 1
-
     - name: Copy {{ item.caname }} CRL file to Ansible controller
       become: no
       fetch:

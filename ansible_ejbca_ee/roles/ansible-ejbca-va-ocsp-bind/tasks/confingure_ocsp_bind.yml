@@ -14,7 +14,7 @@
 
 - name: Import certificate file to OCSP key binding
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh keybind import 
+    {{ ejbca_sh }} keybind import 
     --name {{ item.name }} 
     -f {{ identity_batch_output_dir }}/{{ item.name }}.crt
   become: yes
@@ -25,7 +25,7 @@
 
 - name: Activate OCSP key binding
   command: >
-    {{ ejbca_home }}/bin/ejbca.sh keybind setstatus 
+    {{ ejbca_sh }} keybind setstatus 
     --name {{ item.name }} 
     ACTIVE
   become: yes
@@ -34,9 +34,9 @@
   loop: "{{ ejbca_va_keybinding }}"
   no_log: true
 
-# TODO - Figure out why this can't be set via CLI, but works by setting in the UI
+#TODO - Figure out why this can't be set via CLI, but works by setting in the UI
 #- name: Set Next Key Pair Alias 
-#  command: "{{ ejbca_home }}/bin/ejbca.sh keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
+#  command: "{{ ejbca_sh }} keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
 #  no_log: true
 #  become: yes
 #  become_user: "{{ ejbca_user }}"

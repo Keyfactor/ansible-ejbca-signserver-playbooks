@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "17Jul2021-Skyrim-SA"
+superAdminCn: "30Aug2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
@@ -48,9 +48,9 @@ mariadb_users:
     host: "localhost"
 
 # Maria DB JDBC driver download URL
-ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_driver: https://dlm.mariadb.com/1785291/Connectors/java/connector-java-2.7.4/mariadb-java-client-2.7.4.jar
 # Maria DB JDBC driver SHA256 hash
-ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+ejbca_jdbc_driver_checksum: sha256:f06577b19e89b33028b96cd4f031248e761de7ebc712f4ef535e268df76edb2a
 
 # EJBCA version and deployment info
 ejbca_version: 7.7.0
@@ -62,14 +62,14 @@ ejbca_src_dir_name: ejbca_ee_7_7_0
 ejbca_type: CA
 
 # Location to write the CRL files on server
-ejbca_crl_dir_enabled: true
+ejbca_crl_dir_enabled: false
 ejbca_crl_dir:
   - /opt/web/CRLs
   - /opt/web/AIA
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-wildfly_version: 24.0.0.Final
+wildfly_version: 24.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
 wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_use_galleon: true
@@ -77,7 +77,7 @@ wildfly_galleon_version: 4.2.8
 #wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
 wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
 #wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
-wildfly_jboss_client_checksum: sha256:fb633ed945d21de548b266f09b9467295571e429a301eae456713424cbc23464 # WF 24
+wildfly_jboss_client_checksum: sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -128,6 +128,9 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
 ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# Set this to true to use P11NG with EJBCA 
+web_use_p11ng: true
 
 #Enable/Disable DB integrity protection
 databaseprotection_enablesign_AuditRecordData: true
@@ -183,7 +186,7 @@ management_add_administrators:
 ejbca_keybinding:
   - name: peerClient-ocsp
     crypto_token_name: peeringCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -207,7 +210,7 @@ ejbca_keybinding:
     enabled: "{{ use_external_va }}"
   - name: peerClient-ra
     crypto_token_name: peeringCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -227,7 +230,7 @@ ejbca_keybinding:
     enabled: "{{ use_external_ra }}"
   - name: peerClient-sign
     crypto_token_name: peeringCryptoToken
-    tokentype: PKCS11CryptoToken
+    tokentype: Pkcs11NgCryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
@@ -302,8 +305,8 @@ management_add_certification_authorities:
     store_responses_on_demand: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
     #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
     #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
@@ -327,7 +330,7 @@ management_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Management_CA_SLOT"      
@@ -359,8 +362,8 @@ management_add_certification_authorities:
     store_responses_on_demand: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
     #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
     #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
@@ -384,7 +387,7 @@ management_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Root_CA_SLOT"
@@ -438,8 +441,8 @@ sub_add_certification_authorities:
     store_responses_on_demand: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
     #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
     #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
@@ -463,7 +466,7 @@ sub_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Sub_CA_SLOT"
@@ -556,6 +559,48 @@ httpd_trusted_cas:
     fullchain: true
   - caname: "{{ organizationNameShort }}-Sub-CA"
     fullchain: true
+
+# Enable/Disable using the HTTPD CRL mapping to use friendly names in the CRL file that are retreived from 
+# EJBCA CRL cache in the ejbca/publicweb/crls/search.cgi
+use_httpd_crl_map: true
+
+# The type of hash for the CA DN or the subjectKeyIdentifier, can be one of iHash or sKIDHash
+httpd_crl_hash_type: iHash
+
+# List of CRL files without the .crl extension and the iHash value for the CA DN used for friendly names
+# in the CRL URL and HTTPD maps the name to the hash value to retrieve the CRL from EJBCA crl cache
+# crl_name: file name without the .crl extension, e.g.: managementca
+# hash: The CA DN hashed to create the iHash value, e.g.:
+# CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an iHash of QEmnargCJtoJPXtVylHO1T85MF8
+# If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
+httpd_crl_mapping_names:
+  - crl_name: "{{ organizationName | lower }}-mgmtca"
+    hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
+  - crl_name: "{{ organizationNameShort | lower }}-rootca-g1"
+    hash: K8WY8UadARfiek83i40zzB02Udw
+  - crl_name: "{{ organizationNameShort | lower }}-subca-g1"
+    hash: 1vnFSu3sYhgsdaB655sZr/2j21s
+
+# Enable/Disable using the HTTPD CA Cert mapping to use friendly names in the AIA URL to get the CA cert retreived from 
+# EJBCA Certificates cache in the ejbca/publicweb/certificates/search.cgi
+use_httpd_aia_map: true
+
+# The type of hash for the CA Subject DN or the subjectKeyIdentifier, can be one of sHash or sKIDHash
+httpd_aia_hash_type: sHash
+
+# List of CA cert files without the .crt extension and the sHash value for the CA Subject DN used for friendly names
+# in the AIA URL and HTTPD maps the name to the hash value to retrieve the CA Cert from EJBCA certificate cache
+# aia_name: file name without the .crt extension, e.g.: managementca
+# hash: The CA Subject DN hashed to create the sHash value or use the Subject Key ID hash, e.g.:
+# CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an sHash of QEmnargCJtoJPXtVylHO1T85MF8
+# If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
+httpd_crl_mapping_names:
+  - aia_name: "{{ organizationName | lower }}-mgmtca"
+    hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
+  - aia_name: "{{ organizationNameShort | lower }}-rootca-g1"
+    hash: K8WY8UadARfiek83i40zzB02Udw
+  - aia_name: "{{ organizationNameShort | lower }}-subca-g1"
+    hash: 1vnFSu3sYhgsdaB655sZr/2j21s
 
 # List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
 # This variable is also used for exporting CRL's from EJBCA CA node to import into external RA/VA's

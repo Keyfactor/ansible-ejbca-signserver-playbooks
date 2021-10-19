@@ -1,3 +1,5 @@
+{{ ansible_managed | comment }}
+
 #Listen 80
 <VirtualHost *:80>
     # Create a load balancer setup for EJBCA
@@ -11,9 +13,7 @@
     RewriteEngine On
     RewriteCond %{REQUEST_METHOD} !^(HEAD|GET|POST)$ [NC]
     RewriteRule .* - [F,L]
-    # Redirect legacy EJBCA enrollment to HTTPS
-    #RewriteCond %{HTTPS} !=on
-    #RewriteRule ^/?ejbca/enrol/(.*) https://%{SERVER_NAME}/ejbca/enrol/$1 [R,L]
+
     # Allow encoded slashes for OCSP GET
     AllowEncodedSlashes On
     ProxyPass /signserver/      balancer://SignSrvCluster/signserver/

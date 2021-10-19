@@ -1,0 +1,31 @@
+---
+
+# Databse check is not necessary as 'OK' result is returned if database already exists when attempted creation.
+- name: Create database if not already created
+  mysql_db:
+    login_host: '{{ rds_db_host }}'
+    login_user: '{{ rds_admin }}'
+    login_password: '{{ rds_admin_password }}'
+    login_port: '{{ rds_db_port }}'
+    name: '{{ item.name }}'
+    state: present
+  register: database_created
+  loop: "{{ rds_databases }}"
+  no_log: true
+
+- name: Create database user with defined permission set
+  mysql_user:
+    login_host: '{{ rds_db_host }}'
+    login_user: '{{ rds_admin }}'
+    login_password: '{{ rds_admin_password }}'
+    login_port: '{{ rds_db_port }}'
+    name: '{{ item.name }}'
+    password: '{{ item.password }}'
+    host: '{{ ansible_default_ipv4.address }}'
+# Privileges based on PrimeKey documentation minimal rqeuirements at https://doc.primekey.com/ejbca/ejbca-installation/ejbca-security
+# MariaDB engine >=10.4 master admin is denied GRANT ALL PRIVILIGES on databases
+    priv: 
+      "{{ item.priv }}"
+    state: present
+  loop: "{{ rds_users }}"
+  no_log: true

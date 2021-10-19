@@ -6,13 +6,16 @@
     state: present
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+#TODO
+# Add install for Oracle EPEL repo
 
 - name: Install OpenJDK Development, unzip CentOS/RHEL 8
   package:
     name: "{{ ejbca_packages_8 }}"
     state: present
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Install OpenJDK Development, unzip, & Ant CentOS/RHEL 7
   package:

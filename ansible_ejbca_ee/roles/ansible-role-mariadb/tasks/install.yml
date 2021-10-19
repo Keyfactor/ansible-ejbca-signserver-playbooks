@@ -11,7 +11,8 @@
   tags: mariadb
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
         (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Ensure "module_hotfixes=1 is in section "[MariaDB]" in specified file
   ini_file:
@@ -22,7 +23,8 @@
     backup: yes
   tags: mariadb
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Install packages CentOS 7
   package:
@@ -47,4 +49,5 @@
   loop: "{{ mariadb_packages_8 }}"
   tags: mariadb
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")

@@ -30,10 +30,24 @@ configdump_import_files: "{{ configdump_files }}"
 # should use this option to add the publisher to the CA.
 add_publshers_to_cas: true
 
+# RDS Database settings:
+rds_admin:
+rds_admin_password:  "{{ encrypted_database_rds_admin_password | default('PrimeKeyPkI4all') }}"
+rds_db_host: awshost.rds.test
+rds_db_port: 3306
+rds_databases:
+  - name: ejbca
+    collation: "utf8_general_ci"
+    encoding: "utf8"
+rds_users:
+  - name: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    priv: "ejbca.*:CREATE,ALTER,SELECT,UPDATE,INSERT,DELETE"
+
 # Maria DB JDBC driver download URL
-ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_driver: https://dlm.mariadb.com/1785291/Connectors/java/connector-java-2.7.4/mariadb-java-client-2.7.4.jar
 # Maria DB JDBC driver SHA256 hash
-ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+ejbca_jdbc_driver_checksum: sha256:f06577b19e89b33028b96cd4f031248e761de7ebc712f4ef535e268df76edb2a
 
 # EJBCA version and deployment info
 ejbca_version: 7.7.0
@@ -52,7 +66,7 @@ ejbca_crl_dir:
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-wildfly_version: 24.0.0.Final
+wildfly_version: 24.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
 wildfly_standalone_file: standalone-24.xml.datasource.j2
 wildfly_use_galleon: true
@@ -60,7 +74,7 @@ wildfly_galleon_version: 4.2.8
 #wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
 wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
 #wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
-wildfly_jboss_client_checksum: sha256:fb633ed945d21de548b266f09b9467295571e429a301eae456713424cbc23464 # WF 24
+wildfly_jboss_client_checksum: sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -111,6 +125,9 @@ ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | def
 # IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
 # "ANY" can be specified to allow any remote IP.
 ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# Set this to true to use P11NG with EJBCA 
+web_use_p11ng: true
 
 #Enable/Disable DB integrity protection
 databaseprotection_enablesign_AuditRecordData: true

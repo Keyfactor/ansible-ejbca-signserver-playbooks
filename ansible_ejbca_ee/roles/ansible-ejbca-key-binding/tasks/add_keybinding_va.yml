@@ -35,7 +35,10 @@
   become_user: "{{ ejbca_user }}"
   register: keybinding_create
   loop: "{{ key_bindings |subelements('crypto_token') }}"
+  loop_control:
+    label: "{{ item.0.name }}"
   when: item.0.name not in keybinding_exists.stdout
+  failed_when: keybinding_create.rc >= 2
 
 - name: Create CSR for OCSP key binding 
   command: >
@@ -47,7 +50,10 @@
   become_user: "{{ ejbca_user }}"
   register: keybinding_create_csr
   loop: "{{ key_bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: item.name not in keybinding_exists.stdout
+  failed_when: keybinding_create_csr.rc >= 2
 
 - name: Copy certificate to localhost
   become: no

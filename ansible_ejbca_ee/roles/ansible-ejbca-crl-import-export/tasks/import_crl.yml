@@ -31,9 +31,5 @@
       failed_when: import_ca_crl_file.rc >= 2
       changed_when: import_ca_crl_file.rc == 0
 
-    - debug:
-        msg: "Importing CA CRL failed with message: {{ import_ca_crl_file.stdout }}"
-      when: import_ca_crl_file.rc == 1
-
   when: item.caname in check_list_of_cas_for_crl.stdout
 

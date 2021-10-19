@@ -29,6 +29,7 @@
   become_user: "{{ ejbca_user }}"
   register: keybinding_list
   changed_when: false
+  failed_when: keybinding_list.rc >= 2
 
 #- name: Debug keybinding_list
 #  debug:
@@ -83,7 +84,7 @@
   #changed_when: keybinding_create_csr.rc == 0
   when: 
     - item.name not in keybinding_list.stdout
-    - item.enabled|bool 
+    - item.enabled|bool
 
 - name: Create end entity 
   command: >
@@ -174,7 +175,7 @@
     - item.name not in keybinding_list.stdout
     - item.enabled|bool 
 
-# TODO - Figure out why this can't be set via CLI, but works by setting in the UI
+#TODO - Figure out why this can't be set via CLI, but works by setting in the UI
 #- name: Set Next Key Pair Alias 
 #  command: "{{ ejbca_sh }} keybind modify --name {{ item.0.name }} --nextkeypair {{ item.0.key_label }}"
 #  no_log: true

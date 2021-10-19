@@ -6,13 +6,19 @@
     chdir: "{{ ejbca_home }}"
   become_method: sudo
   become_user: "{{ ejbca_user }}"
-  changed_when: False
-  failed_when: "'FAILED' in endentity_exists.stderr"
+  changed_when: false
+  failed_when: false
   register: endentity_exists
   tags: certreq-cli-batch
 
 #- debug:
 #    var: endentity_exists
+
+- debug:
+    msg: "Failed to query username: {{ endentity_exists.stdout }}"
+  when: 
+    - "'FAILED' in endentity_exists.stderr"
+  failed_when: true
 
 - block:
   - name: Add {{ item.username }} Entity to CA
@@ -37,10 +43,6 @@
     failed_when: ra_addIdent_result.rc >= 2
     changed_when: ra_addIdent_result.rc == 0
 
-  - debug:
-      msg: "Adding end entity failed with message: {{ ra_addIdent_result.stdout }}"
-    when: ra_addIdent_result.rc == 1
-
   - name: Set password for {{ item.username }}
     command: >
       {{ ejbca_sh }} ra setclearpwd 
@@ -56,10 +58,6 @@
     failed_when: ra_setpwd_result.rc >= 2
     changed_when: ra_setpwd_result.rc == 0
 
-  - debug:
-      msg: "Adding end entity password failed with message: {{ ra_setpwd_result.stdout }}"
-    when: ra_setpwd_result.rc == 1
-
   - name: Create certs for {{ item.username }}
     command: >
       {{ ejbca_sh }} batch 
@@ -74,10 +72,6 @@
     no_log: true
     failed_when: ra_batch_result.rc >= 2
     changed_when: ra_batch_result.rc == 0
-
-  - debug:
-      msg: "Adding end entity password failed with message: {{ ra_batch_result.stdout }}"
-    when: ra_batch_result.rc == 1
 
   - name: Determine {{ item.username }} certificate serial number
     command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"

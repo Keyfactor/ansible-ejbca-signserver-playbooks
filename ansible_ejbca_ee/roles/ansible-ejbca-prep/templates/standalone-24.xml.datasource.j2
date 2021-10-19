@@ -141,7 +141,16 @@
                 <level name="WARN"/>
             </logger>
             <logger category="org.jboss.security">
+                <!-- Set to DEBUG for Kerberos/MSAE troubleshooting -->
                 <level name="INFO"/>
+            </logger>
+            <logger category="com.sun.security">
+                <!-- Set to DEBUG for Kerberos/MSAE troubleshooting -->
+                <level name="ERROR"/>
+            </logger>
+            <logger category="net.sourceforge">
+                <!-- Set to DEBUG for Kerberos/MSAE troubleshooting -->
+                <level name="ERROR"/>
             </logger>
             <logger category="org.xnio">
                 <level name="WARN"/>

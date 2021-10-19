@@ -1,7 +1,7 @@
 ---
 
-- name: Check if {{ item.name }} end entity exists
-  command: "{{ ejbca_sh }} ra findendentity {{ item.name }}"
+- name: Check if {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} end entity exists
+  command: "{{ ejbca_sh }} ra findendentity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}"
   args:
     chdir: "{{ ejbca_home }}"
   become_method: sudo
@@ -12,10 +12,11 @@
   tags: certreq-cli-batch
 
 - block:
+
     - name: Copy CSR file from Controller
       copy:
-        src: "{{ ejbca_csr_dir_output }}/{{ item.name }}.csr"
-        dest: "{{ identity_batch_output_dir }}/{{ item.name }}.csr"
+        src: "{{ ejbca_csr_dir_output }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}"
+        dest: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
       register: file_copy
@@ -26,12 +27,12 @@
         entity_pass: "{{ pass_15 }}"
       no_log: true
 
-    - name: Add end entity
+    - name: Add end entity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}
       command: >
-        "{{ ejbca_home }}/bin/ejbca.sh" ra addendentity
-        --username "{{ item.name }}"
+        {{ ejbca_sh }} ra addendentity
+        --username "{% if item.name is not defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}"
         --dn "{{ item.dn }}"
-        --caname "{{ item.caname }}"
+        --caname "{% if item.external_caname is defined %}{{ item.external_caname }}{% else %}{{ item.caname }}{% endif %}"
         --type 1
         --token {{ item.token }}
         --password {{ entity_pass }}
@@ -49,13 +50,13 @@
         msg: "Adding end entity failed with message: {{ adding_csr_end_entity.stdout }}"
       when: adding_csr_end_entity.rc == 1
 
-    - name: Sign CSR for {{ item.name }} 
+    - name: Sign CSR for {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} 
       command: >
-        {{ ejbca_home }}/bin/ejbca.sh createcert 
-        --username {{ item.name }}  
+        {{ ejbca_sh }} createcert 
+        --username {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} 
         --password {{ entity_pass }} 
-        -c {{ identity_batch_output_dir }}/{{ item.name }}.csr 
-        -f /var/tmp/{{ item.name }}.crt
+        -c {{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}  
+        -f /var/tmp/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}
       no_log: true
       become: yes
       become_user: "{{ ejbca_user }}"
@@ -67,20 +68,20 @@
     - name: Copy certificate files to localhost
       become: no
       fetch:
-        src: "{{ identity_batch_output_dir }}/{{ item.name }}.crt"
-        dest: "{{ ejbca_csr_dir_output }}/{{ item.name }}.crt"
+        src: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}"
+        dest: "{{ ejbca_csr_dir_output }}/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}"
         flat: yes
       tags: certreq-cli-csr
 
     - name: Cleanup the cert file in /var/tmp
       file:
-        path: "{{ identity_batch_output_dir }}/{{ item.name }}.crt"
+        path: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}"
         state: absent
       tags: certreq-cli-csr
 
     - name: Cleanup the csr file in /var/tmp
       file:
-        path: "{{ identity_batch_output_dir }}/{{ item.name }}.csr"
+        path: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}"
         state: absent
       tags: certreq-cli-csr
 

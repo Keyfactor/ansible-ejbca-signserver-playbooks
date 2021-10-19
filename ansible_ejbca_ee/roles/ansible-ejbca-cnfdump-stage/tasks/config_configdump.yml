@@ -14,7 +14,7 @@
   become_method: sudo
   when: not cfgdump_exists.stat.exists
 
-- name: Create confifdump file structure for all the imports
+- name: Create configdump file structure for all the imports
   file:
     path: "{{ item }}"
     state: directory

@@ -40,8 +40,4 @@
       failed_when: import_external_ca.rc >= 2
       changed_when: import_external_ca.rc == 0
 
-    - debug:
-        msg: "Initializing CA failed with message: {{ import_external_ca.stdout }}"
-      when: import_external_ca.rc == 1
-
   when: item.caname not in check_list_of_cas.stdout
