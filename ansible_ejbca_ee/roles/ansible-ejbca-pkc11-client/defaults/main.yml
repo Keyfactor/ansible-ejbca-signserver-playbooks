@@ -13,6 +13,9 @@ softhsm_gen_hsm_slots:
   - slot_name: Root_CA_SLOT
     slot_so_pin: "{{ encrypted_rootca_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_rootca_token_pin | default('foo123') }}"
+  - slot_name: Root2_CA_SLOT
+    slot_so_pin: "{{ encrypted_rootca2_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_rootca2_token_pin | default('foo123') }}"
   - slot_name: Sub_CA_SLOT
     slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
     slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"

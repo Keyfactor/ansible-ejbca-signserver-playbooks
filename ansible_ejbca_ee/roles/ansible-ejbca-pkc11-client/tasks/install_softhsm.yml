@@ -38,6 +38,12 @@
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
+- name: Install SoftHSM Amazon Linux 2
+  yum:
+    name: softhsm
+    state: present
+  when: (ansible_facts['distribution'] == "Amazon" and ansible_facts['distribution_major_version'] == "2") 
+
 - name: Set permissions on softhsm lib directory
   file:
     path: /var/lib/softhsm
