@@ -17,7 +17,7 @@ ejbca_version: 7.8.0.1
 # keytype: RSA, DSA or ECDSA
 # keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
 # signalg: Signature algorithm
-# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
 # tokenpass: Password for the CA token
 # pkcs11_token: Dict of parameters needed for PKCS11 token
 # slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
@@ -40,13 +40,10 @@ root_add_certification_authorities:
     store_responses_on_demand: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA01+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/crls/search.cgi?iHash=NU2oQ%2BPpIC/8L%2BaJR7Xc64IY/3M"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
-    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA01+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+C01+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=NU2oQ%2BPpIC/8L%2BaJR7Xc64IY/3M"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=NU2oQ%2BPpIC/8L%2BaJR7Xc64IY/3M"
     crlPeriod: 15552000000
     crlPeriod_yml: 6mo
     crlIssueInterval: 0
@@ -95,13 +92,10 @@ root_add_certification_authorities:
     store_responses_on_demand: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA02+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/crls/search.cgi?iHash=NGL9UTxz1Dmeaq9TwXR1V2v//5g"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
-    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA02+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA02+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=NGL9UTxz1Dmeaq9TwXR1V2v//5g"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=NGL9UTxz1Dmeaq9TwXR1V2v//5g"
     crlPeriod: 15552000000
     crlPeriod_yml: 6mo
     crlIssueInterval: 0
@@ -149,7 +143,7 @@ root_add_certification_authorities:
 # keytype: RSA, DSA or ECDSA
 # keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
 # signalg: Signature algorithm
-# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
 # tokenpass: Password for the CA token
 # pkcs11_token: Dict of parameters needed for PKCS11 token
 # slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
@@ -158,7 +152,7 @@ root_add_certification_authorities:
 # defaultkey_label: Default (encryption) key label
 # testkey_label: Test key label
 sub_add_certification_authorities:
-  - caname: "DevSecOps-Sub-CA01-G1"
+  - caname: "DevSecOps-Sub-CA"
     certprofile: "SubCA-{{ organizationNameShort }}-G1"
     dn: "CN={{ organizationName }} Issuing CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "CN={{ organizationName }} Root CA01 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
@@ -173,13 +167,10 @@ sub_add_certification_authorities:
     store_responses_on_demand: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/crls/search.cgi?iHash=QeeUxWpa7/fyAkdCn5ySG0GenvU"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
-    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=QeeUxWpa7/fyAkdCn5ySG0GenvU"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=QeeUxWpa7/fyAkdCn5ySG0GenvU"
     crlPeriod: 259200000
     crlPeriod_yml: 3d
     crlIssueInterval: 86400000
@@ -230,13 +221,10 @@ sub_add_certification_authorities:
     store_responses_on_demand: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
-    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
-    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/crls/search.cgi?iHash=yNjdmMD3KUb6BQ/SWr6tU3e3IuE"
     defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
-    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
-    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
-    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
-    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=yNjdmMD3KUb6BQ/SWr6tU3e3IuE"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/certificates/search.cgi?iHash=yNjdmMD3KUb6BQ/SWr6tU3e3IuE"
     crlPeriod: 259200000
     crlPeriod_yml: 3d
     crlIssueInterval: 86400000
@@ -322,6 +310,8 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerMgmt.yaml'
   - src: 'ee-userAuthentication.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userAuthentication.yaml'
+  - src: 'ee-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/vpnFirewall.yaml'
   - src: 'cp-tlsServerMgmtCA.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerMgmtCA.yaml'
   - src: 'cp-AdminNoCDPMgmtCA.yaml.j2'
@@ -342,3 +332,27 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
   - src: 'cp-ocspSignerEcc-15d.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSignerEcc-15d.yaml'
+  - src: 'cp-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/vpnFirewall.yaml'
+  - src: 'est-firewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/est-config/firewall.yaml'
+
+# Enrollment protocols to disable on EJBCA
+disable_ejbca_protocols:
+  - name: SCEP
+  - name: 'REST Crypto Token Management'
+  #- name: 'RA Web'
+
+# Enrollment protocols to enable on EJBCA
+enable_ejbca_protocols:
+  - name: Certstore
+  - name: CMP
+  - name: CRLstore
+  - name: 'Public Web'
+  - name: 'REST CA Management'
+  - name: 'REST Certificate Management'
+  - name: Webdist
+  - name: 'Web Service'
+  - name: ACME
+  - name: EST
+  - name: OCSP  

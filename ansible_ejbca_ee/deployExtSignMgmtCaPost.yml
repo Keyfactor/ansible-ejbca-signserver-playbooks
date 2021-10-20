@@ -15,5 +15,6 @@
     # are sourced from the include_vars above.
     add_certification_authorities: "{{ mgmt_add_certification_authorities }}"
   roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-3
     - ansible-ejbca-deploy-pki-ext-signed-sub-2
     - ansible-ejbca-httpd

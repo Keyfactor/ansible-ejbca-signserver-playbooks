@@ -7,7 +7,7 @@
     - name: Generate Keys for Key Bindings
       include_role:
         name: ansible-ejbca-ctb-keygen
-      loop: "{{ ejbca_keybinding |subelements('crypto_token') }}"
+      loop: "{{ ejbca_keybinding |subelements('crypto_token') if ejbca_keybinding is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
@@ -19,20 +19,28 @@
   when:
     - ejbca_keybinding[0] is defined
 
-- name: Create Key Binding for Peering
-  include_role:
-    name: ansible-ejbca-key-binding
-  vars:
-    key_bindings: "{{ ejbca_keybinding }}"
-    auth_key_bind: true
-  when: 
-    - use_external_va|bool or use_external_ra|bool or use_external_ss|bool  
+- name: Configure Key Bind and Peering
+  block:
 
-- name: Create Peer Connector
-  include_role:
-    name: ansible-ejbca-peer-connector
-  when: 
-    - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+    - name: Create Key Binding for Peering
+      include_role:
+        name: ansible-ejbca-key-binding
+      vars:
+        key_bindings: "{{ ejbca_keybinding }}"
+        auth_key_bind: true
+      when: 
+        - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+
+    - name: Create Peer Connector
+      include_role:
+        name: ansible-ejbca-peer-connector
+      when: 
+        - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+        
+  when:
+    - (use_external_va is defined) or 
+      (use_external_ra is defined) or 
+      (use_external_ss is defined)
 
 - name: Prepare configdump template files
   include_role: 
@@ -116,4 +124,5 @@
   become: yes 
   become_user: "{{ ejbca_user }}"
   when: 
+    - use_external_ra is defined
     - use_external_ra|bool

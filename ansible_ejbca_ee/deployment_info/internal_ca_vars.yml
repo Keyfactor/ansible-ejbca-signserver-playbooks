@@ -282,7 +282,7 @@ ejbca_peerConnector:
 # keytype: RSA, DSA or ECDSA
 # keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
 # signalg: Signature algorithm
-# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
 # tokenpass: Password for the CA token
 # pkcs11_token: Dict of parameters needed for PKCS11 token
 # slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
@@ -417,7 +417,7 @@ management_add_certification_authorities:
 # keytype: RSA, DSA or ECDSA
 # keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
 # signalg: Signature algorithm
-# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
 # tokenpass: Password for the CA token
 # pkcs11_token: Dict of parameters needed for PKCS11 token
 # slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
