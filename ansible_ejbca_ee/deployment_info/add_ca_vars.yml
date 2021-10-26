@@ -66,6 +66,7 @@ root_add_certification_authorities:
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     slot_identifier_type: ""
     slot_identifier_value: ""
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 4096
@@ -118,6 +119,7 @@ root_add_certification_authorities:
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     slot_identifier_type: ""
     slot_identifier_value: ""
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: secp384r1
@@ -193,6 +195,7 @@ sub_add_certification_authorities:
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: ""
     slot_identifier_value: ""
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -247,6 +250,7 @@ sub_add_certification_authorities:
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: ""
     slot_identifier_value: ""
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: secp384r1
@@ -282,6 +286,7 @@ configdump_dir_structure:
   - "{{ ejbca_home }}/dump/dump3/certification-authorities"  
   - "{{ ejbca_home }}/dump/dump3/end-entity-profiles"
   - "{{ ejbca_home }}/dump/dump3/services"
+  - "{{ ejbca_home }}/dump/dump3/est-config"
 
 configdump_files:
   - src: 'cp-RootCA-G1.yaml.j2'

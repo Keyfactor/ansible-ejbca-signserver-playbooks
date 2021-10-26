@@ -206,6 +206,7 @@ ejbca_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingOcsp0001"
         key_size: 3072
@@ -230,6 +231,7 @@ ejbca_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingRa0001"
         key_size: 3072
@@ -347,6 +349,7 @@ mgmt_add_certification_authorities:
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Management_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -414,6 +417,7 @@ policy_add_certification_authorities:
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "POLICY1_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 4096
@@ -482,6 +486,7 @@ sub_add_certification_authorities:
     tokenpass: "{{ encrypted_subca1_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Sub_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -549,6 +554,7 @@ sub_add_certification_authorities:
     tokenpass: "{{ encrypted_subca2_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Sub2_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072

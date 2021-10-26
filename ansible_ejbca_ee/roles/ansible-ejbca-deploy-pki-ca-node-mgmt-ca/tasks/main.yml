@@ -143,6 +143,9 @@
       - caname: "ManagementCA"
         superadmincn: "{{ superAdminCn }}"
         fullchain: false
+  loop: "{{ ejbca_ca_import }}"
+  loop_control:
+    label: "{{ item.caname }}"
 
 - name: Check if local directory {{ ejbca_csr_dir_output }} exists
   stat:

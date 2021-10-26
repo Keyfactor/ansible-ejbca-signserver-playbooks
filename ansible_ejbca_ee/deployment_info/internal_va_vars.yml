@@ -158,6 +158,7 @@ ejbca_va_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: OCSP_KeyBinding_SLOT
+    force_used_slots: true
     crypto_token:
       - key_label: ocspSubSigningKey0001
         key_size: "3072"
@@ -176,6 +177,7 @@ ejbca_va_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: OCSP_KeyBinding_SLOT
+    force_used_slots: true
     crypto_token:
       - key_label: ocspRootSigningKey0001
         key_size: "4096"
@@ -194,6 +196,7 @@ ejbca_va_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: OCSP_KeyBinding_SLOT
+    force_used_slots: true
     crypto_token:
       - key_label: ocspMgmtSigningKey0001
         key_size: "3072"
