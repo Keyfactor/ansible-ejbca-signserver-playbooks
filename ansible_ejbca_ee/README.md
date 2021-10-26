@@ -41,7 +41,7 @@ Installs and configures EJBCA with a Root CA, imports the ManagementCA, adds Sup
 ---
 Creates a sub CA in EJBCA issuing CA node, downloads the CSR to the Ansible controller.
 
-## deployExtRootCaForSubPart4.yml
+### deployExtRootCaForSubPart4.yml
 ---
 Uploads a sub CA CSR from the Ansible controller to the EJBCA Root CA node to sign, then downloads the signed certificate to the Ansible controller.
 
