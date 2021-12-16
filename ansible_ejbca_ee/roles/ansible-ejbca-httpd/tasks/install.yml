@@ -7,5 +7,7 @@
   with_items: "{{ httpd_packages }}"
   when: (ansible_facts['distribution'] == "CentOS" ) or
         (ansible_facts['distribution'] == "RedHat" ) or
-        (ansible_facts['distribution'] == "OracleLinux" )
+        (ansible_facts['distribution'] == "OracleLinux" ) or
+        (ansible_facts['distribution'] == "Rocky" ) or
+        (ansible_facts['distribution'] == "AlmaLinux" )
   tags: reverse-proxy

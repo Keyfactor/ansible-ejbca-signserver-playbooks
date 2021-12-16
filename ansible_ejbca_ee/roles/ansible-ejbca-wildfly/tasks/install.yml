@@ -81,7 +81,15 @@
     - wildfly_use_galleon|bool
 
 - name: Install wildfly {{ wildfly_version }} using Galleon {{ wildfly_galleon_version }}
-  command: "{{ wildfly_galleon_bin }}/bin/galleon.sh install wildfly:current#{{ wildfly_version }} --dir={{ wildfly_dir }} --default-configs=standalone/standalone.xml --layers=cdi,core-tools,datasources,deployment-scanner,ee,-jsonb,ejb,io,jaxrs,jpa,jsf,logging,mail,management,webservices,legacy-security"
+  command: >
+    {{ wildfly_galleon_bin }}/bin/galleon.sh install wildfly:current#{{ wildfly_version }} 
+    --dir={{ wildfly_dir }} 
+    --default-configs=standalone/standalone.xml
+    {% if wildfly_version.split('.')[0]|int >= 25 %} 
+    --layers=cloud-server,deployment-scanner,ejb,io,jsf,mail,webservices,-open-tracing,-jsonb
+    {% elif wildfly_version.split('.')[0]|int <= 24 %} 
+    --layers=cdi,core-tools,datasources,deployment-scanner,ee,-jsonb,ejb,io,jaxrs,jpa,jsf,logging,mail,management,webservices,legacy-security
+    {% endif %}
   when: 
     - not wildfly_src_dir.stat.exists
     - wildfly_use_galleon|bool

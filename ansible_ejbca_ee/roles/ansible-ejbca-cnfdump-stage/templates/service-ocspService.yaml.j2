@@ -12,11 +12,13 @@ Worker Properties:
   Admin E-mail Subject: ''
   Admin E-mail Message: ''
   Publishers to Check:
+{% if  ejbca_peerConnector is defined %}
 {% for item in ejbca_peerConnector %}
 {% if 'ocsp' == item.type %}
   - validationAuthorityPeerPub-{{ item.name }}
 {% endif %}
 {% endfor %}
+{% endif %}
 Interval Type: Periodical Interval
 Interval Properties:
   Periodical Value: 5

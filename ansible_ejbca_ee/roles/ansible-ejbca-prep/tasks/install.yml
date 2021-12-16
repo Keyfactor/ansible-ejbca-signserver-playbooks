@@ -1,6 +1,6 @@
 ---
 
-- name: Install EPEL
+- name: Install EPEL on CentOS/RedHat 7/8
   package:
     name: epel-release
     state: present
@@ -9,15 +9,17 @@
 #TODO
 # Add install for Oracle EPEL repo
 
-- name: Install OpenJDK Development, unzip CentOS/RHEL 8
+- name: Install OpenJDK Development, unzip on Alma/CentOS/Oracle/RedHat/Rocky 8
   package:
     name: "{{ ejbca_packages_8 }}"
     state: present
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
+        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
-- name: Install OpenJDK Development, unzip, & Ant CentOS/RHEL 7
+- name: Install OpenJDK Development, unzip, & Ant on CentOS/RedHat 7
   package:
     name: "{{ ejbca_packages_7 }}"
     state: present
@@ -47,7 +49,7 @@
       when: 
         - use_local_repository|bool
 
-    - name: Download ant with check (sha256)
+    - name: Download ant and check (sha256)
       get_url:
         url: "{{ ant_url }}"
         dest: "{{ ejbca_root_dir }}"

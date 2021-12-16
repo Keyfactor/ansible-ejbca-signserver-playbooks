@@ -9,7 +9,7 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
   no_log: true
-  when: not external_signed_ca_cert_file_local_repository|bool 
+  when: not item.external_signed_ca_cert_file_local_repository|bool 
 
 - name: Upload external signed CA certificate file from Ansible controller for creating {{ item.caname }}
   copy:
@@ -18,7 +18,7 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
   no_log: true
-  when: external_signed_ca_cert_file_local_repository|bool
+  when: item.external_signed_ca_cert_file_local_repository|bool
 
 - name: Import External CA - {{ item.caname }}
   command: >
@@ -29,5 +29,11 @@
   become: yes
   become_user: "{{ ejbca_user }}"
   register: import_external_ca
+  # TODO Look into if the rc should be 1 instead of 2.
   failed_when: import_external_ca.rc >= 2
   changed_when: import_external_ca.rc == 0
+# Note: The cert file should only contain the certificate and not the chain
+
+#- name: Debug import_external_ca
+#  debug:
+#    var: import_external_ca

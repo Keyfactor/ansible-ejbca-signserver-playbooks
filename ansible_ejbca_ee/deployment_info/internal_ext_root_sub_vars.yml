@@ -407,6 +407,8 @@ sub_add_certification_authorities:
     dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     root_ca_name: "{{ organizationNameShort }}-Root-CA"
+    external_signed_ca_cert_file_local_repository: false
+    external_signed_ca_cert_file: "SubCA-{{ organizationNameShort }}-G1.crt"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -585,7 +587,7 @@ httpd_aia_hash_type: sHash
 # hash: The CA Subject DN hashed to create the sHash value or use the Subject Key ID hash, e.g.:
 # CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an sHash of QEmnargCJtoJPXtVylHO1T85MF8
 # If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
-httpd_crl_mapping_names:
+httpd_aia_mapping_names:
   - aia_name: "{{ organizationName | lower }}-mgmtca"
     hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
   - aia_name: "{{ organizationNameShort | lower }}-rootca-g1"
