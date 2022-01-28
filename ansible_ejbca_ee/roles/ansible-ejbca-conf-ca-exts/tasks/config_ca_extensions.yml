@@ -91,7 +91,7 @@
   become_user: "{{ ejbca_user }}"
   become: yes
   register: useLdapDnOrder_check
-  changed_when: useLdapDnOrder_check.stdout.split("'")[1]|bool == item.useLdapDnOrder
+  changed_when: useLdapDnOrder_check.stdout.split("'")[1]|bool != item.useLdapDnOrder
   when:
     - item.useLdapDnOrder is defined
   no_log: true
@@ -103,7 +103,7 @@
   become_user: "{{ ejbca_user }}"
   become: yes
   register: doEnforceUniqueDistinguishedName_check
-  changed_when: doEnforceUniqueDistinguishedName_check.stdout.split("'")[1]|bool == item.enforce_unique_dn
+  changed_when: doEnforceUniqueDistinguishedName_check.stdout.split("'")[1]|bool != item.enforce_unique_dn
   no_log: true
   when:
     - item.enforce_unique_dn is defined

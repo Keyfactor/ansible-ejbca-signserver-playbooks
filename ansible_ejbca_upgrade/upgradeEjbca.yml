@@ -36,7 +36,7 @@
   roles:
     - ansible-ejbca-upgrade
 
-- hosts: ejbcaRaServers[0]
+- hosts: ejbcaRaServers
   become: yes
   become_method: sudo
   gather_facts: false
@@ -60,7 +60,7 @@
   roles:
     - ansible-ejbca-upgrade
 
-- hosts: ejbcaVaServers[0]
+- hosts: ejbcaVaServers
   become: yes
   become_method: sudo
   gather_facts: false
