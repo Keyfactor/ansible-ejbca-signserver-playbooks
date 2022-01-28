@@ -18,14 +18,6 @@ use_external_ra: true
 # If enabled configures a Peer connectiona nd key binding for Sign Server
 use_external_ss: false
 
-# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
-# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
-# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
-# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
-deploy_with_configdump: true
-configdump_directory_structure: "{{ configdump_dir_structure }}"
-configdump_import_files: "{{ configdump_files }}"
-
 # Add publishers to the CA's in EJBCA. CA's created before the publisher is added to EJBCA and want to leverage the publisher
 # should use this option to add the publisher to the CA.
 add_publshers_to_cas: true
@@ -228,6 +220,7 @@ ejbca_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingOcsp0001"
         key_size: 3072
@@ -252,6 +245,7 @@ ejbca_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingRa0001"
         key_size: 3072
@@ -272,6 +266,7 @@ ejbca_keybinding:
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingSign0001"
         key_size: 3072
@@ -370,7 +365,8 @@ management_add_certification_authorities:
     tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
-    slot_identifier_value: "Management_CA_SLOT"      
+    slot_identifier_value: "Management_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -411,6 +407,8 @@ sub_add_certification_authorities:
     dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     rootDn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
     root_ca_name: "{{ organizationNameShort }}-Root-CA"
+    external_signed_ca_cert_file_local_repository: false
+    external_signed_ca_cert_file: "SubCA-{{ organizationNameShort }}-G1.crt"
     subjectaltname: ""
     validity: "3650"
     validity_yml: "10y"
@@ -450,6 +448,7 @@ sub_add_certification_authorities:
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Sub_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -588,7 +587,7 @@ httpd_aia_hash_type: sHash
 # hash: The CA Subject DN hashed to create the sHash value or use the Subject Key ID hash, e.g.:
 # CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an sHash of QEmnargCJtoJPXtVylHO1T85MF8
 # If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
-httpd_crl_mapping_names:
+httpd_aia_mapping_names:
   - aia_name: "{{ organizationName | lower }}-mgmtca"
     hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
   - aia_name: "{{ organizationNameShort | lower }}-rootca-g1"

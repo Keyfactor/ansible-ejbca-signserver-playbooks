@@ -53,7 +53,7 @@
   tags: reverse-proxy
   when: enable_firewalld_for_httpd|bool
 
-- name: Configure the httpd conf file for CentOS/RHEL 8
+- name: Configure the httpd conf file for Alma/CentOS/Oracle/RedHat/Rocky 8
   template:
     backup: yes
     src: "{{ item.src }}"
@@ -69,9 +69,11 @@
   tags: reverse-proxy
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
+        (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
+        (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
-- name: Configure the httpd conf file for CentOS/RHEL 7
+- name: Configure the httpd conf file for CentOS/RedHat 7
   template:
     backup: yes
     src: "{{ item.src }}"
@@ -88,7 +90,7 @@
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
-- name: Configure friendly CRL name mapping
+- name: Configure friendly AIA &| CRL name mapping
   block:
 
     - name: Create directory for mapping file
@@ -107,10 +109,24 @@
         owner: root
         group: root
         mode: 0644
+      when:
+        - use_httpd_crl_map is defined
+        - use_httpd_crl_map|bool
+
+    - name: Create AIA mapping file
+      template:
+        src: aiamapping.txt.j2
+        dest: /etc/httpd/rewriteMaps/aiamapping.txt
+        owner: root
+        group: root
+        mode: 0644
+      when:
+        - use_httpd_aia_map
+        - use_httpd_aia_map|bool
 
   when:
-    - use_httpd_crl_map is defined
-    - use_httpd_crl_map|bool
+    - ( use_httpd_crl_map is defined and use_httpd_crl_map|bool ) or ( use_httpd_aia_map is defined and use_httpd_aia_map|bool)
+
 
 - name: Create CRL & AIA directory links
   file:

@@ -237,6 +237,7 @@ root_add_certification_authorities:
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Root_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 4096

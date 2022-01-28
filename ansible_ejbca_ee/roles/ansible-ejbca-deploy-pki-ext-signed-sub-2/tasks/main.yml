@@ -1,22 +1,6 @@
 ---
 # tasks file for roles/ansible-ejbca-deploy-pki-ext-signed-sub-2
 
-- name: Import signed CA certificate
-  include_role: 
-    name: ansible-ejbca-import-ext-ca
-    tasks_from: add_external_signed_ca
-  loop: "{{ add_certification_authorities }}"
-  no_log: true
-  when:
-    - add_certification_authorities[0] is defined
-
-- name: Configure CA settings
-  include_role: 
-    name: ansible-ejbca-conf-ca-exts
-    tasks_from: config_ca_extensions
-  loop: "{{ add_certification_authorities }}"
-  no_log: true
-
 - name: Configdump import cert profiles, end entity profiles, and services
   command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
   args:

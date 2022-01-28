@@ -5,7 +5,7 @@ organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"
 organizationDomainName: solitude.skyrim
 countryName: US
-superAdminCn: "30Aug2021-Skyrim-SA"
+superAdminCn: "3Dec2021-Skyrim-SA"
 sharedVarsLocation: ~/ansible/ansibleCacheDir
 
 # If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
@@ -53,12 +53,12 @@ ejbca_jdbc_driver: https://dlm.mariadb.com/1785291/Connectors/java/connector-jav
 ejbca_jdbc_driver_checksum: sha256:f06577b19e89b33028b96cd4f031248e761de7ebc712f4ef535e268df76edb2a
 
 # EJBCA version and deployment info
-ejbca_version: 7.7.0
+ejbca_version: 7.8.1
 # If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_7.0.zip
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_7_0.zip
-ejbca_src_dir_name: ejbca_ee_7_7_0
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_8_0_1.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_8_1.zip
+ejbca_src_dir_name: ejbca_ee_7_8_1
 ejbca_type: CA
 
 # Location to write the CRL files on server
@@ -69,15 +69,17 @@ ejbca_crl_dir:
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-wildfly_version: 24.0.1.Final
+wildfly_version: 26.0.1.Final
 wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
-wildfly_standalone_file: standalone-24.xml.datasource.j2
+wildfly_standalone_file: standalone-26.xml.datasource.j2
 wildfly_use_galleon: true
 wildfly_galleon_version: 4.2.8
-#wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
+# sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
 wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
-#wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
-wildfly_jboss_client_checksum: sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
+# sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff # WF 23
+# sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
+#wildfly_jboss_client_checksum: sha256:b160673ab755d82b423cc41be07df7922c3481e74b7ad324e664460f2c24341c # WF 25.0.1
+wildfly_jboss_client_checksum: sha256:859e69844bf047193f4ab461c7cc2b7c4b18ec76d1f32ebebcb9470097ef7dcd # WF 26.0.1
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: true
 
@@ -186,11 +188,13 @@ management_add_administrators:
 ejbca_keybinding:
   - name: peerClient-ocsp
     crypto_token_name: peeringCryptoToken
-    tokentype: Pkcs11NgCryptoToken
+    #tokentype: Pkcs11NgCryptoToken
+    tokentype: PKCS11CryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingOcsp0001"
         key_size: 3072
@@ -210,11 +214,13 @@ ejbca_keybinding:
     enabled: "{{ use_external_va }}"
   - name: peerClient-ra
     crypto_token_name: peeringCryptoToken
-    tokentype: Pkcs11NgCryptoToken
+    #tokentype: Pkcs11NgCryptoToken
+    tokentype: PKCS11CryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingRa0001"
         key_size: 3072
@@ -230,11 +236,13 @@ ejbca_keybinding:
     enabled: "{{ use_external_ra }}"
   - name: peerClient-sign
     crypto_token_name: peeringCryptoToken
-    tokentype: Pkcs11NgCryptoToken
+    #tokentype: Pkcs11NgCryptoToken
+    tokentype: PKCS11CryptoToken
     tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
     cryptotoken_enable_auto_activate: true
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "peerKeyBindingSign0001"
         key_size: 3072
@@ -282,7 +290,7 @@ ejbca_peerConnector:
 # keytype: RSA, DSA or ECDSA
 # keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
 # signalg: Signature algorithm
-# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
 # tokenpass: Password for the CA token
 # pkcs11_token: Dict of parameters needed for PKCS11 token
 # slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
@@ -299,7 +307,7 @@ management_add_certification_authorities:
     validity: "3650"
     validity_yml: "10y"
     policy: "null"
-    signalg: "SHA384WithRSA"
+    signalg: "SHA256WithRSA"
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
@@ -331,9 +339,11 @@ management_add_certification_authorities:
     request_processor: null
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
-    slot_identifier_value: "Management_CA_SLOT"      
+    slot_identifier_value: "Management_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -388,9 +398,11 @@ management_add_certification_authorities:
     request_processor: null
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Root_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 4096
@@ -417,7 +429,7 @@ management_add_certification_authorities:
 # keytype: RSA, DSA or ECDSA
 # keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
 # signalg: Signature algorithm
-# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
 # tokenpass: Password for the CA token
 # pkcs11_token: Dict of parameters needed for PKCS11 token
 # slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
@@ -467,9 +479,11 @@ sub_add_certification_authorities:
     request_processor: null
     cryptotoken_enable_auto_activate: true
     tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
     slot_identifier_value: "Sub_CA_SLOT"
+    force_used_slots: true
     crypto_token:
       - key_label: "signKey0001"
         key_size: 3072
@@ -594,7 +608,7 @@ httpd_aia_hash_type: sHash
 # hash: The CA Subject DN hashed to create the sHash value or use the Subject Key ID hash, e.g.:
 # CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an sHash of QEmnargCJtoJPXtVylHO1T85MF8
 # If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
-httpd_crl_mapping_names:
+httpd_aia_mapping_names:
   - aia_name: "{{ organizationName | lower }}-mgmtca"
     hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
   - aia_name: "{{ organizationNameShort | lower }}-rootca-g1"

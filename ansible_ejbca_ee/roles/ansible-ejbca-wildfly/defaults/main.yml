@@ -20,8 +20,10 @@ wildfly_galleon_version: 4.2.8
 wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
 wildfly_jboss_client_checksum: sha256:39daed5a4f73b173b822988ea161dcfae37b459984d67cb71fc29c7e0c33873c
 
-wildfly_jboos_client_download_url: "https://repo1.maven.org/maven2/org/wildfly/wildfly-client-all/{{ wildfly_version }}/wildfly-client-all-{{ wildfly_version }}.jar"
-wildfly_jboos_client_file: jboss-client.jar
+wildfly_jboss_client_download_url: "https://repo1.maven.org/maven2/org/wildfly/wildfly-client-all/{{ wildfly_version }}/wildfly-client-all-{{ wildfly_version }}.jar"
+wildfly_jboss_client_file: jboss-client.jar
+wildfly_elytron_tool_download_url: "https://repo1.maven.org/maven2/org/wildfly/security/wildfly-elytron-tool/1.17.2.Final/wildfly-elytron-tool-1.17.2.Final.jar"
+wildfly_elytron_tool_checksum: sha256:07b62bc174f6e8e132690d748681621b93b91468ecb9dcef2c1080549ae9e939
 wildfly_galleon_download_file: "galleon-{{ wildfly_galleon_version }}.Final"
 #wildfly_galleon_download_url: "https://github.com/wildfly/galleon/releases/download/galleon-parent-{{ wildfly_galleon_version }}.Final/{{ wildfly_galleon_download_file }}.zip"
 wildfly_galleon_download_url: "https://github.com/wildfly/galleon/releases/download/{{ wildfly_galleon_version }}.Final/{{ wildfly_galleon_download_file }}.zip"

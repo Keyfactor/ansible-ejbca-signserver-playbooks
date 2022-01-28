@@ -81,7 +81,15 @@
     - wildfly_use_galleon|bool
 
 - name: Install wildfly {{ wildfly_version }} using Galleon {{ wildfly_galleon_version }}
-  command: "{{ wildfly_galleon_bin }}/bin/galleon.sh install wildfly:current#{{ wildfly_version }} --dir={{ wildfly_dir }} --default-configs=standalone/standalone.xml --layers=cdi,core-tools,datasources,deployment-scanner,ee,-jsonb,ejb,io,jaxrs,jpa,jsf,logging,mail,management,webservices,legacy-security"
+  command: >
+    {{ wildfly_galleon_bin }}/bin/galleon.sh install wildfly:current#{{ wildfly_version }} 
+    --dir={{ wildfly_dir }} 
+    --default-configs=standalone/standalone.xml
+    {% if wildfly_version.split('.')[0]|int >= 25 %} 
+    --layers=cloud-server,deployment-scanner,ejb,io,jsf,mail,webservices,-jsonb,-jms-activemq,-observability,-jmx-remoting,core-management,core-tools,management
+    {% elif wildfly_version.split('.')[0]|int <= 24 %} 
+    --layers=cdi,core-tools,datasources,deployment-scanner,ee,-jsonb,ejb,io,jaxrs,jpa,jsf,logging,mail,management,webservices,legacy-security
+    {% endif %}
   when: 
     - not wildfly_src_dir.stat.exists
     - wildfly_use_galleon|bool
@@ -99,12 +107,38 @@
 
 - name: Download wildfly {{ wildfly_version }} jboss-client.jar
   get_url:
-    url: '{{ wildfly_jboos_client_download_url }}'
-    dest: '{{ wildfly_dir }}/bin/client/{{ wildfly_jboos_client_file }}'
+    url: '{{ wildfly_jboss_client_download_url }}'
+    dest: '{{ wildfly_dir }}/bin/client/{{ wildfly_jboss_client_file }}'
     validate_certs: '{{ wildfly_download_validate_certs }}'
     checksum: "{{ wildfly_jboss_client_checksum }}"
   when: 
     - not wildfly_src_dir.stat.exists
+    - wildfly_use_galleon|bool
+
+- name: Fixes for Wildfly 26
+  block:
+
+    - name: Update elytron-tool.sh due to bug with Wildfly 26 Galleon install
+      template:
+        src: elytron-tool.sh.j2
+        dest: "{{ wildfly_dir }}/bin/elytron-tool.sh"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}" 
+        force: yes
+        mode: 0755
+
+    - name: Download wildfly-elytron-tool.jar that has main class to  work with the elytron-tool.sh script
+      get_url:
+        url: "{{ wildfly_elytron_tool_download_url }}"
+        dest: "{{ wildfly_dir }}/bin/wildfly-elytron-tool.jar"
+        validate_certs: "{{ wildfly_download_validate_certs }}"
+        checksum: "{{ wildfly_elytron_tool_checksum }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        force: yes
+
+  when:
+    - wildfly_version.split('.')[0]|int == 26
     - wildfly_use_galleon|bool
 
 - name: Configure ownership on wildfly installed with Galleon

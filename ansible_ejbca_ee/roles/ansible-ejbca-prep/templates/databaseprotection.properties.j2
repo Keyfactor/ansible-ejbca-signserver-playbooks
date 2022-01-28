@@ -38,7 +38,8 @@ databaseprotection.keyid.0 = 1
 {% for val in item.crypto_token %}
 {% if 'dbprotect' == val.type %}
 databaseprotection.keylabel.0 = {{ val.key_label }}
-databaseprotection.classname.0 = org.cesecore.keys.token.PKCS11CryptoToken
+#databaseprotection.classname.0 = org.cesecore.keys.token.PKCS11CryptoToken
+databaseprotection.classname.0 = org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken
 #databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType=SLOT_LABEL, slotLabelValue=i{{ item.slot_identifier_value }}
 databaseprotection.properties.0 = sharedLibrary={{ hsm_shared_library }}, slotLabelType={{ item.slot_identifier_type }}, slotLabelValue={{ item.slot_identifier_value }}
 databaseprotection.tokenpin.0 = {{ item.tokenpass }}

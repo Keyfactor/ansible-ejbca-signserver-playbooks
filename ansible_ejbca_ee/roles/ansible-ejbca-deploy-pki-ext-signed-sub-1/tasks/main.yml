@@ -27,9 +27,8 @@
         tasks_from: add_crypto_token
       loop: "{{ add_certification_authorities }}"
       no_log: true
-       when:
-        - clienttoolbox_key_generation is not defined
-        - not clienttoolbox_key_generation|bool     
+      when:
+        - (clienttoolbox_key_generation is not defined) or (clienttoolbox_key_generation is defined and not clienttoolbox_key_generation|bool)
 
     - name: Generate keys for Subordinated CA's on crypto token using EJBCA CLI
       include_role:
@@ -42,8 +41,7 @@
       no_log: true
       tags: key_generation
       when:
-        - clienttoolbox_key_generation is not defined
-        - not clienttoolbox_key_generation|bool
+        - (clienttoolbox_key_generation is not defined) or (clienttoolbox_key_generation is defined and not clienttoolbox_key_generation|bool)
 
   when: add_certification_authorities[0] is defined
 
