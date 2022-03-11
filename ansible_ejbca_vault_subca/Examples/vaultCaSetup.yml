@@ -1,5 +1,0 @@
----
-
-- hosts: docker_hosts
-  roles:
-   - ansible-ejbca-vault-ca-setup

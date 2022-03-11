@@ -1,0 +1,26 @@
+---
+
+# Info to create HTTPD end entity in EJBCA for the TLS certificate
+identity_info:
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn=ra01.{{ organizationDomainName }}"
+    name: "ra01.{{ organizationDomainName }}"
+    #full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn=ra01.{{ organizationDomainName }}"
+    username: ra_httpd_tls
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName=ra01.{{ organizationDomainName }}, dNSName=enroll.{{ organizationDomainName }}, dNSName=api.enroll.{{ organizationDomainName }}, dNSName=enrolls.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+    useType: ra
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ocsp01.{{ organizationDomainName }}"
+    name: "ocsp01.{{ organizationDomainName }}"
+    #full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ocsp01.{{ organizationDomainName }}"
+    username: va_httpd_tls
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName=ocsp01.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+    useType: va

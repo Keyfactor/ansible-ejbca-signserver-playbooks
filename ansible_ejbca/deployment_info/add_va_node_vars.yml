@@ -1,0 +1,293 @@
+---
+
+organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"
+organizationNameCRL: "{{ organizationName }}"
+organizationDomainName: solitude.skyrim
+countryName: US
+superAdminCn: "6May2021-Skyrim-SA"
+sharedVarsLocation: ~/ansible/ansibleCacheDir
+
+# VA Nodes
+va_node_1: ejbcava01
+va_node_2: ejbcava02
+va_node_3: ejbcava03
+va_node_4: ejbcava04
+va_node_5: ejbcava05
+va_node_6: ejbcava06
+va_node_7: ejbcava07
+
+peer_ca_cert_serial_numbers: "{{ lookup('file', '{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+
+use_external_va: true
+
+# Maria DB configuration info
+mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('PrimeKeyPkI4all') }}"
+mariadb_binlog_formatt: ROW
+mariadb_databases:
+  - name: ejbca
+    collation: "utf8_general_ci"
+    encoding: "utf8"
+mariadb_users:
+  - name: ejbca-usr
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    priv: "ejbca.*:ALL"
+    host: "%"
+  - name: ejbca-usr
+    password: ejbca
+    priv: "ejbca.*:ALL"
+    host: "localhost"
+
+# Maria DB JDBC driver download URL
+ejbca_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+# Maria DB JDBC driver SHA256 hash
+ejbca_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+
+# Wildfly Configuration Info
+wildfly_version: 23.0.2.Final
+wildfly_checksum: 08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01
+wildfly_standalone_file: standalone-23.xml.datasource.j2
+wildfly_use_galleon: true
+wildfly_galleon_version: 4.2.6
+wildfly_galleon_checksum: sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1
+wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff #WF 23
+# Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
+wildfly_disable_infinispan: true
+
+
+ejbca_version: 7.5.0.2
+# If enabled Ansible controller is used as software repository
+use_local_repository: false
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_5_0_2_VA.zip
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_5_0_2_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_5_0_2_VA
+ejbca_type: VA
+
+# Location to write the CRL files on server
+ejbca_crl_dir_enabled: false
+
+#web.properties
+web_httpserver_external_privhttps: 443
+web_reqcertindb: false
+
+ant_version: apache-ant-1.10.9-bin.tar.gz
+ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
+
+# EJBCA VA property files
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+  - src: ocsp.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ocsp.properties"
+  - src: custom.properties.j2
+    dest: "{{ ejbca_home }}/conf/custom.properties"
+
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    database_connection_type: mariadb
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
+    host: 172.16.109.12
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
+    #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
+    #connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
+
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+
+# Slots to create for SoftHSM PKCS11
+softhsm_gen_hsm_slots:
+  - slot_name: OCSP_KeyBinding_SLOT
+    slot_so_pin: "{{ encrypted_ocsp_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+#hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+
+# EJBCA CLI password to configure for the CLI account
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+    
+# List of OCSP Signers to create on the External VA
+ejbca_va_keybinding:
+  - name: ocspSubSigningKey
+    crypto_token_name: ocspCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: OCSP_KeyBinding_SLOT
+    crypto_token:
+      - key_label: ocspSubSigningKey0001
+        key_size: "3072"
+        key_type: "RSA"
+        type: ocsp_keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Sub Signer"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: USERGENERATED
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+  - name: ocspRootSigningKey
+    crypto_token_name: ocspCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: OCSP_KeyBinding_SLOT
+    crypto_token:
+      - key_label: ocspRootSigningKey0001
+        key_size: "4096"
+        key_type: "RSA"
+        type: ocsp_keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Root Signer"
+    caname: "{{ organizationNameShort }}-Root-CA"
+    token: USERGENERATED
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+  - name: ocspMgmtSigningKey
+    crypto_token_name: ocspCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: OCSP_KeyBinding_SLOT
+    crypto_token:
+      - key_label: ocspMgmtSigningKey0001
+        key_size: "3072"
+        key_type: "RSA"
+        type: ocsp_keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},O={{ organizationName }},OU=OCSP Signers,CN=OCSP Mgmt Signer"
+    caname: "ManagementCA" 
+    token: USERGENERATED
+    certprofile: ocspSigner
+    eeprofile: ocspSigner
+
+httpd_create_aia_crl_dir: false
+
+httpd_identity_info:
+  id_name: "{{ inventory_hostname }}"
+  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"
+
+identity_info:
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ va_node_1 }}.{{ organizationDomainName }}"
+    name: "{{ va_node_1 }}.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ va_node_1 }}.{{ organizationDomainName }}"
+    username: "{{ va_node_1 }}_httpd_tls"
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName={{ va_node_1 }}.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+  
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ va_node_2 }}.{{ organizationDomainName }}"
+    name: "{{ va_node_2 }}.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ va_node_2 }}.{{ organizationDomainName }}"
+    username: "{{ va_node_2 }}_httpd_tls"
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName={{ va_node_2 }}.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ va_node_3 }}.{{ organizationDomainName }}"
+    name: "{{ va_node_3 }}.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ va_node_3 }}.{{ organizationDomainName }}"
+    username: "{{ va_node_3 }}_httpd_tls"
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName={{ va_node_3 }}.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+
+# List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
+# caname: Name of the CA in EJBCA
+# The superadmincn can be added to each CA to add a Common Name to the superadmin role.
+# fullchain: Must be set to false for this to work by getting each CA certificate to import as an external CA
+ejbca_ca_import:
+  - caname: "ManagementCA"
+    superadmincn: "{{ superAdminCn }}"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    fullchain: false
+
+# CA chains to add to the HTTPD trusted CA certificate file for certauth
+# caname: Name of the CA in EJBCA
+# fullchain: Must be set to true for this to work by getting the issuing CA chain and then adding that chain to the file
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+    fullchain: true
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: true
+
+# VA Node Connector list
+ejbca_peerConnector:
+  - name: "{{ va_node_1 }}"
+    url: "https://'{{ va_node_1 }}'.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ocsp
+    type: ocsp
+    state: ENABLED
+    remote_key_update: true
+    enabled: "{{ use_external_va }}"
+
+  - name: "{{ va_node_2 }}"
+    url: "https://'{{ va_node_2 }}'.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ocsp
+    type: ocsp
+    state: ENABLED
+    remote_key_update: true
+    enabled: "{{ use_external_va }}"
+
+  - name: "{{ va_node_3 }}"
+    url: "https://'{{ va_node_3 }}'.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ocsp
+    type: ocsp
+    state: ENABLED
+    remote_key_update: true
+    enabled: "{{ use_external_va }}"

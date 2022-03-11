@@ -1,0 +1,15 @@
+---
+# defaults file for ansible-ejbca-uninstall
+
+
+#ejbca_root_dir: /opt
+#ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+
+ejbca_directory_removal:
+  - "{{ ejbca_home }}"
+  - "{{ ejbca_root_dir }}/clientToolBox"
+  - "{{ ejbca_root_dir }}/{{ ejbca_src_dir_name }}"
+
+
+wildfly_dir_file_removal:
+  - 

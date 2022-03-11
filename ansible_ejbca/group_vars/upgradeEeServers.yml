@@ -1,0 +1,7 @@
+---
+
+ejbca_version: 7.8.2.1
+ejbca_software_ee_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_8_2_1.zip
+ejbca_software_ra_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_8_2_1_RA.zip
+ejbca_software_va_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_8_2_1_VA.zip
+ejbca_src_dir_name: ejbca_ee_7_8_2_1

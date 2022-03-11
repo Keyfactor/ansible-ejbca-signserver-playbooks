@@ -1,0 +1,63 @@
+---
+
+organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"
+organizationNameCRL: "{{ organizationName }}"
+organizationDomainName: solitude.skyrim
+countryName: US
+superAdminCn: "1Feb2022-Skyrim-SA"
+sharedVarsLocation: ~/ansible/ansibleCacheDir
+
+# Deployment locations for all the servers
+ejbca_root_dir: /opt
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+ejbca_sh: "{{ ejbca_home }}/bin/ejbca.sh"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+ejbca_group: wildfly
+ejbca_user: wildfly
+identity_batch_output_dir: /var/tmp
+
+# Directories to store files on Ansible controller
+ejbca_crl_dir_output: "{{ playbook_dir }}/ejbcaCRLs"
+ejbca_cacrt_dir_output: "{{ playbook_dir }}/ejbcaCaCerts"
+ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+
+# Create Root Node TLS end entity to Issuing Cluster and copy down to Ansible controller
+create_root_tls_cert: true
+
+# If configuring peering, the serial numbers used in the EJBCA roles are stored as a fact in that yaml file
+peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+
+# EJBCA CLI password to configure for the CLI account
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+
+# Location to write the CRL files on server
+ejbca_crl_dir_enabled: false
+ejbca_crl_dir:
+  - /opt/web/CRLs
+  - /opt/web/AIA
+
+# CA chains to add to the HTTPD trusted CA certificate file for certauth
+# caname: Name of the CA in EJBCA
+# fullchain: Must be set to true for this to work by getting the issuing CA chain and then adding that chain to the file
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+    fullchain: true
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: true
+
+# List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
+# This variable is also used for exporting CRL's from EJBCA CA node to import into external RA/VA's
+# caname: Name of the CA in EJBCA
+# The superadmincn can be added to each CA to add a Common Name to the superadmin role.
+# fullchain: Must be set to false for this to work by getting each CA certificate to import as an external CA
+ejbca_ca_import:
+  - caname: "ManagementCA"
+    superadmincn: "{{ superAdminCn }}"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    fullchain: false
