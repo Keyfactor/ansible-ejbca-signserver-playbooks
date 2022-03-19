@@ -1,0 +1,23 @@
+---
+# defaults file for ansible-ejbca-va-httpd
+#ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+#ejbca_cacrt_dir_output: "{{ playbook_dir }}/ejbcaCaCerts"
+#ejbca_root_dir: /opt
+#ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+#ejbca_sh: "{{ ejbca_home }}/bin/ejbca.sh"
+#wildfly_install_dir: /opt
+#wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+#ejbca_group: wildfly
+#ejbca_user: wildfly
+
+#httpd_identity_info:
+#  id_name: "{{ inventory_hostname }}"
+#  id_ca_cert_file: ManagementCA.crt
+#  
+#httpd_cert_files:
+#  - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.id_name }}.crt"
+#    dest: "/etc/pki/tls/certs/{{ httpd_identity_info.id_name }}.crt"
+#  - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.id_name }}.key"
+#    dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
+#  - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.id_ca_cert_file }}"
+#    dest: "/etc/pki/tls/certs/chain.crt"

@@ -1,0 +1,15 @@
+---
+# tasks file for primekey
+
+- name: Create crypto token on external VA
+  include_tasks: create_crypto_token_va.yml
+  when:
+    - ejbca_va_crypto_tokens[0] is defined
+    - inventory_hostname in groups['eeVaServers']
+
+- name: Generate keys on external VA
+  include_tasks: gen_keys_va.yml
+  when:
+    - ejbca_va_keybinding[0] is defined
+    - inventory_hostname in groups['eeVaServers']
+  

@@ -1,7 +1,0 @@
----
-
-- hosts: primekeyServers
-  become: yes
-  become_method: sudo
-  roles:
-   - ansible-ejbca-certreq-websvc

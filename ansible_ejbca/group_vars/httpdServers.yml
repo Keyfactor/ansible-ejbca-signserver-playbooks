@@ -1,0 +1,71 @@
+---
+
+# Configure firewalld to allow http and https services inbound to server
+enable_firewalld_for_httpd: true
+
+
+# List of HTTPD certificate files to configure for HTTPD to use for TLS
+httpd_cert_files:
+  - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.id_name }}.crt"
+    dest: "/etc/pki/tls/certs/{{ httpd_identity_info.id_name }}.crt"
+  - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.id_name }}.key"
+    dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
+  - src: "{{ ejbca_csr_dir_output }}/{{ httpd_identity_info.id_ca_cert_file }}"
+    dest: "/etc/pki/tls/certs/chain.crt"    
+# Add the management CA to HTTP trust chain file. 
+add_mgmt_ca: true
+
+# Create CRL and AIA folder symbolic links for webserver to host these files
+httpd_create_aia_crl_dir: false
+
+# Create the folder structure for CRL's and AIA files when httpd_create_aia_crl_dir is true
+httpd_web_dirs:
+  - src: "/opt/web/CRLs"
+    dest: "/var/www/html/CRLs"
+  - src: "/opt/web/AIA"
+    dest: "/var/www/html/AIA"
+
+# Create a crontab to download CRL's from publicweb URL (Note: publicweb is going to be deprecated)
+enable_crl_crontab: false
+
+# Enable/Disable using the HTTPD CRL mapping to use friendly names in the CRL file that are retreived from 
+# EJBCA CRL cache in the ejbca/publicweb/crls/search.cgi
+use_httpd_crl_map: true
+
+# The type of hash for the CA DN or the subjectKeyIdentifier, can be one of iHash or sKIDHash
+httpd_crl_hash_type: iHash
+
+# List of CRL files without the .crl extension and the iHash value for the CA DN used for friendly names
+# in the CRL URL and HTTPD maps the name to the hash value to retrieve the CRL from EJBCA crl cache
+# crl_name: file name without the .crl extension, e.g.: managementca
+# hash: The CA DN hashed to create the iHash value, e.g.:
+# CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an iHash of QEmnargCJtoJPXtVylHO1T85MF8
+# If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
+httpd_crl_mapping_names:
+  - crl_name: "{{ organizationName | lower }}-mgmtca"
+    hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
+  - crl_name: "{{ organizationNameShort | lower }}-rootca-g1"
+    hash: K8WY8UadARfiek83i40zzB02Udw
+  - crl_name: "{{ organizationNameShort | lower }}-subca-g1"
+    hash: 1vnFSu3sYhgsdaB655sZr/2j21s
+
+# Enable/Disable using the HTTPD CA Cert mapping to use friendly names in the AIA URL to get the CA cert retreived from 
+# EJBCA Certificates cache in the ejbca/publicweb/certificates/search.cgi
+use_httpd_aia_map: true
+
+# The type of hash for the CA Subject DN or the subjectKeyIdentifier, can be one of sHash or sKIDHash
+httpd_aia_hash_type: sHash
+
+# List of CA cert files without the .crt extension and the sHash value for the CA Subject DN used for friendly names
+# in the AIA URL and HTTPD maps the name to the hash value to retrieve the CA Cert from EJBCA certificate cache
+# aia_name: file name without the .crt extension, e.g.: managementca
+# hash: The CA Subject DN hashed to create the sHash value or use the Subject Key ID hash, e.g.:
+# CN=ManagementCA,OU=Certification Authorities,O=Intune Test,C=US has an sHash of QEmnargCJtoJPXtVylHO1T85MF8
+# If there is + in the string, e.g.: oavHw1U+TltzeLlBUeuWjDZW7IA, replace this with %2B oavHw1U%2BTltzeLlBUeuWjDZW7IA
+httpd_aia_mapping_names:
+  - aia_name: "{{ organizationName | lower }}-mgmtca"
+    hash: ecpgmaBhnkye/KzqRP2dYlqbHXc
+  - aia_name: "{{ organizationNameShort | lower }}-rootca-g1"
+    hash: K8WY8UadARfiek83i40zzB02Udw
+  - aia_name: "{{ organizationNameShort | lower }}-subca-g1"
+    hash: 1vnFSu3sYhgsdaB655sZr/2j21s

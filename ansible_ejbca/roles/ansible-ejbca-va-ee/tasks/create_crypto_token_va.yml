@@ -1,0 +1,17 @@
+---
+
+- name: Check deployment
+  include_role: 
+    name: ansible-ejbca-restart-wildfly
+  vars:
+    restart_wildfly: true
+  tags: check_deployment
+
+- name: Create crypto tokens for OCSP Signers
+  include_role: 
+    name: ansible-ejbca-crypto-token
+    tasks_from: add_crypto_token
+  loop: "{{ ejbca_va_crypto_tokens }}"
+  no_log: true
+  when:
+    - ejbca_va_crypto_tokens[0] is defined

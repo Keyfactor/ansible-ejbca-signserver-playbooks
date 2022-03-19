@@ -1,0 +1,81 @@
+---
+
+all:
+  hosts:
+    ejbcart01.solitude.skyrim
+    ejbca01.solitude.skyrim
+    ejbcava01.solitude.skyrim
+    ejbcara01.solitude.skyrim
+    webrepo.solitude.skyrim
+  children:
+    eeRootCaServers:
+      hosts:
+        rt01:
+          ansible_host: 172.16.170.13
+    eeCaServers:
+      hosts:
+        ca01:
+          ansible_host: 172.16.170.170
+    eeRaServers:
+      hosts:
+        ra01:
+          ansible_host: 172.16.170.172
+    eeVaServers:
+      hosts:
+        va01:
+          ansible_host: 172.16.170.173
+    dbServers:
+      hosts:
+        webrepo.solitude.skyrim:
+          ansible_host: 172.16.170.133       
+    vaSigners:
+      hosts:
+        va01:
+          ansible_host: 172.16.170.173
+    ceServers:
+      hosts:
+        ce01:
+          ansible_host: 172.16.170.177
+    conServers:
+      hosts:
+        docker02.solitude.skyrim:
+          ansible_host: 172.16.170.8
+    httpdServers:
+      children:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+    mariadbServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+    applicationServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+    upgradeEeServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:      
+    pkiTlsCerts:
+      hosts:
+        enrollmentCa:
+          ansible_host: 172.16.170.170
+    pkiCsrCerts:
+      hosts:
+        enrollmentCa:
+          ansible_host: 172.16.170.170
+    pkiServers:
+      children:
+        mariadbServers:
+        applicationServers:
+        httpdServers:

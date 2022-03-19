@@ -1,0 +1,158 @@
+---
+
+vault_csr_dir_output: "{{ playbook_dir }}/vaultCSR"
+vault_crt_stage_dir: /var/tmp
+vault_cfg_dir: "/home/srajala/vault"
+#vault_cfg_dir: "{{ ansible_env.HOME }}/vault"
+
+vault_cli_dir: "/home/srajala/vault/cli"
+vault_certreq_dir: /home/srajala/certs
+
+vault_tlsServerAuth_end_entitys: 
+  - instance: tlsServerAuth
+    ejbca_vault_path: ejbcav1
+    dn_common_name: test-vault-01.solitude.skyrim
+    dn_ou: 
+      - Devices 
+    dn_org: Solitude
+    dn_country: US
+    san_DNSName: 
+      - test-vault-01.solitude.skyrim
+    eku: serverAuth
+
+  - instance: tlsServerAuth
+    ejbca_vault_path: ejbcav1
+    dn_common_name: test-vault-02.solitude.skyrim
+    dn_ou: 
+      - Devices  
+    dn_org: Solitude
+    dn_country: US
+    san_DNSName: 
+      - test-vault-02.solitude.skyrim
+    eku: serverAuth
+
+
+sub_ca_1_id: -127947408
+root_ca_1_id: -1905764898
+
+tls_certifate_chain:
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    cert_download_url: "https://{{ ejbca_enrollment_fqdn }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ sub_ca_1_id }}&format=pem&level=0"
+    cert_file_location: "/var/tmp/{{ organizationNameShort }}-Sub-CA.crt"
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    cert_download_url: "https://{{ ejbca_enrollment_fqdn }}/ejbca/publicweb/webdist/certdist?cmd=cachain&caid={{ root_ca_1_id }}&format=pem"
+    cert_file_location: "{{ vault_cfg_dir }}/build/certs/{{ organizationNameShort }}-Root-CA.crt"
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    cert_download_url: "https://{{ ejbca_enrollment_fqdn }}/ejbca/publicweb/webdist/certdist?cmd=cacert&caid={{ sub_ca_1_id }}&format=pem&level=0"
+    cert_file_location: "{{ vault_cfg_dir }}/build/certs/{{ organizationNameShort }}-Sub-CA.crt"
+
+identity_info:
+  - dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
+    name: ejbca-vault-connector-ra02
+    full_dn: "cn=ejbca-vault-connector-ra02,ou=Devices,O={{ organizationName }},C={{ countryName }}"
+    username: vault_connector_ra02
+    password: "{{ encrypted_ejbca_vault_ra_identity_password | default('foo123') }}"
+    altname: "dNSName=ejbca-vault-connector-ra02"
+    certprofile: tlsClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+    useType: raAdmin
+  - dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
+    name: "vault02.{{ organizationDomainName }}"
+    full_dn: "cn=vault02.{{ organizationDomainName }},ou=Devices,O={{ organizationName }},C={{ countryName }}"
+    username: vault02_tls
+    password: "{{ encrypted_vaultTls_identity_password | default('foo123') }}"
+    altname: "dNSName=vault02.{{ organizationDomainName }}"
+    certprofile: tlsServerAuth
+    eeprofile: "tlsServer{{ organizationName }}"
+    caname: "{{ organizationName }}-Sub-CA"
+    token: PEM
+    useType: tls
+
+id_cert_files:
+  - src: "{{ ejbca_csr_dir_output }}/{{ identity_info[0].name }}.crt"
+    dest: "{{ vault_crt_stage_dir }}/id/{{ identity_info[0].name }}.crt"
+  - src: "{{ ejbca_csr_dir_output }}/{{ identity_info[0].name }}.key"
+    dest: "{{ vault_crt_stage_dir }}/id/{{ identity_info[0].name }}.key"
+  - src: "{{ ejbca_csr_dir_output }}/{{ identity_info[1].name }}.crt"
+    dest: "{{ vault_cfg_dir }}/config/tmp/0.crt"
+  - src: "{{ ejbca_csr_dir_output }}/{{ identity_info[01].name }}.key"
+    dest: "{{ vault_cfg_dir }}/config/vault.key"
+  - src: "{{ ejbca_csr_dir_output }}/{{ organizationNameShort }}-Sub-CA.crt"
+    dest: "{{ vault_cfg_dir }}/config/tmp/{{ organizationNameShort }}-Sub-CA.crt"
+  - src: "{{ ejbca_csr_dir_output }}/{{ organizationNameShort }}-Sub-CA.crt"
+    dest: "{{ vault_cfg_dir }}/config/chain.crt"
+
+merge_id_cert_files:
+  - name: "{{ identity_info[0].name }}"
+    dir: "{{ vault_crt_stage_dir }}/id/"
+    file: "{{ vault_crt_stage_dir }}/{{ identity_info[0].name }}.crt"
+  - name: "{{ identity_info[1].name }}"
+    dir: "{{ vault_cfg_dir }}/config/tmp/"
+    file: "{{ vault_cfg_dir }}/config/vault.crt"
+
+# Docker Compose file settings
+vault_container_name: "{{ identity_info[1].name }}"
+vault_container_image: ejbca/vault
+vault_host_tcp_port: 8200
+
+# Vault json config settings
+vault_log_level: Info
+vault_api_addr: "https://{{ identity_info[1].name }}:8210"
+vault_tcp_port: 8200
+vault_tls_listener: true  
+vault_tls_tcp_port: 8210
+
+ejbca_ra_admin_role_name: RA-Vault
+ejbca_enrollment_fqdn: "enroll.{{ organizationDomainName }}"
+
+docker_users:
+  - srajala
+
+vault_cli_url: https://releases.hashicorp.com/vault/1.6.1/vault_1.6.1_linux_amd64.zip
+
+vault_plugin_download_urls:
+  - url: http://172.16.170.133:8080/ejbca/ejbca-vault-plugin-v1-alpine.tar.gz
+    name: ejbca-vault-plugin-v1
+    path: ejbcav1
+    checksum: cea27daf6b877b70c0e66f79eac854ff5e6bc08cd75f51f7aa99a0a9fa1277a2
+
+vault_role_policies:
+  - name: admin
+    src: admin-policy.hcl.j2
+    dest: "{{ vault_cli_dir }}/admin-policy.hcl"
+  - name: provisioner
+    src: provisioner-policy.hcl.j2
+    dest: "{{ vault_cli_dir }}/provisioner-policy.hcl"
+
+
+# Variables to configure Vault to issue certificates using EJBCA Vault plugin
+
+vault_ejbca_instances:
+  - name: tlsServerAuth
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    certprofile: tlsServerAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    pem_bundle: "{{ vault_crt_stage_dir }}/{{ identity_info[0].name }}.crt"
+    tls_certifate_chain: "{{ tls_certifate_chain[0].cert_file_location }}"
+    url: "https://{{ ejbca_enrollment_fqdn }}/ejbca/ejbca-rest-api/v1"
+    vault_path: "{{ vault_plugin_download_urls[0].path }}"
+
+
+# Variables for Issuing a sub CA to Vault from EJBCA
+vault_int_pki_name: pki_int
+vault_int_ca_dn: 'common_name="Vault Intermediate Authority GX2"  organization="Skyrim"'
+vault_int_ca_keysize: 2048
+vault_int_pki_passwd: "{{ encrypted_vault_int_pki_passwd | default('foo123') }}"
+vault_int_root_ca_cert_url: https://enrollprimekey.solitude.skyrim/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3DSolitude+Root+CA+G1%2COU%3DCertification+Authorities%2COU%3DSolitude%2CO%3DSkyrim&level=0
+vault_int_ca_ejbca_dn: 'CN=Vault Intermediate Authority GX2,OU=Certification Authorities,OU=Solitude,O=Skyrim'
+vault_int_ca_ejbca_rootca_sign: Solitude-Root-CA 
+vault_int_ca_ejbca_certprofile: HashiCorp-SubCA-G1
+vault_int_ca_ejbca_endentityprofile: Hashicorp-SubCA 
+ejbcawsracli_url: https://enrollprimekey.solitude.skyrim/ejbca/ejbcaws/ejbcaws
+ejbcawsracli_keystore_path: /opt/ejbca/p12/SkyrimSuperAdministrator.p12
+ejbcawsracli_keystore_password: "{{ encrypted_ejbcawsracli_keystore_password | default('foo123') }}"
+ejbcawsracli_truststore_path: "{{ ejbca_toolbox }}/truststore"
+ejbcawsracli_truststore_url: https://enroll.solitude.skyrim/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=1595111880&format=jks
+

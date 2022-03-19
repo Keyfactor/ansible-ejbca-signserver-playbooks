@@ -1,0 +1,138 @@
+---
+
+- name: Check if TLS Certificate file already exists
+  stat:
+    path: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}.pem"
+  register: tls_cert_exists
+
+- name: Create httpd tls certificate
+  include_role:
+    name: ansible-ejbca-certreq-cli
+    tasks_from: batch_cert_request
+  loop: "{{ identity_info }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+  when: 
+    - identity_info[0] is defined
+    - not tls_cert_exists.stat.exists
+
+#- name: Configure HTTPD TLS certificate when the node is a CA
+#  block:
+#
+#  - name: Create cert stage directory
+#    file:
+#      path: /var/tmp/certstage
+#      state: directory
+#      owner: "{{ ejbca_user }}" 
+#      group: "{{ ejbca_group }}"
+#
+#  - name: Create fact
+#    set_fact:
+#      entity_pass: "{{ pass_15 }}"
+#    no_log: true
+#
+#  - name: Add External Webserver Entity to CA
+#    command: >
+#      {{ ejbca_sh }} ra addendentity 
+#      --username '{{ httpd_identity_info.id_username }}' 
+#      --password '{{ entity_pass }}' 
+#      --dn '{{ httpd_identity_info.id_full_dn }}' 
+#      --altname '{{ httpd_identity_info.id_altname }}' 
+#      --caname '{{ httpd_identity_info.id_caname }}' 
+#      --type 1 
+#      --token PEM 
+#      --certprofile '{{ httpd_identity_info.id_certprofile }}' 
+#      --eeprofile '{{ httpd_identity_info.id_eeprofile }}'
+#    args:
+#      chdir: "{{ ejbca_home }}"
+#    become_user: "{{ ejbca_user }}"
+#    become: yes
+#    register: ra_addIdent_result
+#
+#  - name: Set password
+#    command: >
+#      {{ ejbca_sh }} ra setclearpwd 
+#      --username '{{ httpd_identity_info.id_username }}' 
+#      --password '{{ entity_pass }}'
+#    args:
+#      chdir: "{{ ejbca_home }}"
+#    become_user: "{{ ejbca_user }}"
+#    become: yes
+#    register: ra_setpwd_result
+#
+#  - name: Batch time
+#    command: >
+#      {{ ejbca_sh }} batch 
+#      --username {{ httpd_identity_info.id_username }}
+#    args:
+#      chdir: "{{ ejbca_home }}"
+#    become_user: "{{ ejbca_user }}"
+#    become: yes
+#    register: ra_batch_result
+#    tags: reverse-proxy
+#
+
+- name: Create cert stage directory
+  file:
+    path: /var/tmp/certstage
+    state: directory
+    owner: "{{ ejbca_user }}" 
+    group: "{{ ejbca_group }}"
+
+- name: Get CA chain file
+  command: >
+    {{ ejbca_sh }} ca getcacert 
+    --caname {{ item.caname }}
+    {% if item.fullchain is defined and item.fullchain is sameas true %}
+    -f /var/tmp/certstage/{{ item.caname }}-fullchain.crt
+    --include-full-chain 
+    {% else %}
+    -f /var/tmp/certstage/{{ item.caname }}.crt
+    {% endif %}
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: ejbca_get_ca_chain
+  failed_when: ejbca_get_ca_chain.rc >= 2
+  changed_when: ejbca_get_ca_chain.rc == 0
+  loop: "{{ httpd_trusted_cas }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  tags: ejbca-cli-cacert
+  when: 
+    - not tls_cert_exists.stat.exists
+
+- name: Add CA chain file to trusted-ca.crt file
+  shell: >
+    cat /var/tmp/certstage/{{ item.caname }}-fullchain.crt >> /etc/pki/tls/certs/trusted-ca.crt
+  loop: "{{ httpd_trusted_cas }}"
+  loop_control:
+    label: "{{ item.caname }}"
+  when: 
+    - not tls_cert_exists.stat.exists
+
+- name: Cleanup the cert stage file
+  file:
+    path: /var/tmp/certstage
+    state: absent
+
+- name: Copy certificate files to location for httpd to use
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root 
+    group: root
+    mode: 0640
+    remote_src: yes
+  loop: 
+    - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}.pem" 
+      dest: "/etc/pki/tls/certs/{{ httpd_identity_info.id_name }}.crt"
+    - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-Key.pem"
+      dest: "/etc/pki/tls/private/{{ httpd_identity_info.id_name }}.key"
+    - src: "{{ ejbca_home }}/p12/pem/{{ httpd_identity_info.id_name }}-CA.pem"
+      dest: "/etc/pki/tls/certs/chain.crt"
+  loop_control:
+    label: "{{ item.src }}"
+  tags: reverse-proxy
+  when: 
+    #- not tls_cert_exists.stat.exists
