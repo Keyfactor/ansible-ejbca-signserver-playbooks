@@ -1,0 +1,22 @@
+---
+
+- name: Create import file structure
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  loop: "{{ profile_dir_structure }}"
+
+- name: Prepare import template files for importing
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0664
+  loop: "{{ profile_import_list }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  register: prepare_import_files

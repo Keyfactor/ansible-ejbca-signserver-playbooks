@@ -2,12 +2,10 @@
 
 # ansible-playbook -i inventory -l eeRaServers,ra01,pkiTlsCerts deployRa.yml
 
-- hosts: eepkiServers:eeRaServers
+- hosts: pkiServers:eeRaServers
   become: yes
   become_method: sudo
   gather_facts: true
-  #pre_tasks:
-  #  - include_vars: 
   roles:
     - ansible-hostname
     - ansible-role-mariadb
@@ -22,7 +20,7 @@
   roles:
     - ansible-ejbca-certreq-cli
 
-- hosts: eepkiServers:eeRaServers
+- hosts: pkiServers:eeRaServers
   become: yes
   become_method: sudo
   gather_facts: false

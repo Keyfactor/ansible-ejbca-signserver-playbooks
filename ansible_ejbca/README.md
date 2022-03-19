@@ -1,6 +1,93 @@
-# ansible_ejbca_ee
+# ansible_ejbca
 
-An Ansible playbook that installs EJBCA CA, external RA, & external VA. The CA can also be configured as a standalone without deploying external RA/VA.
+An Ansible playbook that installs EJBCA CA, external RA, & external VA with the enterprise edition, or deploy a simple PKI with the community edition. The enterprise version can also be configured as a standalone CA without deploying external RA/VA.
+
+## Requirements
+
+- Internet Access (required for downloading Wildfly, JDBC driver, HSM client, etc.)
+- Access to a repository containing packages, likely on the internet.
+- A recent version of [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
+- A web respository that has the enterprise version of EJBCA (Full, RA & VA builds) or the community version to download
+- A host from where to run the Ansible playbook
+- A host where to install EJBCA on, reachable from the Ansible host using SSH with configured SSH keys for SSH agent based login, and the user with ability to become root using sudo.
+- the target host need the configured hostname in DNS or hostsfile for Apache to startup properly, i.e.
+```bash
+/etc/hosts: 192.168.122.92 ejbca01.solitude.skyrim
+```
+## For information - Before getting started
+
+### Dependencies
+This is a self contained playbook.  All the roles in this playbook are needed to sucessfully use this playbook.
+
+### Security
+Some software is downloaded when running this playbook. It is your responsibility to ensure that the files downloaded are the correct ones, and that integrity is protected. It is recommended to use an internal repository, with approved files, in your organization if security is of a concern.
+
+### Role Variables
+There are numerous variables for this playbook. These variables are set in `deployment_info/internal_XX_vars.yml`. Reference the deployment_info vars files for the settings used to deploy.
+
+
+## Quick Start
+
+CE - Edit _group_vars/ceServers.yml_, _host_vars/ce01.yaml_, and the _inventory_ and run:
+
+```bash
+ansible-playbook -i inventory -l ceServers,ce01 deployCeNode.yml --ask-become-pass
+```
+
+CA - Edit _group_vars/eeCaServers.yml_, _host_vars/ca01.yaml_, and the _inventory_ and run:
+
+```bash
+ansible-playbook -i inventory -l eeCaServers,ca01 deployCA.yml --ask-become-pass
+```
+
+External RA - Edit _group_vars/eeRaServers.yml_, _group_vars/pkiTlsCerts.yml_, _host_vars/ra01.yaml_, and _inventory_ and run:
+
+```bash
+ansible-playbook -i inventory -l eeRaServers,ra01,pkiTlsCerts deployRa.yml --ask-become-pass
+```
+
+External VA - Edit _group_vars/eeVaServers.yml_, _group_vars/pkiTlsCerts.yml_, _group_vars/pkiCsrCerts.yml_, _host_vars/va01.yaml_, and _inventory_ and run:
+
+```bash
+ansible-playbook -i inventory -l eeVaServers,va01,pkiTlsCerts,pkiCsrCerts deployVa.yml --ask-become-pass
+```
+
+### Switching the Datasource
+---
+To use the Database source failover/failback use the following commands:
+
+#### Failover 
+---
+```bash
+ansible-playbook -i inventory -e failover_wildfly_db=true configureDB.yml
+```
+
+#### Failback
+---
+```bash
+ansible-playbook -i inventory -e failback_wildfly_db=true configureDB.yml 
+```
+
+### Using Ansible Vault
+
+Create a password file protected with Ansible Vault
+
+```bash
+touch passwords/custom_enc_ca_vars.yml
+ansible-vault create passwords/custom_enc_ca_vars.yml
+```
+
+Edit the password file to add/remove variables
+
+```bash
+ansible-vault edit passwords/custom_enc_ca_vars.yml
+```
+
+Use the Ansible Vault password file
+
+```bash
+ansible-playbook --ask-vault-pass -i inventory -e @passwords/custom_enc_ca_vars.yml deployCa.yml
+```
 
 ## Current Ansible plays
 
@@ -81,123 +168,14 @@ Configures peering between EJBCA and RA/VA. This role is not usable and requires
 ---
 Handles post configuration tasks (Key bindings, peering, publishers, etc).
 
-## Requirements
-
-- Internet Access (required for downloading Wildfly, JDBC driver, HSM client, etc.)
-- Access to a repository containing packages, likely on the internet.
-- A recent version of [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
-- A web respository that has the enterprise version of EJBCA (Full, RA & VA builds) to download
-- A host from where to run the Ansible playbook
-- A host where to install EJBCA on, reachable from the Ansible host using SSH with configured SSH keys for SSH agent based login, and the user with ability to become root using sudo.
-- the target host need the configured hostname in DNS or hostsfile for Apache to startup properly, i.e.
-```bash
-/etc/hosts: 192.168.122.92 ejbca01.solitude.skyrim
-```
 
 
-## Dependencies
-
-This is a self contained playbook.  All the roles in this playbook are needed to sucessfully use this playbook.
-
-## Security
-
-Some software is downloaded when running this playbook. It is your responsibility to ensure that the files downloaded are the correct ones, and that integrity is protected. It is recommended to use an internal repository, with approved files, in your organization if security is of a concern.
-
-## Quick Start
-
-CA - Edit _deployment_info/internal_ca_vars.yml_ and _inventory_ and run:
-
-```bash
-ansible-playbook -i inventory deployCa.yml --ask-become-pass
-```
-
-External RA - Edit _deployment_info/internal_ra_vars.yml_ and _inventory_ and run:
-
-```bash
-ansible-playbook -i inventory deployRa.yml --ask-become-pass
-```
-
-External VA - Edit _deployment_info/internal_va_vars.yml_ and _inventory_ and run:
-
-```bash
-ansible-playbook -i inventory deployVa.yml --ask-become-pass
-```
-
-Create a password file protected with Ansible Vault
-
-```bash
-touch deployment_info/custom_enc_ca_vars.yml
-ansible-vault create deployment_info/custom_enc_ca_vars.yml
-```
-
-Edit the password file to add/remove variables
-
-```bash
-ansible-vault edit deployment_info/custom_enc_ca_vars.yml
-```
-
-Use the Ansible Vault password file
-
-```bash
-ansible-playbook --ask-vault-pass -i inventory -e @deployment_info/custom_enc_ca_vars.yml deployCa.yml
-```
-
-### Switching the Datasource
----
-To use the Database source failover/failback use the following commands:
-
-#### Failover 
----
-```bash
-ansible-playbook -i inventory -e failover_wildfly_db=true configureDB.yml
-```
-
-#### Failback
----
-```bash
-ansible-playbook -i inventory -e failback_wildfly_db=true configureDB.yml 
-```
-
-## Example Playbook
-
-This example is taken from `deployCa.yml` and is tested on CentOS 8 with FIPS mode disabled (Latest RedHat/CentOS patches broke FIPS mode with Java for EJBCA clientToolBox sunPKCS11).  The playbook saves the serial number for the Peer Connector certificate that is configured as a keybinding on the CA.  Use the serial numbers in this file called peer_cert_serial_numbers.yml to use in the VA and RA ansible playbooks for configuring the Peering Roles.  The playbook creates a file called peer_cert_serial_numbers.yml for the Peer Connector certificates.  This file is saved to  `~/ansible/ansibleCacheDir` and must be accessible for the VA and RA roles.
-
-```yaml
----
-
-- hosts: primekeyServers
-  become: yes
-  become_method: sudo
-  roles:
-    - ansible-hostname
-    - ansible-role-mariadb
-    - ansible-ejbca-wildfly
-    - ansible-ejbca-pkc11-client
-    - ansible-ejbca-prep
-    - ansible-ejbca-deploy-pki-sample
-    - ansible-ejbca-crl-import-export
-    - ansible-ejbca-httpd
-```
-
-The inventory file should contain the following: `inventory`:
-
-```yaml
-[ejbcaCaServers]
-ejbca01.solitude.skyrim ansible_host=172.16.170.129
-
-[ejbcaVaServers]
-ejbcava01.solitude.skyrim ansible_host=172.16.170.128
-
-[ejbcaRaServers]
-ejbcara01.solitude.skyrim ansible_host=172.16.170.142
-```
 
 Also see a [full documentation of EJBCA](https://doc.primekey.com/doc) on how to further configure/manage EJBCA.
 
 ## Role Variables
 
-There are numerous variables for this playbook. These variables are set in `deployment_info/internal_XX_vars.yml`. Reference the deployment_info vars files for the settings used to deploy.
-
+There are numerous variables for this playbook. These variables are set in `group_vars` and the `host_vars`. Reference the vars files for the settings used to deploy.
 
 
 ## Compatibility
@@ -225,7 +203,7 @@ Some variarations of the build matrix do not work. These are the variations and 
 
 ## Installation Notes
 
-1. Using a CentOS8 VM to install onto, installing python3 from yum makes /usr/bin/python3 available, while Ansible by default looks for /usr/bin/python.
+1. Using a Alma or Rocky 8 VM to install onto, installing python3 from yum makes /usr/bin/python3 available, while Ansible by default looks for /usr/bin/python.
 
 Add the following to the play yml that will be used, e.g. deployCa.yml or deployRa.yml  
 ```yaml

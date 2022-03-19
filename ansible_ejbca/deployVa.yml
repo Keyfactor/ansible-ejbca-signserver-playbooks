@@ -2,7 +2,7 @@
 
 # ansible-playbook -i inventory -l eeVaServers,va01,pkiTlsCerts,pkiCsrCerts deployVa.yml
 
-- hosts: eepkiServers:eeVaServers
+- hosts: pkiServers:eeVaServers
   become: yes
   become_method: sudo
   roles:
@@ -27,7 +27,7 @@
   roles:
     - ansible-ejbca-certreq-cli
 
-- hosts: eepkiServers:eeVaServers
+- hosts: pkiServers:eeVaServers
   become: yes
   become_method: sudo
   gather_facts: true

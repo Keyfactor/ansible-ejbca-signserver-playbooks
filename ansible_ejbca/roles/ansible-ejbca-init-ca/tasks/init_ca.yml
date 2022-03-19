@@ -38,6 +38,10 @@
       failed_when: initializing_management_ca.rc >= 2
       changed_when: initializing_management_ca.rc == 0
 
+    #- name: Debug initializing_management_ca
+    #  debug:
+    #    var: initializing_management_ca
+
   when:
     - item.rootDn is not defined 
 
