@@ -8,7 +8,7 @@ This is a collection of Ansible playbooks to use with EJBCA, SignServer, and int
 These playbooks are available:  
 * **[ansible_ejbca](./ansible_ejbca)** – For use with EJBCA Community or Enterprise version to install and configure EJBCA CA, external RA, & external VA, or only standalone CA without deploying external RA/VA.
 * **[ansible_signsrv](./ansible_signsrv)** – For use with SignServer Enterprise version 
-* **[ansible_certificate_request_role](./ansible_certificate_request_role)** – For use with EJBCA Enterprise version to issue certificates from an EJBCA server using the REST API 
+* **[ejbca_certificate_request_role](./ejbca_certificate_request_role)** – For use with EJBCA Enterprise version to issue certificates from an EJBCA server using the REST API 
 
 ## Get started 
 
