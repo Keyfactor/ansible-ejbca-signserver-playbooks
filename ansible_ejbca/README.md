@@ -171,7 +171,7 @@ Handles post configuration tasks (Key bindings, peering, publishers, etc).
 
 
 
-Also see a [full documentation of EJBCA](https://doc.primekey.com/doc) on how to further configure/manage EJBCA.
+Also see a [full documentation of EJBCA](https://doc.primekey.com/ejbca) on how to further configure/manage EJBCA.
 
 ## Role Variables
 
