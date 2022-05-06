@@ -1,0 +1,30 @@
+---
+
+# ansible-playbook -i inventory -l eeRaServers,ra01,pkiTlsCerts deployRa.yml
+
+- hosts: pkiServers:eeRaServers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - ansible-hostname
+    - ansible-role-mariadb
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-prep
+    - ansible-ejbca-ra-ee
+
+- hosts: pkiTlsCerts
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - ansible-ejbca-certreq-cli
+
+- hosts: pkiServers:eeRaServers
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - ansible-ejbca-importcacrt
+    - ansible-pki-ss-httpd
+    - ansible-ejbca-peer-in

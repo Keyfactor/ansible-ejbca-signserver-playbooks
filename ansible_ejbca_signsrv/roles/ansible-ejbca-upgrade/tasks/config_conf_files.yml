@@ -1,0 +1,33 @@
+---
+
+- name: Check if ejbca-custom directory exists
+  stat:
+    path: "{{ ejbca_root_dir }}/ejbca-custom"
+  register: ejbca_custom_dir
+
+- name: Prepare for upgrade of EJBCA nodes
+  block:
+
+  - name: Create ejbca-custom/conf directory
+    file:
+      path: "{{ ejbca_root_dir }}/ejbca-custom/conf"
+      state: directory
+      owner: "{{ ejbca_user }}"
+      group: "{{ ejbca_group }}"
+
+  - name: Register properties files in ejbca/conf directory
+    find:
+      paths: "{{ ejbca_home }}/conf/"
+      patterns: "*.properties"
+    register: found_properties_files
+
+  - name: Copy properties files from EJBCA conf to custom.conf
+    copy:
+      src: "{{ item.path }}"
+      dest: "{{ ejbca_root_dir }}/ejbca-custom/conf"
+      owner: "{{ ejbca_user }}"
+      group: "{{ ejbca_group }}"
+      remote_src: yes
+    loop: "{{ found_properties_files.files }}"
+
+  when: not ejbca_custom_dir.stat.exists

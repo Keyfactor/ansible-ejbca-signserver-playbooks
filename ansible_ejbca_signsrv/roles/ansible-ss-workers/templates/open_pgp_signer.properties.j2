@@ -1,0 +1,82 @@
+# {{ ansible_managed | comment }}
+# Configuration of OpenPGPSigner {{ main_item.0.id }}.
+
+## General properties
+WORKER{{ main_item.0.id }}.TYPE=PROCESSABLE
+WORKER{{ main_item.0.id }}.IMPLEMENTATION_CLASS=org.signserver.module.openpgp.signer.OpenPGPSigner
+
+WORKER{{ main_item.0.id }}.NAME={{ main_item.0.name }}
+WORKER{{ main_item.0.id }}.AUTHTYPE={{ main_item.0.AuthType }}
+
+# Crypto token
+WORKER{{ main_item.0.id }}.CRYPTOTOKEN={{ main_item.0.CryptoToken }}
+#WORKER{{ main_item.0.id }}.CRYPTOTOKEN=CryptoTokenP11
+#WORKER{{ main_item.0.id }}.CRYPTOTOKEN=CryptoTokenP11NG1
+#WORKER{{ main_item.0.id }}.CRYPTOTOKEN=CryptoTokenP11NG1KeyWrapping
+
+# Using key from sample keystore
+WORKER{{ main_item.0.id }}.DEFAULTKEY={{ main_item.1.keyalias }}
+# Key using ECDSA
+#WORKER{{ main_item.0.id }}.DEFAULTKEY=signer00002
+
+{% if inventory_hostname in groups['eeSignServers'] %}
+# Allow peering with EJBCA
+WORKER{{ main_item.0.id }}.PEERS_VISIBLE={{ main_item.0.peer_enable |default('true') }}
+{% endif %}
+
+# If the signature should be detached
+WORKER{{ main_item.0.id }}.DETACHEDSIGNATURE={{ main_item.0.detached_signature }}
+
+# Signature digest algorithm
+# Default: SHA-256
+# Options - SHA-256, SHA-384, SHA-512
+WORKER{{ main_item.0.id }}.DIGESTALGORITHM={{ main_item.0.DigestAlgorithm |default('SHA-256') }}
+
+# Binary or ASCII armored response format
+# Default: ARMORED
+# Options - BINARY or ARMORED
+WORKER{{ main_item.0.id }}.RESPONSE_FORMAT={{ main_item.0.response_format }}
+
+# Property for storing the PGP public key
+# (Fill in this property later after obtaining the public key using the generate
+#  CSR to have the User ID(s) added first)
+WORKER{{ main_item.0.id }}.PGPPUBLICKEY=
+
+# If the key usage counter is disabled
+WORKER{{ main_item.0.id }}.DISABLEKEYUSAGECOUNTER={{ main_item.0.DisableKeyUsageCounter |default('true') }}
+
+# Set to true to make CSR generation generate a revocation certificate
+#WORKER{{ main_item.0.id }}.GENERATE_REVOCATION_CERTIFICATE=true
+WORKER{{ main_item.0.id }}.GENERATE_REVOCATION_CERTIFICATE=
+
+# The number of seconds the key is valid for after its creation
+# This property is used when a certification is added to the key so to extend the current validity, set a higher value and perform the certification again
+# An empty value or zero means that the key does not expire
+# Default: (empty)
+WORKER{{ main_item.0.id }}.SELFSIGNED_VALIDITY={{ main_item.0.selfsigned_validity |default('') }}
+
+## Archiving properties
+
+# Using the base 64 archiver
+WORKER{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.base64dbarchiver.Base64DatabaseArchiver
+
+# Using the old database archiver
+#{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.olddbarchiver.OldDatabaseArchiver
+
+# Archiving only requests
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST
+
+# Archiving only responses
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=RESPONSE
+
+# Archiving both requests and responses
+WORKER{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST_AND_RESPONSE
+
+# Store forwarded address (from the X-Forwarded-For header) as the request address
+#{{ main_item.0.id }}.ARCHIVER0.USE_FORWARDED_ADDRESS=true
+
+# Include additional forwarded addresses (apart from the last), only applies if the property above is set
+#{{ main_item.0.id }}.ARCHIVER0.MAX_FORWARDED_ADDRESSES=3
+
+# Included direct (non-forwarded address) at the end of forwarded addresses
+#{{ main_item.0.id }}.ARCHIVER0.INCLUDE_DIRECT_ADDRESS=true

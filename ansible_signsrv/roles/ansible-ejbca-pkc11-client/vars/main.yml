@@ -1,9 +1,0 @@
----
-# vars file for ansible-ejbca-pkc11-client
-
-softhsm_8:
-  - http://repo.okay.com.mx/centos/8/x86_64/release/okay-release-1-4.el8.noarch.rpm
-  - http://repo.okay.com.mx/centos/8/x86_64/release/softhsm-2.4.0-2.el8.x86_64.rpm
-
-softhsm_7:
-  - softhsm

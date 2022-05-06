@@ -1,0 +1,122 @@
+---
+
+- name: Check if ejbca directory exists
+  stat:
+    path: "{{ ejbca_root_dir }}/{{ ejbca_upgrade_src_dir }}"
+  register: ejbca_src_dir_check
+  changed_when: false
+
+- name: Download, unlink, and relink EJBCA directory
+  block:
+
+    - name: Download and unpack EJBCA EE archive
+      unarchive:
+        src: "{{ ejbca_upgrade_software_url }}"
+        dest: /opt
+        remote_src: yes
+      register: unpacked_ejbca
+
+    - name: Remove current symlink for installed EJBCA
+      file:
+        state: absent
+        path: "{{ ejbca_home }}"
+
+    - name: Create symlink to installed EJBCA version
+      file:
+        state: link
+        src: "{{ ejbca_root_dir }}/{{ ejbca_upgrade_src_dir }}"
+        dest: "{{ ejbca_home }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+
+    - name: Set file permissions for {{ ejbca_home }}
+      file:
+        path: "{{ ejbca_home }}"
+        state: directory
+        recurse: yes
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+
+  when:
+    - not ejbca_src_dir_check.stat.exists 
+
+- name: Configure EJBCA cache configuration in persistence-ds-template.xml
+  template:
+    src: persistence-ds-template.xml.j2
+    dest: "{{ ejbca_home }}/modules/ejbca-entity/resources/persistence-ds-template.xml"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  when: wildfly_disable_infinispan|bool
+
+- name: Ensure statedump package is unpacked if statedump is being built
+  unarchive:
+    src: "{{ ejbca_statedump_src }}"
+    dest: "{{ ejbca_home }}/modules/"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    creates: "{{ ejbca_home }}/modules/statedump"
+  when: ejbca_build_statedump | bool
+  register: unpacked_statedump
+
+- name: Compile EJBCA into ear file
+  block:
+
+    - name: Ensure EJBCA EAR file is built
+      command: >
+        ant -q clean build
+        {% if ejbca_build_configdump %}configdump{% endif %}
+        {% if ejbca_build_statedump %}statedump{% endif %}
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      environment:
+        EJBCA_HOME: "{{ ejbca_home }}"
+        APPSRV_HOME: "{{ wildfly_home }}"
+      args:
+        chdir: "{{ ejbca_home }}"
+
+    - name: Ensure EJBCA EAR file is copied to application server if application server exists
+      copy:
+        src: "{{ ejbca_home }}/dist/ejbca.ear"
+        remote_src: yes
+        force: yes
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        dest: "{{ wildfly_home }}/standalone/deployments/ejbca.ear"
+
+  when:
+    - unpacked_ejbca.changed or
+      unpacked_statedump.changed or 
+      ejbca_force_build_ear
+
+- name: Check if clientToolBox directory exists
+  stat:
+    path: "{{ ejbca_root_dir }}/clientToolBox"
+  register: found_clienttoolbox
+  changed_when: false
+
+- name: Ensure clientToolBox is removed before rebuilding and moving
+  block:
+
+    - name: Remove existing clientToolBox
+      file:
+        state: absent
+        path: "{{ ejbca_root_dir }}/clientToolBox"
+
+    - name: Ensure clientToolBox is built
+      command: ant clientToolBox
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      args:
+        chdir: "{{ ejbca_home }}"
+
+    - name: Ensure clientToolBox has been copied outside of EJBCA dist folder
+      copy: 
+        src: "{{ ejbca_home }}/dist/clientToolBox"
+        dest: "{{ ejbca_root_dir }}"
+        remote_src: yes
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+
+  when: 
+    - unpacked_ejbca.changed
+    - found_clienttoolbox.stat.exists

@@ -1,0 +1,15 @@
+---
+
+# ansible-playbook -i inventory -l ceServers,ce01 deployCeNode.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-hostname
+    - ansible-role-mariadb
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ejbca-prep
+    - ansible-ejbca-deploy-pki-ce-sample
+    - ansible-pki-ss-httpd

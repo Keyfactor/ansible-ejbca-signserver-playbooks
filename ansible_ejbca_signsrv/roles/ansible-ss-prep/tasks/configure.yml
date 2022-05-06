@@ -1,0 +1,250 @@
+---
+
+- block:
+    - name: Add environment variables to {{ signsrv_user }} user profile
+      template:
+        src: user_profile.j2
+        dest: "{{ signsrv_user_profile }}/.bash_profile"
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+
+    - name: Check if {{ signsrv_user }} owns the {{ signsrv_home }} directory
+      stat:
+        path: "{{ signsrv_root_dir }}/{{ signsrv_src_dir_name }}"
+      register: signsrv_owns_it
+
+    - name: Set file permissions for {{ signsrv_home }}
+      file:
+        path: "{{ signsrv_home }}"
+        state: directory
+        recurse: yes
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+      when: signsrv_user not in signsrv_owns_it.stat.pw_name
+
+  when: signsrv_manage_user
+
+- name: Ensure signserver-custom/conf directory exists
+  file:
+    path: "{{ signsrv_home }}/../signserver-custom/conf"
+    state: directory
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+
+- name: Check if Elytron Credential store pass exists
+  stat:
+    path: "{{ wildfly_elytron_pass_file }}"
+  register: elytron_pass_file_exists
+  changed_when: false
+
+- name: Check if Elytron Credential store file exists
+  stat:
+    path: "{{ wildfly_home }}/standalone/configuration/credentials"
+  register: elytron_store_file_exists
+  changed_when: false
+
+- name: Elytron Credential store configuration
+  block:
+    - name: Create directory
+      file:
+        path: "{{ wildfly_elytron_pass_dir }}"
+        state: directory
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0700
+
+    - name: Create fact
+      set_fact:
+        cred_pass: "{{ pass_33 }}"
+      no_log: true
+
+    - name: Create file
+      template:
+        src: wildfly_pass.j2
+        dest: "{{ wildfly_elytron_pass_file }}"
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0700
+
+    - name: Create credential store
+      command: >
+        {{ wildfly_home }}/bin/elytron-tool.sh credential-store 
+        --create 
+        --location {{ wildfly_home }}/standalone/configuration/credentials 
+        --password "{{ cred_pass }}"
+      become: yes  
+      become_user: "{{ signsrv_user }}"
+      args:
+        creates: "{{ wildfly_home }}/standalone/configuration/credentials"
+      environment:
+        JAVA_OPTS: -Djava.security.disableSystemPropertiesFile
+      no_log: true
+
+    - name: Add Database password to credential store
+      command: >
+        {{ wildfly_home }}/bin/elytron-tool.sh credential-store 
+        --location {{ wildfly_home }}/standalone/configuration/credentials 
+        --password "{{ cred_pass }}" 
+        --add {{ item.credential_ref }} 
+        --secret "{{ item.password }}"
+      become: yes  
+      become_user: "{{ signsrv_user }}"
+      environment:
+        JAVA_OPTS: -Djava.security.disableSystemPropertiesFile
+      loop: "{{ appsrv_datasources }}"
+      no_log: true
+
+  when: 
+    - not elytron_pass_file_exists.stat.exists
+    - not elytron_store_file_exists.stat.exists
+
+- name: Configure Wildfly Kerberos 
+  block:
+    - name: Configure Wildfly Kerberos config file
+      template:
+        src: krb5.conf.j2
+        dest: "{{ wildfly_kerberos_file_path }}"
+        owner: root
+        group: root
+        mode: 0644
+      when: not krb_conf_use_os_file|bool
+
+    - name: Download kerberbos keytab file for Wildfly
+      get_url:
+        url: "{{ wildfly_kerberos_keytab_file_url }}"
+        dest: "{{ wildfly_kerberos_keytab_file }}"
+        checksum: "{{ wildfly_kerberos_keytab_file_url_checksum }}"
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0640
+
+  when: wildfly_enable_kerberos|bool
+
+- name: Deploy Wildfly standalone.xml
+  template:
+    src: "{{ wildfly_standalone_file }}"
+    dest: "{{ wildfly_home }}/standalone/configuration/standalone.xml"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+  notify: restart wildfly
+
+- name: Copy Sign Server XML Security libs to Wildfly
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}" 
+    remote_src: yes
+  loop: "{{ signsrv_xalan_xml_files }}"
+  loop_control:
+    label: "{{ item.src }}"
+  notify: restart wildfly
+
+- name: Update Xalan XML module file
+  template:
+    src: xalan-module.xml.j2
+    dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main/module.xml"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+  notify: restart wildfly
+
+- name: Find windows files
+  find:
+    path: "{{ signsrv_home }}"
+    file_type: file
+    recurse: yes
+    patterns: "*.bat,*.ps1,*.cmd"
+  register: find_win_files
+
+- name: Remove windows files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ find_win_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: flush handlers
+  meta: flush_handlers
+
+- name: Stage templated SignServer property files are copied to signerserver-custom/conf
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ signsrv_user }}"
+    group: "{{ signsrv_group }}"
+  loop: "{{ signsrv_templated_properties_files }}"
+  loop_control:
+    label: "{{ item.src }}"
+  register: configured_ejbca_properties
+
+- name: Register properties files in signserver-custom/conf
+  find:
+    paths: "{{ signsrv_home }}/../signserver-custom/conf/"
+    patterns: "*.properties"
+  register: found_properties_files
+
+- name: Register properties files that has a matching sample file in SignServer conf directory
+  stat:
+    path: "{{ signsrv_home }}/conf/{{ item }}.sample"
+  register: found_properties_files_with_matching_sample
+  loop: "{{ found_properties_files.files | map(attribute='path') | map('basename') | list }}"
+
+#- name: Debug found_properties_files_with_matching_sample
+#  debug:
+#    var: found_properties_files_with_matching_sample
+
+- name: Set variable properties files to be removed using (properties files in signserver-custom | intersect (properties files with matching sample)) | difference(templated properties files)
+  set_fact:
+    signsrv_properties_files_to_remove: "{{ ( found_properties_files.files | map(attribute='path') | map('basename') | list | intersect (found_properties_files_with_matching_sample.results | selectattr('stat.path', 'defined') | map(attribute='item') | list )) | difference(signsrv_templated_properties_files | map(attribute='dest') | map('basename') | list ) }}"
+
+#- name: Debug signsrv_properties_files_to_remove
+#  debug:
+#    var: signsrv_properties_files_to_remove
+
+- name: Stage that default SignServer properties files not in list of templated SignServer properties files are removed
+  block:
+  - name: Stage existing properties files not in list of templated SignServer properties files are removed from signserver-custom/conf folder
+    file:
+      path: "{{ signsrv_home }}/../signserver-custom/conf/{{ item }}"
+      state: absent
+    loop: "{{ signsrv_properties_files_to_remove }}"
+
+  - name: Stage existing properties files not in list of templated SignServer properties files are removed from signserver/conf folder
+    file:
+      path: "{{ signsrv_home }}/conf/{{ item }}"
+      state: absent
+    loop: "{{ signsrv_properties_files_to_remove }}"
+    register: removed_signsrv_properties
+  when: signsrv_properties_files_to_remove
+
+- name: SoftHSM hack 
+  block:
+    - name: Create directory softhsm hack
+      file:
+        path: /usr/local/lib/softhsm
+        state: directory
+        owner: "{{ signsrv_user }}"
+        group: "{{ signsrv_group }}"
+        mode: 0755
+
+    - name: Create Sym link for SoftHSM
+      file:
+        src: "{{ hsm_shared_library }}"
+        dest: /usr/local/lib/softhsm/libsofthsm2.so
+        state: link
+  when: 
+    - inventory_hostname in groups['ceSignServers']
+    - use_softhsm is defined
+    - use_softhsm|bool
+
+- name: Check if application server exists
+  stat:
+    path: "{{ wildfly_home }}"
+  register: found_appsrv_home
+
+- name: Restart wildfly when adding a node to the cluster
+  systemd:
+    name: wildfly
+    state: restarted
+  when: found_appsrv_home.stat.exists

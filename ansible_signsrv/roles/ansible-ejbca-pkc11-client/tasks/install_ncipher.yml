@@ -1,9 +1,0 @@
----
-
-#- name: Ensure application user is in nfast group
-#  user:
-#    name: "{{ ejbca_user }}"
-#    groups: nfast
-#    append: yes
-#    system: yes
-#  when: ncipher_preload | bool

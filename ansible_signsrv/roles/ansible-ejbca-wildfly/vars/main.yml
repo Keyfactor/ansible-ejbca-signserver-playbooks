@@ -1,3 +1,0 @@
----
-
-node_id_12: "{{ lookup('password', '/dev/null length=12 chars=ascii_lowercase,digits') }}"
