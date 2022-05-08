@@ -1,5 +1,9 @@
 ---
 
+# Set the default Python interpreter
+ansible_python_interpreter: /usr/bin/python3
+
+# Configure the Orgnaization variables used for templating DN's and FQDN's
 organizationName: Solitude
 organizationNameShort: "{{ organizationName }}"
 organizationNameCRL: "{{ organizationName }}"

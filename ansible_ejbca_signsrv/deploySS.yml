@@ -1,6 +1,6 @@
 ---
 
-# ansible-playbook -i inventory -l eeSignServers,ss01,ssTlsCerts deploySS.yml
+# ansible-playbook -i inventory -l eeSignServers,ss01,ssTlsCerts,ssCsrCerts deploySS.yml
 
 - hosts: signServers:eeSignServers
   become: yes
@@ -21,7 +21,14 @@
   become_method: sudo
   gather_facts: false
   roles:
-    - ansible-ss-ejbca-certreq-cli
+    - ansible-ejbca-certreq-cli
+
+- hosts: ssCsrCerts
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - ansible-ejbca-certreq-cli
 
 - hosts: signServers:eeSignServers
   become: yes

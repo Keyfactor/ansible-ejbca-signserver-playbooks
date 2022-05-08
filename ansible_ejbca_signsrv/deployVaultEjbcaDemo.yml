@@ -1,5 +1,5 @@
 ---
-- hosts: docker_hosts
+- hosts: conServers
   become: yes
   become_method: sudo
   vars:
@@ -8,7 +8,7 @@
   roles:
     - ansible-role-docker
 
-- hosts: docker_hosts
+- hosts: conServers
   gather_facts: false
   pre_tasks:
     - setup:
@@ -42,7 +42,7 @@
   roles:
     - ansible-ejbca-certreq-websvc
 
-- hosts: docker_hosts
+- hosts: conServers
   gather_facts: false
   pre_tasks:
     - setup:

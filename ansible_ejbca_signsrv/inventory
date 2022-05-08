@@ -79,7 +79,10 @@ all:
         eeRootCaServers:
         eeCaServers:
         eeVaServers:
-        eeRaServers:      
+        eeRaServers:
+    upgradeCeServers:
+      children:
+        ceServers:
     pkiTlsCerts:
       hosts:
         pkiEnrollmentCa:
