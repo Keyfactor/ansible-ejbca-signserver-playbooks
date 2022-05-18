@@ -1,0 +1,135 @@
+---
+
+# Use this option to generate keys for the Authkey Bindings, configure the AuthKey Binding, configure Peering.
+# Import certificate profiles, end entity profiles, publishers, and roles for the RA peer and other roles wantes
+#deploy_post_ca_config: true
+# Map in List Dictionaires for the configdump directory structure and configdump files
+configdump_directory_structure: "{{ authkeybind_configdump_dir_structure }}"
+configdump_import_files: "{{ authkeybind_configdump_files }}"
+
+# If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
+# create Peer connection, and create an auth key binding
+use_external_va: true
+
+# If enabled this will configure a Peer connection, and add the RA Peer role to EJBCA 
+use_external_ra: true
+
+# If enabled configures a Peer connectiona nd key binding for Sign Server
+use_external_ss: false
+
+# EJBCA version and deployment info
+ejbca_version: 7.9.0
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+# Safenet Luna shared client
+#hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+
+# Key bindings used for the certificate that peering uses to authenticate to external RA/VA & SignServer
+ejbca_keybinding:
+  - name: peerClient-ocsp
+    crypto_token_name: peeringCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "peerKeyBindingOcsp0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: keybind
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-ocsp"
+    caname: "ManagementCA"
+    token: "USERGENERATED"
+    certprofile: tlsPeerConnector
+    eeprofile: tlsPeerConnMgmt
+    useType: ocsp
+    enabled: "{{ use_external_va }}"
+  - name: peerClient-ra
+    crypto_token_name: peeringCryptoToken
+    tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "peerKeyBindingRa0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-ra"
+    caname: "ManagementCA"
+    token: "USERGENERATED"    
+    certprofile: tlsPeerConnector
+    eeprofile: tlsPeerConnMgmt
+    useType: ra
+    enabled: "{{ use_external_ra }}"
+
+# Peer connectors to configure on the CA for connecting to external VA, RA, & SignServer
+ejbca_peerConnector:
+  - name: OCSP-01
+    url: "https://ocsp01.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ocsp
+    type: ocsp
+    state: ENABLED
+    enabled: "{{ use_external_va }}"
+    remote_key_update: true
+  - name: OCSP-02
+    url: "https://ocsp02.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ocsp
+    type: ocsp
+    state: ENABLED
+    enabled: "{{ use_external_va }}"
+    remote_key_update: true
+  - name: OCSP-03
+    url: "https://ocsp03.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ocsp
+    type: ocsp
+    state: ENABLED
+    enabled: "{{ use_external_va }}"
+    remote_key_update: true
+  - name: RA-01
+    url: "https://ra01.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ra
+    type: ra
+    state: ENABLED
+    enabled: "{{ use_external_ra }}"
+    remote_key_update: true
+
+authkeybind_configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/dump3/admin-roles"
+  - "{{ ejbca_home }}/dump/dump3/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump3/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump3/services"
+  - "{{ ejbca_home }}/dump/dump3/publishers"
+  - "{{ ejbca_home }}/dump/dump3/est-config"
+  - "{{ ejbca_home }}/dump/dump3/scep-config"
+  - "{{ ejbca_home }}/dump/va/services"
+  - "{{ ejbca_home }}/dump/va/publishers"  
+  - "{{ ejbca_home }}/dump/ra/admin-roles" 
+
+authkeybind_configdump_files:
+# Files for External VA
+  - src: 'service-ocspService.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/services/ocspService.yaml'
+# Files for External RA
+  - src: 'role-ra-peer-connection.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'

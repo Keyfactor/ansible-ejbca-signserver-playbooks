@@ -1,0 +1,207 @@
+---
+
+# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+deploy_with_configdump: true
+# Map in the List Dictionaires for the CA's to create in EJBCA. The variable to map in 
+# are sourced from the include_vars above.
+add_certification_authorities: "{{ sub_add_certification_authorities }}"
+# Map in List Dictionaires for the configdump directory structure and configdump files
+configdump_directory_structure: "{{ sub_configdump_dir_structure }}"
+configdump_import_files: "{{ sub_configdump_files }}"
+
+# If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
+# create Peer connection, and create an auth key binding
+use_external_va: true
+
+# If enabled this will configure a Peer connection, and add the RA Peer role to EJBCA 
+use_external_ra: true
+
+# If enabled configures a Peer connectiona nd key binding for Sign Server
+use_external_ss: false
+
+# EJBCA version and deployment info
+ejbca_version: 7.9.0
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+# Safenet Luna shared client
+#hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+
+sub_add_certification_authorities:
+  - caname: "{{ organizationNameShort }}-Sub-CA1-G1"
+    certprofile: "SubCA-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Issuing CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    #rootDn: "External"
+    rootDn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    root_ca_name: "{{ organizationNameShort }}-Policy-CA1-G1"
+    eeprofile:
+    token: "USERGENERATED" 
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: "5y"
+    policy: "null"
+    signalg: "SHA256WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA1+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    external_caname:
+    external_root_cachain_local_repository: false
+    external_root_cachain_local_file: ~/Downloads/certs/rootCA.crt
+    external_root_cachain_url:
+    external_root_cachain_file:
+    external_signed_ca_cert_file_url:
+    external_signed_ca_cert_file:
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_subca1_token_pin | default('foo123') }}"
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "Sub_CA_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+  - caname: "{{ organizationNameShort }}-Sub-CA2-G1"
+    certprofile: "SubCA-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Issuing CA2 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    #rootDn: "External"
+    rootDn: "CN={{ organizationName }} Policy CA1 G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    root_ca_name: "{{ organizationNameShort }}-Policy-CA1-G1"
+    eeprofile:
+    token: "USERGENERATED"
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: "5y"
+    policy: "null"
+    signalg: "SHA256WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA2+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA2+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA2+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: false
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    external_caname:
+    external_root_cachain_local_repository: false
+    external_root_cachain_local_file: ~/Downloads/certs/rootCA.crt
+    external_root_cachain_url: 
+    external_root_cachain_file:
+    external_signed_ca_cert_file_url:
+    external_signed_ca_cert_file:
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_subca2_token_pin | default('foo123') }}"
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "Sub2_CA_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+
+# Enrollment protocols to disable on EJBCA
+disable_ejbca_protocols:
+  - name: ACME
+  - name: EST
+  - name: OCSP
+  - name: SCEP
+  #- name: 'RA Web'
+
+# Enrollment protocols to enable on EJBCA
+enable_ejbca_protocols:
+  - name: Certstore
+  - name: CMP
+  - name: CRLstore
+  - name: 'Public Web'
+  - name: 'REST CA Management'
+  - name: 'REST Certificate Management'
+  - name: 'REST Crypto Token Management'
+  - name: Webdist
+  - name: 'Web Service'
+
+sub_configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/subs/certification-authorities"
+  - "{{ ejbca_home }}/dump/subs/certificate-profiles"
+
+sub_configdump_files:
+  - src: 'cp-SubCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/subs/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+ 

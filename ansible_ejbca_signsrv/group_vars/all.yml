@@ -1,7 +1,7 @@
 ---
 
 # Set the default Python interpreter
-ansible_python_interpreter: /usr/bin/python3
+#ansible_python_interpreter: /usr/bin/python3
 
 # Configure the Orgnaization variables used for templating DN's and FQDN's
 organizationName: Solitude
@@ -47,6 +47,7 @@ create_root_tls_cert: true
 
 # If configuring peering, the serial numbers used in the EJBCA roles are stored as a fact in that yaml file
 peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml' ) | from_yaml }}"
+ra_peer_cert_serial_numbers: "{{ lookup('file', '{{ ejbca_csr_dir_output }}/ra_peer_cert_serial_numbers.yml', errors='ignore' ) | from_yaml }}"
 
 # EJBCA CLI password to configure for the CLI account
 ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"

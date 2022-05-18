@@ -29,7 +29,13 @@
 #    var: connector_ra_cert_serial_numbers
 
 - name: Add serial number to Admin Role
-  command: "{{ ejbca_sh }} roles addrolemember --role '{{ ejbca_ra_admin_role_name }}' --caname '{{ item.caname }}' --with CertificateAuthenticationToken:WITH_SERIALNUMBER --value '{{ item.cert_serial_Number }}' --description '{{ item.cert_serial_Number }}'"
+  command: >
+    {{ ejbca_sh }} roles addrolemember 
+    --role '{{ ejbca_ra_admin_role_name }}' 
+    --caname '{{ item.caname }}' 
+    --with CertificateAuthenticationToken:WITH_SERIALNUMBER 
+    --value '{{ item.cert_serial_Number }}' 
+    --description '{{ item.cert_serial_Number }}'
   args:
     chdir: "{{ ejbca_home }}"
   loop: "{{ connector_ra_cert_serial_numbers }}"

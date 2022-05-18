@@ -57,4 +57,3 @@
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes 
   become_user: "{{ ejbca_user }}"
-

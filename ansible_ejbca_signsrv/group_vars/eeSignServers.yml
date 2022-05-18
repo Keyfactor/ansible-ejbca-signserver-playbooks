@@ -18,13 +18,13 @@ mariadb_users:
 # Source files locally instead of downloading
 use_local_repository: false
 # Location to download SignServer binary zip file
-signsrv_software_url: http://172.16.170.133:8080/ejbca/signserver-ee-5.7.0.Final-bin.zip
+signsrv_software_url: http://172.16.170.133:8080/ejbca/signserver-ee-5.9.0.Final-bin.zip
 # Version of SignServer to deploy
-signsrv_version: "5.7.0"
+signsrv_version: "5.9.0"
 # SignServer filename. This will either be ee or ce
 signsrv_filename: "signserver-ee-"
 # SignServer full filename
-signsrv_src_dir_name: signserver-ee-5.7.0.Final    
+signsrv_src_dir_name: signserver-ee-5.9.0.Final    
 
 # Wildfly datasource connection for Wildfly to connect to the database
 appsrv_datasources:

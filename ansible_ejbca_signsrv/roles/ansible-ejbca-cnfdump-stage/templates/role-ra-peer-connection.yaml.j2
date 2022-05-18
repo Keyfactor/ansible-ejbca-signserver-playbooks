@@ -1,7 +1,18 @@
 Object Type: Role
 Version: 1
 Name: RA-Peer-Connection
+{% if ra_peer_cert_serial_numbers is defined and ra_peer_cert_serial_numbers|length %}
+Role Members:
+{% for line in ra_peer_cert_serial_numbers %}
+- Token Type: CertificateAuthenticationToken
+  Issuer: line.caname
+  Match With: WITH_SERIALNUMBER
+  Match Value: line.cert_serial_Number
+  Description: line.cert_serial_Number
+{% endfor %}
+{% else %}
 Role Members: []
+{% endif %}
 Namespace: ''
 RA Style Id: 0
 Access Rules:

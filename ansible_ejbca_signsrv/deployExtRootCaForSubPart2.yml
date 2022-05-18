@@ -1,10 +1,10 @@
 ---
 
-- hosts: ejbcaRootCa
+# ansible-playbook -i inventory -l eeRootCaServers,rt01 deployExtRootCaForSubPart2.yml
+
+- hosts: pkiServers
   become: yes
   become_method: sudo
-  pre_tasks:
-    - include_vars: deployment_info/internal_root_ca_vars.yml
   vars:
     # Map in the List Dictionaires for the CA's to create in EJBCA. The variable to map in 
     # are sourced from the include_vars above.

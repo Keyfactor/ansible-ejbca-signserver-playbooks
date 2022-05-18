@@ -1,10 +1,10 @@
 ---
 
-- hosts: ejbcaCaServers
+# ansible-playbook -i inventory -l eeCaServers,ca01 deployExtRootCaForSubPart1.yml
+
+- hosts: pkiServers
   become: yes
   become_method: sudo
-  pre_tasks:
-    - include_vars: deployment_info/internal_ext_root_sub_vars.yml
   vars:
     # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
     # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported

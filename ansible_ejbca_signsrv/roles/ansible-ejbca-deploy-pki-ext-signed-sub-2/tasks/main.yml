@@ -1,6 +1,11 @@
 ---
 # tasks file for roles/ansible-ejbca-deploy-pki-ext-signed-sub-2
 
+- name: Prepare configdump template files
+  include_role: 
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: config_configdump
+
 - name: Configdump import cert profiles, end entity profiles, and services
   command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
   args:

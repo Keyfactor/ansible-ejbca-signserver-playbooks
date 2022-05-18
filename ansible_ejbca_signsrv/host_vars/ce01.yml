@@ -1,4 +1,5 @@
 ---
+
 hostname: ce01.solitude.skyrim
 
 # Dirty hack to tell the type of instance till something better is used

@@ -1,6 +1,6 @@
 ---
 
-- hosts: ejbcaCaServers[0]
+- hosts: eeCaServers[0]
   become: yes
   become_method: sudo
   pre_tasks:
@@ -22,7 +22,7 @@
   roles:
     - ansible-ejbca-deploy-pki-ext-signed-sub-1
 
-- hosts: ejbcaRootCa[0]
+- hosts: eeRootCaServers[0]
   become: yes
   become_method: sudo
   pre_tasks:
@@ -30,7 +30,7 @@
   roles:
     - ansible-ejbca-deploy-pki-ext-root-sign-ca
 
-- hosts: ejbcaCaServers[0]
+- hosts: eeCaServers[0]
   become: yes
   become_method: sudo
   pre_tasks:

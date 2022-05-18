@@ -1,10 +1,10 @@
 ---
 
-- hosts: ejbcaCaAddNodes
+# ansible-playbook -i inventory -l eeCaServers,ca02 deployAddCaNode.yml
+
+- hosts: pkiServers
   become: yes
   become_method: sudo
-  pre_tasks:
-    - include_vars: deployment_info/add_ca_node_vars.yml
   roles:
     - ansible-hostname
     - ansible-ejbca-wildfly

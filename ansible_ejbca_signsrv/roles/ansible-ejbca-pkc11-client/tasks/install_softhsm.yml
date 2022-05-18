@@ -68,14 +68,16 @@
   yum:
     name: "{{ softhsm_7 }}"
     state: present
-  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+  when: 
+    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
 - name: Install SoftHSM Amazon Linux 2
   yum:
     name: softhsm
     state: present
-  when: (ansible_facts['distribution'] == "Amazon" and ansible_facts['distribution_major_version'] == "2") 
+  when: 
+    - (ansible_facts['distribution'] == "Amazon" and ansible_facts['distribution_major_version'] == "2") 
 
 - name: Set permissions on softhsm lib directory
   file:
@@ -86,26 +88,33 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
 
-- name: Check SoftHSM Slots
-  shell: >
-    softhsm2-util --show-slots | grep {{ item.slot_name }}
-  register: show_hsm_slots
-  loop: "{{ softhsm_gen_hsm_slots }}"
-  changed_when: show_hsm_slots.rc != 0
-  failed_when: false
-  no_log: true
+- name: Create SoftHSM slots for a new deployment
+  block:
 
-- name: Create SoftHSM slots
-  command: >
-    softhsm2-util 
-    --init-token 
-    --free 
-    --label {{ item.item.slot_name }} 
-    --so-pin {{ item.item.slot_so_pin }} 
-    --pin {{ item.item.slot_pin }}
-  become: yes  
-  become_user: "{{ ejbca_user }}" 
-  loop: "{{ show_hsm_slots.results }}"
-  no_log: true
-  register: create_hsm_slots
-  when: item.changed
+    - name: Check SoftHSM Slots
+      shell: >
+        softhsm2-util --show-slots | grep {{ item.slot_name }}
+      register: show_hsm_slots
+      loop: "{{ softhsm_gen_hsm_slots }}"
+      changed_when: show_hsm_slots.rc != 0
+      failed_when: false
+      no_log: true
+
+    - name: Create SoftHSM slots
+      command: >
+        softhsm2-util 
+        --init-token 
+        --free 
+        --label {{ item.item.slot_name }} 
+        --so-pin {{ item.item.slot_so_pin }} 
+        --pin {{ item.item.slot_pin }}
+      become: yes  
+      become_user: "{{ ejbca_user }}" 
+      loop: "{{ show_hsm_slots.results }}"
+      no_log: true
+      register: create_hsm_slots
+      when: 
+        - item.changed
+
+  when:
+    - create_softhsm_slots|bool

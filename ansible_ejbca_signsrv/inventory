@@ -16,6 +16,22 @@ all:
       hosts:
         ca01:
           ansible_host: 172.16.170.170
+    extSignMgmtCaServers:
+      hosts:
+        extsignmgmt01:
+          ansible_host: 172.16.170.178
+    extSignPolicyCas:
+      hosts:
+        extsignpolca01:
+          ansible_host: 172.16.170.178
+    policyCaSignIssuingCas:
+      hosts:
+        polcasignissueca:
+          ansible_host: 172.16.170.178
+    peerconfigCas:
+      hosts:
+        peerca01:
+          ansible_host: 172.16.170.178 
     eeRaServers:
       hosts:
         ra01:
@@ -48,41 +64,6 @@ all:
       hosts:
         docker02.solitude.skyrim:
           ansible_host: 172.16.170.8
-    httpdServers:
-      children:
-        eeCaServers:
-        eeVaServers:
-        eeRaServers:
-        ceServers:
-        eeSignServers:
-        ceSignServers:
-    mariadbServers:
-      children:
-        eeRootCaServers:
-        eeCaServers:
-        eeVaServers:
-        eeRaServers:
-        ceServers:
-        eeSignServers:
-        ceSignServers:
-    applicationServers:
-      children:
-        eeRootCaServers:
-        eeCaServers:
-        eeVaServers:
-        eeRaServers:
-        ceServers:
-        eeSignServers:
-        ceSignServers:
-    upgradeEeServers:
-      children:
-        eeRootCaServers:
-        eeCaServers:
-        eeVaServers:
-        eeRaServers:
-    upgradeCeServers:
-      children:
-        ceServers:
     pkiTlsCerts:
       hosts:
         pkiEnrollmentCa:
@@ -98,7 +79,48 @@ all:
     ssCsrCerts:
       hosts:
         ssCsrEnrollmentCa:
-          ansible_host: 172.16.170.170      
+          ansible_host: 172.16.170.170   
+    httpdServers:
+      children:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+        eeSignServers:
+        ceSignServers:
+        extSignMgmtCaServers:
+        peerconfigCas: 
+    mariadbServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+        eeSignServers:
+        ceSignServers:
+        extSignMgmtCaServers:
+    applicationServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+        eeSignServers:
+        ceSignServers:
+        extSignMgmtCaServers:
+        extSignPolicyCas:
+        policyCaSignIssuingCas:
+    upgradeEeServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+    upgradeCeServers:
+      children:
+        ceServers:   
     pkiServers:
       children:
         mariadbServers:

@@ -30,6 +30,7 @@
         auth_key_bind: true
       when: 
         - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+        - ejbca_keybinding[0] is defined
 
     - name: Create Peer Connector
       include_role:

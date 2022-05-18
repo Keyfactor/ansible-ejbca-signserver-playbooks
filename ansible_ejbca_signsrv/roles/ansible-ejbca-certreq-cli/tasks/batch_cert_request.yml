@@ -58,21 +58,6 @@
     failed_when: ra_setpwd_result.rc >= 2
     changed_when: ra_setpwd_result.rc == 0
 
-  #- name: Create certs for {{ item.username }}
-    #command: >
-    #  {{ ejbca_sh }} batch 
-    #  --username {{ item.username }} 
-    #  -dir {% if item.token is defined and 'PEM' == item.token and ejbca_type is defined and 'RA' == ejbca_type or 'VA' == ejbca_type %}{{ identity_batch_output_dir }}{% else %}{{ ejbca_home }}/p12/{% endif %}
-    #args:
-    #  chdir: "{{ ejbca_home }}"
-    #become_user: "{{ ejbca_user }}"
-    #become: yes
-    #register: ra_batch_result
-    #tags: certreq-cli-batch
-    #no_log: true
-    #failed_when: ra_batch_result.rc >= 2
-    #changed_when: ra_batch_result.rc == 0
-
   - name: Create certs for {{ item.username }}
     command: >
       {{ ejbca_sh }} batch 
@@ -90,7 +75,7 @@
     become: yes
     register: ra_batch_result
     tags: certreq-cli-batch
-    #no_log: true
+    no_log: true
     failed_when: ra_batch_result.rc >= 2
     changed_when: ra_batch_result.rc == 0
 
@@ -108,7 +93,7 @@
 
 - name: Determine {{ item.username }} certificate serial number
   command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
-  #no_log: true
+  no_log: false
   register: cert_serialNumber
   tags: certreq-cli-batch
   when: 
@@ -117,6 +102,7 @@
     - ra_batch_result is defined
     - ra_batch_result.changed|bool
 
+# Should this really be here? What happens if the Auth Key Binding is already created and we never get here to update the role?
 - name: RA specific
   block:
 
@@ -129,19 +115,26 @@
           ]
       tags: certreq-cli-batch
 
-    - name: Add serial number to Peering Admin Role
-      command: >
-        {{ ejbca_sh }} roles addrolemember 
-        --role 'RA-Peer-Connection' 
-        --caname '{{ item.caname }}' 
-        --with CertificateAuthenticationToken:WITH_SERIALNUMBER 
-        --value '{{ cert_serialNumber.stdout.split('=')[1] }}'
-      args:
-        chdir: "{{ ejbca_home }}"
-      become_user: "{{ ejbca_user }}"
-      become: yes
-      register: add_sn_to_role_result
-      tags: ra_peer_sn_role, certreq-cli-batch
+    - name: Add serial number to the RA Peering Role
+      include_role: 
+        name: ansible-ejbca-ca-add-sn-to-admin-role
+        tasks_from: peer_add_sn_to_role
+      vars:
+        ejbca_ra_admin_role_name: "RA-Peer-Connection"
+        certificate_serial_number: cert_serialNumber
+      no_log: true
+
+    - name: Write RA cert serial numbers to file for use with EJBCA VA or RA playbooks 
+      become: no
+      copy:
+        dest: "{{ ejbca_csr_dir_output }}/ra_peer_cert_serial_numbers.yml"
+        content: "{{ ra_peer_cert_serial_numbers| to_nice_yaml }}"
+      delegate_to: localhost
+      register: write_the_output
+      no_log: true
+      tags: certreq-cli-batch
+      when: 
+        - ra_peer_cert_serial_numbers is defined
 
   when:
     - ejbca_src_dir_name is defined 
@@ -149,22 +142,31 @@
     - (item.useType == "ra")
     - ra_batch_result is defined
     - ra_batch_result.changed|bool
+ 
+ - name: VA Specific
+   block:
 
-  #- name: Create fact for certificate serial numbers
-  #  set_fact: 
-  #    cacheable: yes
-  #    ra_peer_cert_serial_numbers: |            
-  #      "{{ ra_peer_cert_serial_numbers|default([]) + [ {'cert_serial_Number':cert_serialNumber.stdout.split('=')[1], 'caname':item.caname} ] }}"
-  #  tags: certreq-cli-batch
-  
-- name: Create fact for VA {{ item.username }} certificate serial number
-  set_fact: 
-    cacheable: yes
-    va_peer_cert_serial_numbers: |
-      [
-      {{ '{' }}  'cert_serial_Number':'{{ cert_serialNumber.stdout.split('=')[1] }}', 'caname':'{{ item.caname }}' {{ '}' }},
-      ]
-  tags: certreq-cli-batch
+    - name: Create fact for VA {{ item.username }} certificate serial number
+      set_fact: 
+        cacheable: yes
+        va_peer_cert_serial_numbers: |
+          [
+          {{ '{' }}  'cert_serial_Number':'{{ cert_serialNumber.stdout.split('=')[1] }}', 'caname':'{{ item.caname }}' {{ '}' }},
+          ]
+      tags: certreq-cli-batch
+
+    - name: Write VA cert serial numbers to file for use with EJBCA VA or RA playbooks 
+      become: no
+      copy:
+        dest: "{{ ejbca_csr_dir_output }}/va_peer_cert_serial_numbers.yml"
+        content: "{{ va_peer_cert_serial_numbers| to_nice_yaml }}"
+      delegate_to: localhost
+      register: write_the_output
+      no_log: true
+      tags: certreq-cli-batch
+      when:
+        - va_peer_cert_serial_numbers is defined
+
   when: 
     - ejbca_src_dir_name is defined
     - item.useType is defined
@@ -172,7 +174,7 @@
     - ra_batch_result is defined
     - ra_batch_result.changed|bool
 
-- name: Copy file to Ansible controller when PEM file and RA/VA/SS
+- name: Copy file to Ansible controller when PEM file and RA/VA/SS or External Root Node
   block:
 
     - name: Copy {{ item.username }} certificate file {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem to localhost
@@ -203,34 +205,6 @@
     - item.token == 'PEM'
     - item.useType is defined
     - (item.useType == "ra") or (item.useType == "va") or (item.useType == "root") or (item.useType == "signserver")
-    - ra_batch_result is defined
-    - ra_batch_result.changed|bool
-
-- name: Write RA cert serial numbers to file for use with EJBCA VA or RA playbooks 
-  become: no
-  copy:
-    dest: "{{ ejbca_csr_dir_output }}/ra_peer_cert_serial_numbers.yml"
-    content: "{{ ra_peer_cert_serial_numbers| to_nice_yaml }}"
-  delegate_to: localhost
-  register: write_the_output
-  no_log: true
-  tags: certreq-cli-batch
-  when: 
-    - ra_peer_cert_serial_numbers is defined
-    - ra_batch_result is defined
-    - ra_batch_result.changed|bool
-
-- name: Write VA cert serial numbers to file for use with EJBCA VA or RA playbooks 
-  become: no
-  copy:
-    dest: "{{ ejbca_csr_dir_output }}/va_peer_cert_serial_numbers.yml"
-    content: "{{ va_peer_cert_serial_numbers| to_nice_yaml }}"
-  delegate_to: localhost
-  register: write_the_output
-  no_log: true
-  tags: certreq-cli-batch
-  when:
-    - va_peer_cert_serial_numbers is defined
     - ra_batch_result is defined
     - ra_batch_result.changed|bool
 

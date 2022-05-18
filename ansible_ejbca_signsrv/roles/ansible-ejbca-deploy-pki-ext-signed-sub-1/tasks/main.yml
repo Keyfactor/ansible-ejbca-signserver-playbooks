@@ -1,6 +1,13 @@
 ---
 # tasks file for roles/ansible-ejbca-deploy-pki-ext-signed-sub-1
 
+- name: Check deployment
+  include_role: 
+    name: ansible-ejbca-restart-wildfly
+  vars:
+    restart_wildfly: true
+  tags: check_deployment
+
 - name: Suborindated CA Keys
   block:
  
@@ -50,7 +57,9 @@
     name: ansible-ejbca-restart-wildfly
   tags: check_deployment
   when: 
-    - clienttoolbox_key_generation|bool or management_add_end_entities[0] is defined or management_add_administrators[0] is defined
+    - (clienttoolbox_key_generation is defined and clienttoolbox_key_generation|bool) or 
+      management_add_end_entities[0] is defined or 
+      management_add_administrators[0] is defined
 
 - name: Use Configdump to create the CA's
   block:

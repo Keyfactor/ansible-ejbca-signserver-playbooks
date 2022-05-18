@@ -6,6 +6,11 @@
 
 #use_softhsm: true
 
+# New installs for EJBCA CA nodes using softHSM set this to true. If deploying a
+# second EJBCA CA node in a cluster set this to false. RA's and VA's should set
+# this to true for unite keys per instance
+create_softhsm_slots: true
+
 softhsm_gen_hsm_slots:
   - slot_name: Management_CA_SLOT
     slot_so_pin: "{{ encrypted_mgmtca_so_token_pin | default('foo123') }}" 

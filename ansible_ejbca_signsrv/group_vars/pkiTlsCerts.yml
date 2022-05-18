@@ -1,6 +1,8 @@
 ---
 
-# Info to create HTTPD end entity in EJBCA for the TLS certificate
+# Info to create HTTPD end entity in EJBCA for the TLS certificate.
+# The group_vars for pkiTlsCerts needs to be updated with the TLS cert info needed to create the TLS cert.
+# This is not dynamically created. 
 identity_info:
   - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,cn=ra01.{{ organizationDomainName }}"
     name: "ra01.{{ organizationDomainName }}"

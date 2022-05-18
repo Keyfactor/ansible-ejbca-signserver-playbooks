@@ -96,12 +96,12 @@ To use the Database source failover/failback use the following commands:
 
 #### Failover 
 ```bash
-ansible-playbook -i inventory -e failover_wildfly_db=true configureDB.yml
+ansible-playbook -i inventory -l eeCaServers,ca01,ca02 -e failover_wildfly_db=true configureDB.yml
 ```
 
 #### Failback
 ```bash
-ansible-playbook -i inventory -e failback_wildfly_db=true configureDB.yml 
+ansible-playbook -i inventory -l eeCaServers,ca01,ca02 -e failback_wildfly_db=true configureDB.yml 
 ```
 
 ### Use Ansible Vault
@@ -184,9 +184,6 @@ Imports the signed Policy CA certificate for the ManagementCA signed by an exter
 ### deployIssuingCa.yml (Enterprise)
 Creates an issuing CA signed by a Policy CA on the EJBCA node.
 
-### deployPeering.yml (Enterprise)
-Configures peering between EJBCA and RA/VA. This role is not usable and requires an update to leverage the new role structure.
-
 ### deployPostCaConfig.yml (Enterprise)
 Handles post configuration tasks (Key bindings, peering, publishers, etc).
 
@@ -227,7 +224,7 @@ Some variarations of the build matrix do not work. These are the variations and 
 
 1. Using a Alma or Rocky 8 VM to install onto, installing python3 from yum makes /usr/bin/python3 available, while Ansible by default looks for /usr/bin/python.
 
-The following has been set in the `group_vars/all.yml` that will be used for running plays, e.g. deployCa.yml or deployRa.yml, deployCeSS.yml
+The following can been set in the `group_vars/all.yml` that will be used for running plays, e.g. deployCa.yml or deployRa.yml, deployCeSS.yml
 
 ```yaml
     ansible_python_interpreter: /usr/bin/python3

@@ -1,6 +1,6 @@
 ---
 
-- hosts: ejbcaCaServers[0]
+- hosts: eeCaServers[0]
   become: yes
   become_method: sudo
   pre_tasks:

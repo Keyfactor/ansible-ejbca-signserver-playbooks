@@ -1,4 +1,7 @@
 ---
+
+#
+
 - hosts: conServers
   become: yes
   become_method: sudo
@@ -64,6 +67,3 @@
   roles:
     - ansible-ejbca-vault-ca-signed-cert
     - ansible-ejbca-vault-ca-issue-cert
-
-
-
