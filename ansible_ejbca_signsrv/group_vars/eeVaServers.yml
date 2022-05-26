@@ -116,3 +116,14 @@ web_httpserver_external_privhttps: 443
 web_reqcertindb: false
 # Set this to true to use P11NG with EJBCA 
 web_use_p11ng: true
+
+# Configdump dicectory structure for staging the import of the admin role to 
+# allow the CA to peer inbound to the external VA
+configdump_dir_structure_va:
+  - "{{ ejbca_home }}/dump/dump1/admin-roles"
+
+# List dict of EJBCA role templates that are imported into the external VA that
+# allows the CA to connect inbound to the external RA
+configdump_va_files_dump1:
+  - src: 'vaPeeringRole.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/admin-roles/role-vaPeeringRole.yaml.j2'

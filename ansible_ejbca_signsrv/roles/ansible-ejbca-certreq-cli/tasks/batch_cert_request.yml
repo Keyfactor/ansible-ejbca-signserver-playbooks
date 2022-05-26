@@ -20,7 +20,9 @@
     - "'FAILED' in endentity_exists.stderr"
   failed_when: true
 
-- block:
+- name: Create the entity in EJBCA and generate a certificate
+  block:
+
   - name: Add {{ item.username }} Entity to CA
     command: >
       {{ ejbca_sh }} ra addendentity 
@@ -102,9 +104,11 @@
     - ra_batch_result is defined
     - ra_batch_result.changed|bool
 
-# Should this really be here? What happens if the Auth Key Binding is already created and we never get here to update the role?
 - name: RA specific
   block:
+    # This block is to use the certiicate serial number of the external RA TLS cert and add to the
+    # RA peering role on the CA. If the RA peering role does not exist yet the fact created remains
+    # that is used to create the RA peering role when configuring peering at a later time.
 
     - name: Create fact for RA {{ item.username }} certificate serial number
       set_fact: 
@@ -137,7 +141,7 @@
         - ra_peer_cert_serial_numbers is defined
 
   when:
-    - ejbca_src_dir_name is defined 
+    #- ejbca_src_dir_name is defined 
     - item.useType is defined
     - (item.useType == "ra")
     - ra_batch_result is defined
@@ -168,11 +172,18 @@
         - va_peer_cert_serial_numbers is defined
 
   when: 
-    - ejbca_src_dir_name is defined
+    #- ejbca_src_dir_name is defined
     - item.useType is defined
     - (item.useType == "va")
     - ra_batch_result is defined
     - ra_batch_result.changed|bool
+
+- name: Create peer_cert_serial_numbers variable if it is empty
+  include_role: 
+    name: ansible-ejbca-key-binding
+    tasks_from: get_akb_serial_numbers
+  when:
+    - peer_cert_serial_numbers | length == 0
 
 - name: Copy file to Ansible controller when PEM file and RA/VA/SS or External Root Node
   block:

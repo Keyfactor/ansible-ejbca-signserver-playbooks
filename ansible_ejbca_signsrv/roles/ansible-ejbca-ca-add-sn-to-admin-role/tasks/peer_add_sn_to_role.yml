@@ -41,6 +41,7 @@
   loop: "{{ sn_in_role_result.stdout_lines }}"
   when:
     - sn_in_role_result is defined
+    - ( ejbca_ra_admin_role_name in role_exists_result.stdout)
 
 - name: Use CLI to add serial number {{ certificate_serial_number.stdout.split('=')[1] }} to {{ ejbca_ra_admin_role_name }}
   command: >

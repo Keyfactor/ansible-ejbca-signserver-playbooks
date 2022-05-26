@@ -2,7 +2,7 @@
 
 # ansible-playbook -i inventory -l eeCaServers,ca01 deployExtRootCaForSubPart3.yml
 
-- hosts: eeCaServers
+- hosts: pkiServers
   become: yes
   become_method: sudo
   pre_tasks:

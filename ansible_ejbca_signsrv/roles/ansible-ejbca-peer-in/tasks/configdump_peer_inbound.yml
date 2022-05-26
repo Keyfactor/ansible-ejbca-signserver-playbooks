@@ -1,48 +1,22 @@
 ---
 
-- name: Check if Configdump already exists
-  stat:
-    path: "{{ ejbca_home }}/dist/configdump/configdump.jar"
-  register: cfgdump_exists
-
-- name: Build Configdump
-  command: "/usr/bin/ant -q configdump"
-  args:
-    chdir: "{{ ejbca_home }}"
-    creates: "{{ ejbca_home }}/dist/configdump/configdump.jar"
-  become_user: "{{ ejbca_user }}"
-  become_method: sudo
-  when: 
-    - not cfgdump_exists.stat.exists
-
-- name: Create Dump file structure for Dump1
-  file:
-    path: "{{ item }}"
-    state: directory
-    mode: 0750
-    owner: "{{ ejbca_user }}"
-    group: "{{  ejbca_group }}"
-  loop: "{{ configdump_dir_structure_1 }}"
-
-- name: Stage RA Dump template files for Dump1
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: "{{ ejbca_user }}"
-    group: "{{ ejbca_group }}"
-    mode: 0664
-  loop: "{{ configdump_ra_files_dump1 }}"
+- name: Configdump prepare the RA peering role for import into the external RA
+  include_role: 
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: config_configdump
+  vars:
+    configdump_directory_structure: "{{ configdump_dir_structure_ra }}"
+    configdump_import_files: "{{ configdump_ra_files_dump1 }}"
   when: 
     - ejbca_type == "RA"
 
-- name: Stage VA Dump template files for Dump1
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: "{{ ejbca_user }}"
-    group: "{{ ejbca_group }}"
-    mode: 0664
-  loop: "{{ configdump_va_files_dump1 }}"
+- name: Configdump prepare the VA peering role for import into the external RA
+  include_role: 
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: config_configdump
+  vars:
+    configdump_directory_structure: "{{ configdump_dir_structure_ra }}"
+    configdump_import_files: "{{ configdump_ra_files_dump1 }}"
   when: 
     - ejbca_type == "VA"
 

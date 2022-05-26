@@ -1,4 +1,5 @@
 ---
+# tasks file for roles/ansible-ejbca-key-binding
 
 - name: check if OCSP Key Binding exists
   command: "{{ ejbca_sh }} keybind list"

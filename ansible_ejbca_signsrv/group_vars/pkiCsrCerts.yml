@@ -1,4 +1,4 @@
 ---
 
 # If configuring a VA delegated signer, the info needed to sign the CSR is stored as a fact in that yaml file
-identity_csr_info: "{{ lookup('file', '~/ansible/ansibleCacheDir/va_delegated_signers.yml' ) | from_yaml }}"
+identity_csr_info: "{{ lookup('file', '~/ansible/ansibleCacheDir/va_delegated_signers.yml', errors='ignore' ) | from_yaml }}"

@@ -1,6 +1,6 @@
 ---
 
-# ansible-playbook -i inventory -l eeCaServers,ca01 deployExtRootCaForSubPart1.yml
+# ansible-playbook -i inventory -l eeSubCaServers,subca01 deployExtRootCaForSubPart1.yml
 
 - hosts: pkiServers
   become: yes

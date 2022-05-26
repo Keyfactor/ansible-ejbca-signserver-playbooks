@@ -32,6 +32,14 @@ all:
       hosts:
         peerca01:
           ansible_host: 172.16.170.178 
+    extEeRootCaServers:
+      hosts:
+        extroot01:
+          ansible_host: 172.16.170.180
+    eeSubCaServers:
+      hosts:
+        subca01:
+          ansible_host: 172.16.170.179
     eeRaServers:
       hosts:
         ra01:
@@ -89,7 +97,9 @@ all:
         eeSignServers:
         ceSignServers:
         extSignMgmtCaServers:
-        peerconfigCas: 
+        peerconfigCas:
+        extEeRootCaServers:
+        eeSubCaServers: 
     mariadbServers:
       children:
         eeRootCaServers:
@@ -100,6 +110,8 @@ all:
         eeSignServers:
         ceSignServers:
         extSignMgmtCaServers:
+        extEeRootCaServers:
+        eeSubCaServers:  
     applicationServers:
       children:
         eeRootCaServers:
@@ -112,12 +124,16 @@ all:
         extSignMgmtCaServers:
         extSignPolicyCas:
         policyCaSignIssuingCas:
+        extEeRootCaServers:
+        eeSubCaServers:
     upgradeEeServers:
       children:
         eeRootCaServers:
         eeCaServers:
         eeVaServers:
         eeRaServers:
+        extEeRootCaServers:
+        eeSubCaServers:  
     upgradeCeServers:
       children:
         ceServers:   

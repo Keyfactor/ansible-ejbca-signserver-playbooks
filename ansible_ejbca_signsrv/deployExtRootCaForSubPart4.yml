@@ -2,7 +2,7 @@
 
 # ansible-playbook -i inventory -l eeRootCaServers,rt01 deployExtRootCaForSubPart4.yml
 
-- hosts: eeRootCaServers
+- hosts: pkiServers
   become: yes
   vars:
     # Map in the List Dictionaires for the CA's to create in EJBCA. The variable to map in 

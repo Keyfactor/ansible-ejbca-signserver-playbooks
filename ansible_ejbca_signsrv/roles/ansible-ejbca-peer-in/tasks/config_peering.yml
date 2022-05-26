@@ -1,6 +1,6 @@
 ---
 
-- name: Enable Inbound Peer Connections
+- name: Enable Only Inbound Peer Connections to this node
   command: >
     {{ ejbca_sh }} peer config 
     --enable-in TRUE 
