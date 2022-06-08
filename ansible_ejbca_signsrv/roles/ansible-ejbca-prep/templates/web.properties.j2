@@ -1,0 +1,28 @@
+# ------------ Web GUI configuration ---------------------
+#{{ ansible_managed | comment }}
+#java.trustpassword={{ web_java_trustpassword| default('changeit') }}
+superadmin.batch={{ web_superadmin_batch| default('true') }}
+httpserver.external.privhttps={{ web_httpserver_external_privhttps| default('443') }}
+httpserver.pubhttp={{ web_httpserver_external_privhttp| default('80') }}
+httpserver.pubhttps={{ web_httpserver_pubhttps| default('443') }}
+httpsserver.hostname={{ web_httpserver_hostname| default('localhost') }}
+# httpsserver.bindaddress.pubhttp={{ web_httpsserver_bindaddress_pubhttp| default('0.0.0.0') }}
+# httpsserver.bindaddress.pubhttps={{ web_httpsserver_bindaddress_pubhttps| default('0.0.0.0') }}
+# httpsserver.bindaddress.privhttps={{ web_httpsserver_bindaddress_privhttps| default('0.0.0.0') }}
+web.availablelanguages={{ web_available_languages| default('en')}}
+web.docbaseuri={{ web_docbaseuri| default('internal') }}
+web.selfreg.enabled={{ web_selfreg_enabled| default('false') }}
+web.reqcertindb={{ web_reqcertindb| default('true') }}
+keyvault.cryptotoken.enabled={{ web_azurekv_crypto| default('true') }}
+# Enable usage of AWS KMS Crypto Token in the Admin UI
+awskms.cryptotoken.enabled={{ web_awskms_crypto| default('true') }}
+
+{% if ejbca_version >= '7.5' %}
+{% if web_use_p11ng is defined %}
+# Enable usage of P11NG Crypto Token in the Admin UI for EJBCA to use for CloudHSM and other PKCS11 integrations
+p11ng.cryptotoken.enabled={{ web_use_p11ng| default('true') }}
+# Enable usage of SunP11 Crypto Token in the Admin UI
+# Default: true (enabled)
+sunp11.cryptotoken.enabled=false 
+{% endif %}
+{% endif %}

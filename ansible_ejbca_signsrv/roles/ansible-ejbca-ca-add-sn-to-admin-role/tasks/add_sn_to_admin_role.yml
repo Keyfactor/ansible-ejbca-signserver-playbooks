@@ -1,0 +1,55 @@
+---
+
+- name: Check serial number in Admin Role
+  command: "{{ ejbca_sh }} roles listadmins --role '{{ ejbca_ra_admin_role_name }}'"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: sn_in_role_result
+  tags: add_cert_sn_role
+  failed_when: sn_in_role_result.rc >= 2
+  changed_when: False
+
+#- name: Show the result of sn_in_role_result
+#  debug:
+#    var: sn_in_role_result
+
+- name: Create fact for serial numbers in hex
+  set_fact:
+    ra_serial_numbers_hex: "{{ ra_serial_numbers_hex | default( [] ) + [item.split('\"')[3]] }}"
+  loop: "{{ sn_in_role_result.stdout_lines }}"  
+
+#- name: Show the results from ra_serial_numbers_hex
+#  debug:
+#    var: ra_serial_numbers_hex
+
+#- name: Show the values from connector_ra_cert_serial_numbers
+#  debug:
+#    var: connector_ra_cert_serial_numbers
+
+- name: Add serial number to Admin Role
+  command: >
+    {{ ejbca_sh }} roles addrolemember 
+    --role '{{ ejbca_ra_admin_role_name }}' 
+    --caname '{{ item.caname }}' 
+    --with CertificateAuthenticationToken:WITH_SERIALNUMBER 
+    --value '{{ item.cert_serial_Number }}' 
+    --description '{{ item.cert_serial_Number }}'
+  args:
+    chdir: "{{ ejbca_home }}"
+  loop: "{{ connector_ra_cert_serial_numbers }}"
+  loop_control:
+    label: "{{ item.cert_serial_Number }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  when: 
+    - item.useType.find('raAdmin') != -1 and not item.cert_serial_Number in ra_serial_numbers_hex or
+      item.useType.find('raAdmin') != -1 and ra_serial_numbers_hex is undefined
+  register: add_sn_to_role_result
+  tags: add_cert_sn_role
+  failed_when: add_sn_to_role_result.rc >= 2
+
+#- name: Show results
+#  debug:
+#    var: add_sn_to_role_result

@@ -1,8 +1,0 @@
----
-# tasks file for ansible-ejbca-peer-in
-
-- name: Configure Peering 
-  include_tasks: config_peering.yml
-
-- name: Create Peering Role
-  include_tasks: configdump_peer_inbound.yml

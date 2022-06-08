@@ -1,0 +1,9 @@
+---
+
+# ansible-playbook -i inventory -l policyCaSignIssuingCas,polcasignissueca deployIssuingCa.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-1

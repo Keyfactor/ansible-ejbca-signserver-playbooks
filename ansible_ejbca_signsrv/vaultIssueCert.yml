@@ -1,0 +1,10 @@
+---
+
+- hosts: conServers
+  become: no
+  #pre_tasks:
+    #- include_vars: deployment_vars/issue_vars.yml
+    #- setup:
+    #    filter: ansible_env.HOME
+  roles:
+    - ansible-ejbca-vault-issue-cert

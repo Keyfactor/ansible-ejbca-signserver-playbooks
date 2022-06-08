@@ -1,0 +1,12 @@
+---
+
+# Failover database to secondary region
+# ansible-playbook -i inventory -l eeCaServers,ca01 -e failover_wildfly_db=true configureDB.yml
+# Failback database to primary region
+# ansible-playbook -i inventory -l eeCaServers,ca01 -e failback_wildfly_db=true configureDB.yml 
+
+- hosts: eeCaServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-database-config

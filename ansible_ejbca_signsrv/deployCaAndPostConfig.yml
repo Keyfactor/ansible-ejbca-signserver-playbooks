@@ -1,0 +1,11 @@
+---
+
+# ansible-playbook -i inventory deployCaAndPostConfig.yml
+
+- hosts: eeCaServers[0]
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-deploy-pki-add-ca
+    - ansible-ejbca-deploy-pki-ext-signed-sub-4
+    - ansible-ejbca-enroll-protocols

@@ -1,0 +1,19 @@
+---
+
+# ansible-playbook -i inventory -l eeCaServers,ca01 deployExtRootCaForSubPart5.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  vars:
+    # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+    # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+    # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+    # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+    deploy_with_configdump: false
+    # Map in the List Dictionaires for the test HSM slots, generate hsm keys, and add CA's. The variable to map in 
+    # are sourced from the include_vars above.
+    add_certification_authorities: "{{ sub_add_certification_authorities }}"
+  roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-3
+    - ansible-ejbca-deploy-pki-ext-signed-sub-4

@@ -1,0 +1,40 @@
+---
+# tasks file for roles/ansible-ejbca-deploy-pki-ext-signed-sub-2
+
+- name: Prepare configdump template files
+  include_role: 
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: config_configdump
+
+- name: Configdump import cert profiles, end entity profiles, and services
+  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
+
+- name: Configure EJBCA Enrollment protocols
+  include_role:
+    name: ansible-ejbca-enroll-protocols
+  when: 
+    - disable_ejbca_protocols[0] is defined or enable_ejbca_protocols[0] is defined
+
+- name: Add end entities
+  include_role:
+    name: ansible-ejbca-certreq-cli
+    tasks_from: batch_cert_request
+  loop: "{{ management_add_end_entities }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: 
+    - management_add_end_entities[0] is defined
+
+- name: Add administrators
+  include_role:
+    name: ansible-ejbca-roles
+    tasks_from: add_to_role
+  loop: "{{ management_add_administrators }}"
+  loop_control:
+    label: "{{ item.match_value }}"
+  when: 
+    - management_add_administrators[0] is defined

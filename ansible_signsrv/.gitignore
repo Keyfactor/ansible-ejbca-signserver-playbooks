@@ -1,6 +1,0 @@
-.DS_Store
-*.log
-*.retry
-*.swp
-ejbcaCSR/*
-deployment_info/custom*

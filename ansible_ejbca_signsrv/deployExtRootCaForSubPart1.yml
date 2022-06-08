@@ -1,0 +1,23 @@
+---
+
+# ansible-playbook -i inventory -l eeSubCaServers,subca01 deployExtRootCaForSubPart1.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  vars:
+    # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+    # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+    # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+    # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+    deploy_with_configdump: true
+    configdump_directory_structure: "{{ configdump_dir_structure }}"
+    configdump_import_files: "{{ configdump_files }}"
+  roles:
+    - ansible-hostname
+    - ansible-role-mariadb
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ejbca-prep
+    - ansible-ejbca-deploy-pki-ca-node-mgmt-ca
+    - ansible-pki-ss-httpd

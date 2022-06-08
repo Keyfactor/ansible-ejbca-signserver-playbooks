@@ -1,0 +1,37 @@
+---
+
+# ansible-playbook -i inventory -l ceSignServers,cess01,ssTlsCerts,ssCsrCerts deployCeSS.yml
+
+- hosts: signServers:ceSignServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-hostname
+    - ansible-role-mariadb
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ss-prep
+    - ansible-ss-admins
+    - ansible-ss-crypto-workers
+    - ansible-ss-gen-keys
+
+- hosts: ssTlsCerts
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - ansible-ejbca-certreq-cli
+
+- hosts: ssCsrCerts
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - ansible-ejbca-certreq-cli
+
+- hosts: signServers:ceSignServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ss-workers
+    - ansible-pki-ss-httpd

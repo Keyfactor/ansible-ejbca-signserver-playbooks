@@ -1,0 +1,80 @@
+---
+# defaults file for ansible-ss-prep
+
+#signsrv_root_dir: /opt
+#signsrv_home: "{{ signsrv_root_dir }}/signsrv"
+#wildfly_install_dir: /opt
+#wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+#wildfly_manage_service: true
+
+#signsrv_src_link_dir: "{{  signsrv_root_dir }}/signsrv"
+
+#wildfly_standalone_file: standalone-23.xml.datasource.j2
+#systemd_dir: /usr/lib/systemd/system
+
+#signsrv_jdbc_driver: https://dlm.mariadb.com/1496775/Connectors/java/connector-java-2.7.2/mariadb-java-client-2.7.2.jar
+#signsrv_jdbc_driver_checksum: sha256:a3f6776df0842cf65e7f158515012d5307da949f66042282e1ee4474dd19f448
+#signsrv_jdbc_gen_name: mariadb-java-client.jar
+
+#signsrv_manage_user: true
+#signsrv_group: wildfly
+#signsrv_user: wildfly
+#signsrv_user_profile: "/home/{{ signsrv_user }}"
+
+#ant_version: apache-ant-1.10.11-bin.tar.gz
+#ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}"
+#ant_checksum: sha256:0a3dc4624c863657daa609051763f12bfd286bc6da1d61ca48959ce3b94be0e7
+
+# SignServer property files
+#signsrv_templated_properties_files:
+#  - src: signserver_deploy.properties.j2
+#    dest: "{{ signsrv_home }}/../signserver-custom/conf/signserver_deploy.properties"
+#  - src: cesecore.properties.j2
+#    dest: "{{ signsrv_home }}/../signserver-custom/conf/cesecore.properties"
+  #- src: databaseprotection.properties.j2
+  #  dest: "{{ signsrv_home }}/../signserver-custom/conf/databaseprotection.properties"
+
+#appsrv_datasources:
+#  - jndi_name: "java:/SignServerDS"
+#    pool_name: SignServerDS
+#    database_connection_type: mariadb 
+#    database_driver_class: org.mariadb.jdbc.Driver
+#    database_jar_filename: mariadb-java-client.jar
+#    host: 127.0.0.1
+#    port: 3306
+#    database: signsrv
+#    user: signsrv-usr
+#    credential_ref: dbPassword
+#    password: "{{ encrypted_database_signsrvusr_password | default('ejbca') }}"
+
+#wildfly_enable_kerberos: false
+#wildfly_kerberos_enable_debug_log: false
+#krb_conf_use_os_file: false
+#wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+#wildfly_kerberos_keytab_file: "{{ wildfly_home }}/standalone/configuration/ejbca.keytab"
+# URL to download the keytab file used for kerberos.
+#wildfly_kerberos_keytab_file_url:
+# SHA256 checksum of the keytab file
+#wildfly_kerberos_keytab_file_url_checksum:
+#wildfly_kerberos_keytab_principal: SVCEJBCA@INTERNAL.PRIMEKEY.COM
+#krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+#krb_conf_realms:
+#  - realm: INTERNAL.PRIMEKEY.COM
+#    kdc: INTERNAL.PRIMEKEY.COM
+#    default_domain:
+#    admin_server:
+
+# Elytron password file location
+#wildfly_elytron_pass_dir: /opt/elytron
+#wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
+
+#signsrv_xalan_xml_files:
+#  - src: "{{ signsrv_home }}/lib/ext/xalan-2.7.2.jar"
+#    dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
+#  - src: "{{ signsrv_home }}/lib/ext/serializer-2.7.2.jar"
+#    dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
+
+
+
+
+

@@ -1,0 +1,35 @@
+---
+# roles/ansible-ejbca-httpd/vars/main.yml
+
+httpd_conf_files_8:
+  - src: httpd.conf.j2
+    dest: /etc/httpd/conf/httpd.conf
+  - src: ssl.conf.j2
+    dest: /etc/httpd/conf.d/ssl.conf
+  - src: 00-base.conf.j2
+    dest: /etc/httpd/conf.modules.d/00-base.conf
+  - src: 00-dav.conf.j2
+    dest: /etc/httpd/conf.modules.d/00-dav.conf
+  - src: 00-lua.conf.j2
+    dest: /etc/httpd/conf.modules.d/00-lua.conf
+  - src: 00-proxy.conf.j2
+    dest: /etc/httpd/conf.modules.d/00-proxy.conf
+  - src: 01-cgi.conf.j2
+    dest: /etc/httpd/conf.modules.d/01-cgi.conf
+  - src: 80.conf.j2
+    dest: /etc/httpd/conf.d/80.conf
+
+httpd_conf_files_7:
+  - src: httpd.conf.j2
+    dest: /etc/httpd/conf/httpd.conf
+  - src: ssl.conf.j2
+    dest: /etc/httpd/conf.d/ssl.conf
+  - src: 80.conf.j2
+    dest: /etc/httpd/conf.d/80.conf
+
+pass_33: "{{ lookup('password', '/dev/null length=33 chars=ascii_letters') }}"
+pass_15: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+
+httpd_packages:
+  - httpd
+  - mod_ssl

@@ -1,7 +1,0 @@
-# roles/mariadb/handlers/main.yml
----
-
-- name: restart mariadb
-  systemd:
-    name: '{{ mariadb_service }}'
-    state: restarted

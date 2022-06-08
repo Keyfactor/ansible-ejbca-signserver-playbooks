@@ -1,0 +1,64 @@
+---
+
+- name: Check if the key exists on the crypto token
+  command: "{{ signsrv_home }}/bin/signserver testkey {{ item.0.CryptoToken }} {{ item.1.keyalias }}"
+  args:
+    chdir: "{{ signsrv_home }}"
+  environment:
+    APPSRV_HOME: "{{ wildfly_home }}"
+  become: yes
+  become_user: "{{ signsrv_user }}"
+  register: check_p11_keys_no_exist
+  failed_when: false
+  changed_when: false
+
+- name: Debug check_p11_keys_no_exist
+  debug:
+    var: check_p11_keys_no_exist
+  when: check_p11_keys_no_exist.rc == 1
+  failed_when: true
+
+- name: Create a new key on Crypto Token & Generate CSR to download to host
+  block:
+    
+   - name: Generate key for {{ item.0.name }}:{{ item.1.keyalias }} - {{ item.1.keyalg }}:{{ item.1.keysize }}
+     command: "{{ signsrv_home }}/bin/signserver generatekey {{ item.0.CryptoToken }} -keyalg {{ item.1.keyalg }} -keyspec {{ item.1.keysize }} -alias {{ item.1.keyalias }}"
+     args:
+       chdir: "{{ signsrv_home }}"
+     environment:
+       APPSRV_HOME: "{{ wildfly_home }}"
+     become: yes
+     become_user: "{{ signsrv_user }}"
+     register: generate_p11_keys
+
+   - name: Genrate CSR for {{ item.0.name }}:{{ item.1.keyalias }}
+     command: "{{ signsrv_home }}/bin/signserver generatecertreq  {{ item.0.CryptoToken }} '{{ item.1.dn }}' {{ item.1.sig_alg }} /var/tmp/{{ item.0.name }} -alias {{ item.1.keyalias }}"
+     args:
+       chdir: "{{ signsrv_home }}"
+     environment:
+       APPSRV_HOME: "{{ wildfly_home }}"
+     become: yes
+     become_user: "{{ signsrv_user }}"
+     register: generate_p11_key_csr
+     when: 
+      - item.1.dn is defined
+
+   - name: Copy CSR for {{ item.0.name }}:{{ item.1.keyalias }} to localhost
+     become: no
+     fetch:
+       src: "/var/tmp/{{ item.0.name }}"
+       dest: "{{ ejbca_csr_dir_output }}/{{ item.0.name }}.csr"
+       flat: yes
+     when: 
+      - item.1.dn is defined
+
+   - name: Remove the CSR file {{ item.0.name }}.csr in /var/tmp
+     file:
+       path: "/var/tmp/{{ item.0.name }}"
+       state: absent
+     no_log: true
+     when: 
+      - item.1.dn is defined
+
+  when: 
+    - ('SUCCESS' not in check_p11_keys_no_exist.stdout_lines[-1])

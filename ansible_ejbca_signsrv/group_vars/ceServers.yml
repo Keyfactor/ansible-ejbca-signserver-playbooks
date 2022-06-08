@@ -1,0 +1,133 @@
+---
+
+# If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
+# create Peer connection, and create an auth key binding
+use_external_va: false
+
+# If enabled this will configure a Peer connection, and add the RA Peer role to EJBCA 
+use_external_ra: false
+
+# If enabled configures a Peer connectiona nd key binding for Sign Server
+use_external_ss: false
+
+# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+deploy_with_configdump: false
+configdump_directory_structure: "{{ configdump_dir_structure }}"
+configdump_import_files: "{{ configdump_files }}"
+
+# Add publishers to the CA's in EJBCA. CA's created before the publisher is added to EJBCA and want to leverage the publisher
+# should use this option to add the publisher to the CA.
+add_publshers_to_cas: true
+
+# EJBCA version and deployment info
+ejbca_version: 7.4.3.2
+# If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
+use_local_repository: false
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_4_3_2.zip
+# EJBCA URL to download the zip release file
+#ejbca_software_url: https://sourceforge.net/projects/ejbca/files/ejbca7/ejbca_ce_7_4_3_2.zip/download
+ejbca_software_url: https://github.com/Keyfactor/ejbca-ce/archive/refs/tags/EJBCA_7_9_0_1_20220525.zip
+ejbca_src_dir_name: ejbca_ce_7_4_3_2
+ejbca_type: CA
+
+# EJBCA Upgrade version
+ejbca_upgrade_version: 7.9.1
+# EJBCA Upgrade version URL to download the zip release file
+ejbca_upgrade_software_url:
+# Directory name of EJBCA Upgrade version
+ejbca_upgrade_src_dir: ejbca_ce_7_9_1
+
+# Variables to confgure the Widfly datasource for connecting to the applicable DB
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    database_connection_type: mariadb 
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
+    host: 127.0.0.1
+    backup_host: ejbca01.solitude.skyrim
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+  - src: custom.properties.j2
+    dest:  "{{ ejbca_home }}/../ejbca-custom/conf/custom.properties"
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
+    
+# CA DN in Web format and filename used to configure cronjob for downloading CRL's and hosting them on webserver
+certification_authorities_crl_files:
+  - crlfilename: "{{ organizationNameShort | lower }}-mgmtca.crl"
+    cadn: "CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+  - crlfilename: "{{ organizationNameShort | lower }}-rootca-g1.crl"
+    cadn: "CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+  - crlfilename: "{{ organizationNameShort | lower }}-subca-g1.crl"
+    cadn: "CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+
+# Enrollment protocols to disable on EJBCA
+#disable_ejbca_protocols:
+  #- name: OCSP
+  #- name: SCEP
+  #- name: 'RA Web'
+
+# Enrollment protocols to enable on EJBCA
+enable_ejbca_protocols:
+  - name: Certstore
+  - name: CMP
+  - name: CRLstore
+  - name: OCSP
+  - name: 'Public Web'
+  - name: SCEP
+  - name: Webdist
+  - name: 'Web Service'
+
+# CRL Update Service Worker Settings
+crl_service_time_int: 1
+crl_service_time_unit: HOURS

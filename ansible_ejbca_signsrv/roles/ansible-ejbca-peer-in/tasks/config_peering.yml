@@ -1,0 +1,10 @@
+---
+
+- name: Enable Only Inbound Peer Connections to this node
+  command: >
+    {{ ejbca_sh }} peer config 
+    --enable-in TRUE 
+    --enable-out FALSE
+  no_log: true
+  become: yes
+  become_user: "{{ ejbca_user }}"

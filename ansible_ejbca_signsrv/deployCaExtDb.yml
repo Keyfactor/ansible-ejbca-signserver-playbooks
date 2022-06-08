@@ -1,0 +1,15 @@
+---
+
+# ansible-playbook -i inventory -l eeCaServers,ca01 deployCaExtDb.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-hostname
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ejbca-prep
+    - ansible-ejbca-deploy-pki-sample
+    - ansible-ejbca-crl-import-export
+    - ansible-pki-ss-httpd

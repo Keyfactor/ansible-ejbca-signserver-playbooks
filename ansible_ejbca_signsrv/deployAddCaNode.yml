@@ -1,0 +1,13 @@
+---
+
+# ansible-playbook -i inventory -l eeCaServers,ca02 deployAddCaNode.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-hostname
+    - ansible-ejbca-wildfly
+    - ansible-ejbca-pkc11-client
+    - ansible-ejbca-prep
+    - ansible-pki-ss-httpd

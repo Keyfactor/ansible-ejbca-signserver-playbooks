@@ -1,0 +1,167 @@
+---
+# defaults file for primekeyprep
+
+#ejbca_root_dir: /opt
+#ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+#wildfly_install_dir: /opt
+#wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+#wildfly_manage_service: true
+
+#ejbca_src_link_dir: "{{  ejbca_root_dir }}/ejbca"
+
+#ejbca_jdbc_remote_dir: ~/Downloads/PK-Software/mariadb-java-client-2.7.2.jar
+#ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
+
+#apache_ant_remote_dir: ~/Downloads/PK-Software/apache-ant-1.10.11-bin.tar.gz
+#ant_version: apache-ant-1.10.11-bin.tar.gz
+#ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}" 
+#ant_checksum: sha256:0a3dc4624c863657daa609051763f12bfd286bc6da1d61ca48959ce3b94be0e7
+
+#ejbca_manage_user: true
+#ejbca_group: wildfly
+#ejbca_user: wildfly
+#ejbca_user_profile: "/home/{{ ejbca_user }}"
+
+# apply_indexes: If default EJBCA database indexes should be applied. Will always report change if true
+# database_name: Name of EJBCA database
+management_database_indexes:
+  apply_indexes: true
+  database_name: ejbca
+
+ejbca_database_indexes:
+  - index: "--file {{ ejbca_home }}/doc/sql-scripts/create-index-ejbca.sql"
+  #- index: "--execute 'ALTER TABLE AuditRecordData row_format=compressed key_block_size=4;'"
+  #- index: "--execute 'ALTER TABLE CertReqHistoryData row_format=compressed key_block_size=4;'"
+  #- index: "--execute 'ALTER TABLE CRLData row_format=compressed key_block_size=16;'"
+  #- index: "--execute 'ALTER TABLE CertificateData row_format=compressed key_block_size=8;'"
+  #- index: "--execute 'ALTER TABLE UserData row_format=compressed key_block_size=4;'"
+
+# EJBCA CA property files
+#ejbca_templated_properties_files:
+#  - src: cesecore.properties.j2
+#    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+#  - src: database.properties.j2
+#    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+#  - src: ejbca.properties.j2
+#    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+#  - src: web.properties.j2
+#    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+#  - src: mail.properties.j2
+#    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+#  - src: custom.properties.j2
+#    dest:  "{{ ejbca_home }}/../ejbca-custom/conf/custom.properties"
+  #- src: install.properties.j2
+  #  dest: "{{ ejbca_home }}/../ejbca-custom/conf/install.properties"
+
+ejbca_force_build_ear: false
+
+# EJBCA statedump utility source package ZIP file
+ejbca_statedump_src: 
+
+# If the statedump utility should be built into EJBCA
+ejbca_build_statedump: false
+# If the configdump utility should be built into EJBCA
+ejbca_build_configdump: false
+
+wildfly_enable_kerberos: false
+wildfly_kerberos_enable_debug_log: false
+krb_conf_use_os_file: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+wildfly_kerberos_keytab_file: "{{ wildfly_home }}/standalone/configuration/ejbca.keytab"
+# URL to download the keytab file used for kerberos.
+wildfly_kerberos_keytab_file_url:
+# SHA256 checksum of the keytab file
+wildfly_kerberos_keytab_file_url_checksum:
+wildfly_kerberos_keytab_principal: SVCEJBCA@INTERNAL.PRIMEKEY.COM
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:
+
+# Elytron password file location
+#wildfly_elytron_pass_dir: /opt/elytron
+#wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
+
+
+#ejbca.properties
+ejbca_appserver_home: "{{ wildfly_home }}"
+ejbca_conf_productionmode: false
+ejbca_conf_allow_external_dynamic_configuration: true
+# Password used to protect CMS keystores in the database (CAs CMS signer/enc certificate).
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+ejbca_conf_cli_default_username: ejbca
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+
+# Parameter specifying amount of free memory (Mb) before alarming
+# Default: 1
+ejbca_conf_healtcheck_amountfreemem: 1
+
+# Parameter specifying database test query string. Used to check that
+# the database is operational.
+# Default : Select 1 From CertificateData where fingerprint='XX'
+ejbca_conf_healtcheck_dbquery: "Select 1 From CertificateData where fingerprint='XX'"
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# Parameter to specify if the check of CA tokens should actually perform a signature test
+# on the CA token, or it should only see if the token status is active.
+# Default: false (don't perform a signature operation)
+ejbca_conf_healtcheck_catokensigntest: false
+
+# Parameter to specify if a connection test should be performed on each publisher.
+# Default: false
+ejbca_conf_healtcheck_publisherconnections: false
+
+# Parameter to specify location of file containing information about maintenance
+# Use this file to specify weather to include node in healthcheck or report as down for maintenance,
+# which will return an error message (either the property name specified below or a custom message specified in web.xml).
+# Default: empty (not used) ~/maintenance.properties
+ejbca_conf_healtcheck_maintenancefile:
+
+# Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
+# The healthcheck.maintenancefile should contain a single line like this:
+# DOWN_FOR_MAINTENANCE=true
+# Where the node will be down for maintenance of the property is true, and not down for maintenance if the property is false.
+# Default: DOWN_FOR_MAINTENANCE
+ejbca_conf_healtcheck_maintenancepropertyname: DOWN_FOR_MAINTENANCE
+
+# Text string used to say that every thing is ok with this node.
+# Default=ALLOK
+ejbca_conf_healtcheck_okmessage: ALLOK
+
+# Parameter saying if a errorcode 500 should be sent in case of error.
+# Default=true
+ejbca_conf_healtcheck_sendservererror: true
+
+# Uncomment this parameter if you want a static error message instead of one generated by the HealthChecker.
+# Default=null
+ejbca_conf_healtcheck_customerrormessage: EJBCANOTOK
+
+#cesecore.properties
+core_disable_audit_log_to_db: false
+core_allow_external_dynamic_configuration: true
+core_ca_serialnumberoctetsize: 20
+core_db_keepjbossserialization: false
+core_db_keepinternalcakeystores: false
+core_ca_keepocspextendedservice: false
+
+#database.properties
+ejbca_db_database_useSeparateCertificateTable: true
+
+#Enable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: false
+databaseprotection_enableverify_AuditRecordData: false
+
+#mail.properties
+mail_from: "ejbca-donotreply@{{ organizationDomainName }}" 
+
+#web.properties
+web_httpserver_external_privhttps: 443
+web_selfreg_enabled: false
+web_reqcertindb: true

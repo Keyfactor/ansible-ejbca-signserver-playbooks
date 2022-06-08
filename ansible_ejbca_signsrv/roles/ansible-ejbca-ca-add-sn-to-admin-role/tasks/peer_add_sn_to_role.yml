@@ -1,0 +1,62 @@
+---
+
+- name: Check if role exists
+  command: "{{ ejbca_sh }} roles listroles"
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: role_exists_result
+  tags: add_cert_sn_role
+  failed_when: role_exists_result.rc >= 2
+  changed_when: False
+
+#- name: Debug role_exists_result
+#  debug:
+#    var: role_exists_result
+#  when: 
+#    - ('RA-Peer-Connection' in role_exists_result.stdout) or ('Super Administrator Role' in role_exists_result.stdout)
+
+- name: List role members for {{ ejbca_ra_admin_role_name }}
+  command: >
+    {{ ejbca_sh }} roles listadmins --role '{{ ejbca_ra_admin_role_name }}'
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: sn_in_role_result
+  tags: add_cert_sn_role
+  failed_when: sn_in_role_result.rc >= 2
+  changed_when: False
+  when: 
+    - ( ejbca_ra_admin_role_name in role_exists_result.stdout)
+
+#- name: Debug sn_in_role_result
+#  debug:
+#    var: sn_in_role_result
+
+- name: Create fact for member vaules in {{ ejbca_ra_admin_role_name }}
+  set_fact:
+    ra_serial_numbers_hex: "{{ ra_serial_numbers_hex | default( [] ) + [item.split('\"')[3]] }}"
+  loop: "{{ sn_in_role_result.stdout_lines }}"
+  when:
+    - sn_in_role_result is defined
+    - ( ejbca_ra_admin_role_name in role_exists_result.stdout)
+
+- name: Use CLI to add serial number {{ certificate_serial_number.stdout.split('=')[1] }} to {{ ejbca_ra_admin_role_name }}
+  command: >
+    {{ ejbca_sh }} roles addrolemember 
+    --role '{{ ejbca_ra_admin_role_name }}' 
+    --caname '{{ item.caname }}' 
+    --with CertificateAuthenticationToken:WITH_SERIALNUMBER 
+    --value '{{ certificate_serial_number.stdout.split('=')[1] }}'
+    --description '{{ certificate_serial_number.stdout.split('=')[1] }}'
+  args:
+    chdir: "{{ ejbca_home }}"
+  become_user: "{{ ejbca_user }}"
+  become: yes
+  register: add_sn_to_role_result
+  tags: ra_peer_sn_role, certreq-cli-batch
+  when: 
+  - ra_serial_numbers_hex is defined
+  - not certificate_serial_number.stdout.split('=')[1] in ra_serial_numbers_hex

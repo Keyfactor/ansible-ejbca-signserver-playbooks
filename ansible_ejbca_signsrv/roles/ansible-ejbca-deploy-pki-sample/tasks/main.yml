@@ -1,0 +1,408 @@
+---
+# tasks file for roles/ansible-ejbca-deploy-pki-sample
+
+- name: Prepare configdump template files
+  include_role: 
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: config_configdump
+
+- name: Check deployment
+  include_role: 
+    name: ansible-ejbca-restart-wildfly
+  vars:
+    restart_wildfly: true
+  tags: check_deployment
+
+- name: Use Configdump to create the Management & Root CA's
+  block:
+
+    - name: Create crypto tokens for Management & Root CA's
+      include_role: 
+        name: ansible-ejbca-crypto-token
+        tasks_from: add_crypto_token
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
+
+    - name: Generate keys for Management & Root CA's on crypto token
+      include_role:
+        name: ansible-ejbca-crypto-token
+        tasks_from: generate_keys
+      loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: key_generation
+
+    - name: Stage Management & Root CA to create with configdump
+      include_role:
+        name: ansible-ejbca-cnfdump-stage
+        tasks_from: stage_ca
+      vars:
+        dump_dest: "{{ ejbca_home }}/dump/dump1/certification-authorities/{{ item.caname }}.yaml"
+      loop: "{{ management_add_certification_authorities }}"
+      loop_control:
+        label: "{{ item.caname }}"
+      no_log: true
+
+    - name: Intialize Management & Root CA's with configdump
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump1 
+        --initialize
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+  when: 
+    - deploy_with_configdump|bool and management_add_certification_authorities[0] is defined 
+
+- name: Use CLI to create the Management & Root CA's
+  block:
+
+    - name: Import configdump of Root CA templates and EKU's
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump1
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+      
+    - name: Create crypto tokens for Management & Root CA's
+      include_role: 
+        name: ansible-ejbca-crypto-token
+        tasks_from: add_crypto_token
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
+      #when:
+      #  - ("soft" in item.tokentype)
+
+    - name: Generate keys for Management & Root CA's on crypto token
+      include_role:
+        name: ansible-ejbca-crypto-token
+        tasks_from: generate_keys
+      loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: key_generation
+      #when:
+      #  - ("soft" in key_item.0.tokentype)
+
+    - name: Initialize Management & Root CAs with CLI commands
+      include_role:
+        name: ansible-ejbca-init-ca
+        tasks_from: init_ca
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
+      tags: create_cas
+
+    - name: Configure ManagmentCA and Root CA settings
+      include_role: 
+        name: ansible-ejbca-conf-ca-exts
+        tasks_from: config_ca_extensions
+      loop: "{{ management_add_certification_authorities }}"
+      no_log: true
+
+  when: 
+    - management_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
+
+- name: Use Configdump to create the Sub CA's
+  block:
+
+    - name: Create crypto tokens for Sub CA's
+      include_role: 
+        name: ansible-ejbca-crypto-token
+        tasks_from: add_crypto_token
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+
+    - name: Generate keys for Suborindated CA's on crypto token
+      include_role:
+        name: ansible-ejbca-crypto-token
+        tasks_from: generate_keys
+      loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: key_generation
+      #when:
+      #  - ("soft" in key_item.0.tokentype)
+
+    - name: Stage Sub CA's to create with configdump
+      include_role:
+        name: ansible-ejbca-cnfdump-stage
+        tasks_from: stage_ca
+      vars:
+        dump_dest: "{{ ejbca_home }}/dump/dump2/certification-authorities/{{ item.caname }}.yaml"
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+
+    - name: Intialize Sub CA's with configdump
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump2 
+        --initialize
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+  when:
+    - deploy_with_configdump|bool
+    - sub_add_certification_authorities[0] is defined
+
+- name: Use CLI to create the Sub CA's
+  block:
+
+    - name: Import configdump of profiles and services
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/dump2
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+    - name: Create crypto token for Suborindated CA's not using PKCS11
+      include_role: 
+        name: ansible-ejbca-crypto-token
+        tasks_from: add_crypto_token
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+      #when:
+      #  - ("soft" in item.tokentype)
+
+    - name: Generate keys for Suborindated CA's on crypto token
+      include_role:
+        name: ansible-ejbca-crypto-token
+        tasks_from: generate_keys
+      loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
+      loop_control:
+        label: "{{ key_item.0.caname }}"
+        loop_var: key_item
+      no_log: true
+      tags: key_generation
+      #when:
+      #  - ("soft" in key_item.0.tokentype)
+      
+    - name: Initialize Sub CA's with CLI commands
+      include_role:
+        name: ansible-ejbca-init-ca
+        tasks_from: init_ca
+      loop: "{{ sub_add_certification_authorities }}"
+      loop_control:
+        label: "{{ item.caname }}"
+      no_log: true
+      tags: create_cas
+
+    - name: Configure Sub CA's settings
+      include_role: 
+        name: ansible-ejbca-conf-ca-exts
+        tasks_from: config_ca_extensions
+      loop: "{{ sub_add_certification_authorities }}"
+      no_log: true
+
+  when: 
+    - sub_add_certification_authorities[0] is defined
+    - not deploy_with_configdump|bool
+
+- name: Create Key Binding for Peering
+  include_role:
+    name: ansible-ejbca-key-binding
+  vars:
+    key_bindings: "{{ ejbca_keybinding }}"
+    auth_key_bind: true
+  when: 
+    - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+
+- name: Create Peer Connector
+  include_role:
+    name: ansible-ejbca-peer-connector
+  when: 
+    - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+
+- name: Add External VA setup to EJBCA
+  block:
+
+    - name: Create External VA Publisher template files to import with configdump
+      include_role:
+        name: ansible-ejbca-cnfdump-stage
+        tasks_from: stage_external_va_publisher
+      loop: "{{ ejbca_peerConnector }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: 
+        - ("ocsp" in item.type)
+
+    - name: Create External VA OCSP key update service template files to import with configdump
+      include_role:
+        name: ansible-ejbca-cnfdump-stage
+        tasks_from: stage_external_va_key_update
+      loop: "{{ ejbca_peerConnector }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: 
+        - ("ocsp" in item.type)
+        - item.remote_key_update|bool
+
+    - name: Create external VA services and publisher with configdump
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/va
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+  when:
+    - use_external_va is defined
+    - use_external_va|bool
+
+- name: Configure SCP Publisher
+  include_role:
+    name: ansible-ejbca-scp-publisher
+  when: 
+    - management_known_hosts[0] is defined or management_scp_localhost_receiving_users[0] is defined or management_scp_localhost_archive_dirs[0] is defined
+
+- name: Approval Profiles
+  block:
+
+    - name: Import Approval Profiles for EJBCA <= 7.8.0
+      include_role:
+        name: ansible-ejbca-legacy-app-profs
+      when: 
+        - ( ejbca_version is version('7.8.0', '<='))
+
+    - name: Import Approval Profiles for EJBCA >= 7.7.0
+      include_role:
+        name: ansible-ejbca-cnfdump-stage
+        tasks_from: stage_app_profile
+      when: 
+        - ( ejbca_version is version('7.7.0', '>='))
+
+  when:
+    - use_approval_profiles is defined
+    - use_approval_profiles|bool
+
+- name: Add AWS S3 Publishers
+  block:
+
+    - name: Create AWS S3 Publisher template files to import with configdump
+      include_role:
+        name: ansible-ejbca-cnfdump-stage
+        tasks_from: stage_aws_s3_publisher
+      loop: "{{ aws_s3_publishers }}"
+      loop_control:
+        label: "{{ item.s3_publisher_name }}"
+
+    - name: Create AWS S3 publishers with configdump
+      command: >
+        ./configdump.sh import 
+        --ignore-errors 
+        --overwrite update 
+        --non-interactive continue 
+        -l {{ ejbca_home }}/dump/awsS3
+      args:
+        chdir: "{{ ejbca_home }}/dist/configdump"
+      become: yes 
+      become_user: "{{ ejbca_user }}"
+
+  when:
+    - use_aws_s3_publisher is defined
+    - use_aws_s3_publisher|bool
+
+- name: Import configdump of profiles, services, & publishers
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    --overwrite update 
+    --non-interactive continue 
+    -l {{ ejbca_home }}/dump/dump3
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
+
+- name: Update CA's to use Publishers using configdump
+  include_role:
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: add_publishers_to_ca
+  when: 
+    - add_publshers_to_cas is defined
+    - add_publshers_to_cas|bool
+
+- name: Create external RA role with configdump
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    --overwrite update 
+    --non-interactive continue 
+    -l {{ ejbca_home }}/dump/ra
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"
+  when: 
+    - use_external_ra|bool
+
+- name: Configure EJBCA Enrollment protocols
+  include_role:
+    name: ansible-ejbca-enroll-protocols
+  when: 
+    - disable_ejbca_protocols[0] is defined or enable_ejbca_protocols[0] is defined
+
+- name: Add end entities
+  include_role:
+    name: ansible-ejbca-certreq-cli
+    tasks_from: batch_cert_request
+  loop: "{{ management_add_end_entities }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: 
+    - management_add_end_entities[0] is defined
+
+- name: Add administrators
+  include_role:
+    name: ansible-ejbca-roles
+    tasks_from: add_to_role
+  loop: "{{ management_add_administrators }}"
+  loop_control:
+    label: "{{ item.match_value }}"
+  when: 
+    - management_add_administrators[0] is defined
+
+- name: Create a Crontab to download CRL's for hosting on webserver
+  include_role:
+    name: ansible-ejbca-crl-crontab
+    tasks_from: config_crontab
+  when: 
+    - enable_crl_crontab|bool
+
+- name: Copy superadmin.p12 to local server
+  fetch:
+    src: "{{ ejbca_home }}/p12/{{ item.username }}.p12"
+    dest: "{{ superadmin_local_dir|default('~/Desktop') }}/"
+    flat: yes
+  loop: "{{ management_add_end_entities }}"
+  no_log: true
+  register: copy_down_profile

@@ -1,0 +1,130 @@
+---
+
+# Database and user to create for SignServer
+mariadb_databases:
+  - name: signsrv
+    collation: "utf8_general_ci"
+    encoding: "utf8"
+mariadb_users:
+  - name: signsrv-usr
+    password: "{{ encrypted_database_signsrvusr_password | default('ejbca') }}"
+    priv: "sigsrv.*:ALL"
+    host: "%"
+  - name: signsrv-usr
+    password: "{{ encrypted_database_signsrvusr_password | default('ejbca') }}"
+    priv: "signsrv.*:ALL"
+    host: "localhost"
+
+# Source files locally instead of downloading
+use_local_repository: false
+# Location to download SignServer binary zip file
+#signsrv_software_url: https://sourceforge.net/projects/signserver/files/signserver/5.2/signserver-ce-5.2.0.Final-bin.zip/download
+signsrv_software_url: https://github.com/Keyfactor/signserver-ce/releases/download/v5.9.1.Final/signserver-ce-5.9.1.Final-bin.zip
+# Version of SignServer to deploy
+signsrv_version: "5.9.0"
+# SignServer filename. This will either be ee or ce
+signsrv_filename: "signserver-ce-"
+# SignServer full filename
+signsrv_src_dir_name: signserver-ce-5.9.0.Final
+
+# Wildfly datasource connection for Wildfly to connect to the database
+appsrv_datasources:
+  - jndi_name: "java:/SignServerDS"
+    pool_name: SignServerDS
+    database_connection_type: mariadb 
+    database_driver_class: org.mariadb.jdbc.Driver
+    database_jar_filename: mariadb-java-client.jar
+    host: 127.0.0.1
+    port: 3306
+    database: signsrv
+    user: signsrv-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_signsrvusr_password | default('ejbca') }}"
+
+wildfly_enable_kerberos: false
+wildfly_kerberos_enable_debug_log: false
+krb_conf_use_os_file: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+wildfly_kerberos_keytab_file: "{{ wildfly_home }}/standalone/configuration/ejbca.keytab"
+# URL to download the keytab file used for kerberos.
+wildfly_kerberos_keytab_file_url:
+# SHA256 checksum of the keytab file
+wildfly_kerberos_keytab_file_url_checksum:
+wildfly_kerberos_keytab_principal: SVCEJBCA@INTERNAL.PRIMEKEY.COM
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:
+
+# Admins to configure in SignServer
+signsrv_admins:
+  - name: "Super Admin"
+    serial: 5b5df6272d2e50b28fc286482a292c50aa1cbc11
+    issuerdn: "CN=ManagementCA, OU=Certification Authorities, O={{ organizationName }}, C={{ countryName }}"
+
+# Set the Java Home for CE SignServer to Java 8
+signsrv_java_home: /usr/lib/jvm/java
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+ss_conf_healtcheck_authorizedips: 127.0.0.1;::1;0:0:0:0:0:0:0:1
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+
+# PKCS11 Crypto token properties
+p11_crypto_tokens:
+  - id: 1
+    name: CryptoTokenP11
+    SharedLibraryName: SoftHSM
+    SLOTLABELTYPE: SLOT_LABEL
+    SLOTLABELVALUE: SignServer_SLOT
+    testkey_alias: testkey0001
+    testkey_keyalg: RSA
+    testkey_keyspec: 2048
+    peer_enable: true
+    slot_pin: "{{ encrypted_signsrv_token_pin | default('foo123') }}"
+
+softhsm_gen_hsm_slots:
+  - slot_name: SignServer_SLOT
+    slot_so_pin: "{{ encrypted_signsrv_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_signsrv_token_pin | default('foo123') }}"
+  - slot_name: DB_Protect_SLOT
+    slot_so_pin: "{{ encrypted_signsrv_so_databaseprotection_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_signsrv_databaseprotection_token_pin | default('foo123') }}"
+
+# SignServer property files
+signsrv_templated_properties_files:
+  - src: signserver_deploy.properties.j2
+    dest: "{{ signsrv_home }}/../signserver-custom/conf/signserver_deploy.properties"
+  - src: cesecore.properties.j2
+    dest: "{{ signsrv_home }}/../signserver-custom/conf/cesecore.properties"
+
+#signserver_deploy.properties
+web_httpserver_external_privhttps: 443
+webdoc_enabled: true
+web_admingui_dist_enabled: false
+web_clientcli_dist_enabled: false
+
+maskedworkerproperties_enabled: true
+maskedworkerproperties_values: "PIN,KEYSTOREPASSWORD,KEYDATA"
+
+signsrv_xalan_xml_files:
+  - src: "{{ signsrv_home }}/lib/ext/xalan-2.7.2.jar"
+    dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
+  - src: "{{ signsrv_home }}/lib/ext/serializer-2.7.2.jar"
+    dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
+    

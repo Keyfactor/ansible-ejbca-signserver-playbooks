@@ -1,0 +1,9 @@
+---
+
+# ansible-playbook -i inventory -l peerconfigCas,peerca01 deployPostCaConfig.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-4

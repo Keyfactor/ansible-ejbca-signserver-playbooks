@@ -1,0 +1,535 @@
+---
+
+hostname: ejbca01.solitude.skyrim
+
+# Dirty hack to tell the type of instance till something better is used
+#ejbca_type: CA
+
+# Info to create HTTPD end entity in EJBCA for the TLS certificate
+tls_identity_info:
+  - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
+    name: "ca01.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
+    username: ca_httpd_tls
+    password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+    altname: "dNSName=ca01.{{ organizationDomainName }}, dNSName=ca.{{ organizationDomainName }}, dNSName=sapi.ca.{{ organizationDomainName }}, dNSName=api.ca.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationName }}"
+    caname: "{{ organizationName }}-Sub-CA"
+    token: PEM
+    useType: ca
+
+# Dirty mapping of httpd cert file name till something better is used 
+httpd_identity_info:
+  id_name: "{{ identity_info[0].name }}"
+  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"
+
+# Super Admin accounts to create
+management_add_end_entities:
+  - username: "SkyrimSuperAdministrator"
+    dn: "C={{ countryName }},O={{ organizationName }},OU=Administrators,CN={{ superAdminCn }}"
+    caname: "ManagementCA"
+    token: "P12"
+    password: "{{ encrypted_superadmin_enrollment_code | default('foo123') }}"
+    certprofile: adminMgmtCA
+    eeprofile: AdminInternal
+
+# Super Admin entities to add to the Super Admin Role
+management_add_administrators:
+  - role: "Super Administrator Role"
+    caname: "ManagementCA"
+    match_with: "WITH_COMMONNAME"
+    match_value: "{{ superAdminCn }}"
+
+# Key bindings used for the certificate that peering uses to authenticate to external RA/VA & SignServer
+ejbca_keybinding:
+  - name: peerClient-ocsp
+    crypto_token_name: peeringCryptoToken
+    tokentype: Pkcs11NgCryptoToken
+    #tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "peerKeyBindingOcsp0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: keybind
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-ocsp"
+    caname: "ManagementCA"
+    token: "USERGENERATED"
+    certprofile: tlsPeerConnector
+    eeprofile: tlsPeerConnMgmt
+    useType: ocsp
+    enabled: "{{ use_external_va }}"
+  - name: peerClient-ra
+    crypto_token_name: peeringCryptoToken
+    tokentype: Pkcs11NgCryptoToken
+    #tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "peerKeyBindingRa0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-ra"
+    caname: "ManagementCA"
+    token: "USERGENERATED"    
+    certprofile: tlsPeerConnector
+    eeprofile: tlsPeerConnMgmt
+    useType: ra
+    enabled: "{{ use_external_ra }}"
+  - name: peerClient-sign
+    crypto_token_name: peeringCryptoToken
+    tokentype: Pkcs11NgCryptoToken
+    #tokentype: PKCS11CryptoToken
+    tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "KeyBinding_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "peerKeyBindingSign0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: keybind
+    signature_algorithm: SHA256WithRSA
+    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-sign"
+    caname: "ManagementCA"
+    token: "USERGENERATED"
+    certprofile: tlsPeerConnector
+    eeprofile: tlsPeerConnMgmt
+    useType: sign
+    enabled: "{{ use_external_ss }}"
+
+# Peer connectors to configure on the CA for connecting to external VA, RA, & SignServer
+ejbca_peerConnector:
+  - name: OCSP-01
+    url: "https://ocsp01.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ocsp
+    type: ocsp
+    state: ENABLED
+    remote_key_update: true
+    enabled: "{{ use_external_va }}"
+  - name: RA-01
+    url: "https://ra01.{{ organizationDomainName }}/ejbca/peer/v1"
+    keybinding: peerClient-ra
+    type: ra
+    state: ENABLED
+    enabled: "{{ use_external_ra }}"
+  - name: Sign-01
+    url: "https://sign01.{{ organizationDomainName }}/signserver/peer/v1"
+    keybinding: peerClient-sign
+    type: sign
+    state: ENABLED
+    enabled: "{{ use_external_ss }}"
+
+# If enabled configures Approval Profiles in EJBCA
+use_approval_profiles: true    
+
+# List of certification authorities that should be added using CLI
+# caname: CA name
+# certprofile: Certificate profile
+# dn: CA distinguished name
+# subjectaltname: CA subject alt name
+# validity: Validity time or end date
+# policy: "null" or policy oid
+# keytype: RSA, DSA or ECDSA
+# keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
+# signalg: Signature algorithm
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+# tokenpass: Password for the CA token
+# pkcs11_token: Dict of parameters needed for PKCS11 token
+# slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
+# slot_identifier_value: Slot identifier
+# signkey_label: Signing key label
+# defaultkey_label: Default (encryption) key label
+# testkey_label: Test key label
+# The order must be Management CA and then Root CA
+management_add_certification_authorities:
+  - caname: "ManagementCA"
+    certprofile: "managementCA"
+    dn: "CN=ManagementCA,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: "10y"
+    policy: "null"
+    signalg: "SHA256WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/{{ organizationName | lower }}-mgmtca.crt"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/{{ organizationName | lower }}-mgmtca.crt"
+    crlPeriod: 259200000
+    crl_overlap_time: 600000
+    crlIssueInterval: 86400000
+    crlIssueInterval_yml: 1d
+    crlPeriod_yml: 3d
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "Management_CA_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+    publishers:
+      - validationAuthorityPeerPub-OCSP-01
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    certprofile: "RootCA-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    subjectaltname: ""
+    validity: "9125"
+    validity_yml: "25y"
+    policy: "null"
+    signalg: "SHA512WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-RootCAG1.p7b"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/{{ organizationNameShort | lower }}-rootca-g1.crt"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/{{ organizationNameShort | lower }}-rootca-g1.crt"
+    crlPeriod: 15552000000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "Root_CA_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: 4096
+        key_type: "RSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 4096
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+    publishers:
+      - validationAuthorityPeerPub-OCSP-01
+
+# List of certification authorities that should be added using CLI
+# caname: CA name
+# certprofile: Certificate profile
+# dn: CA distinguished name
+# subjectaltname: CA subject alt name
+# validity: Validity time or end date
+# policy: "null" or policy oid
+# keytype: RSA, DSA or ECDSA
+# keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
+# signalg: Signature algorithm
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken" or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+# tokenpass: Password for the CA token
+# pkcs11_token: Dict of parameters needed for PKCS11 token
+# slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
+# slot_identifier_value: Slot identifier
+# signkey_label: Signing key label
+# defaultkey_label: Default (encryption) key label
+# testkey_label: Test key label
+sub_add_certification_authorities:
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    certprofile: "SubCA-{{ organizationNameShort }}-G1"
+    dn: "CN={{ organizationName }} Issuing CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    rootDn: "CN={{ organizationName }} Root CA G1,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    root_ca_name: "{{ organizationNameShort }}-Root-CA"
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: "10y"
+    policy: "null"
+    signalg: "SHA384WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/CertsIssuedTo{{ organizationNameShort }}-SubCAG1.p7b"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/AIA/{{ organizationNameShort | lower }}-subca-g1.crt"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/AIA/{{ organizationNameShort | lower }}-subca-g1.crt"
+    crlPeriod: 259200000
+    crlPeriod_yml: 3d
+    crlIssueInterval: 86400000
+    crlIssueInterval_yml: 1d
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: false
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "Sub_CA_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+    publishers:
+      - validationAuthorityPeerPub-OCSP-01
+        
+configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/dump1/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump1/extended-key-usage"
+  - "{{ ejbca_home }}/dump/dump1/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump2/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump2/services"
+  - "{{ ejbca_home }}/dump/dump2/custom-certificate-extensions"
+  - "{{ ejbca_home }}/dump/dump3/admin-roles"
+  - "{{ ejbca_home }}/dump/dump3/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump3/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump3/services"
+  - "{{ ejbca_home }}/dump/dump3/publishers"
+  - "{{ ejbca_home }}/dump/dump3/acme-config"
+  - "{{ ejbca_home }}/dump/dump3/est-config"
+  - "{{ ejbca_home }}/dump/dump3/scep-config"
+  - "{{ ejbca_home }}/dump/va/services"
+  - "{{ ejbca_home }}/dump/va/publishers"  
+  - "{{ ejbca_home }}/dump/ra/admin-roles" 
+  
+configdump_files:
+  - src: 'cp-RootCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/RootCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-managementCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/ManagementCA.yaml'
+  - src: 'extended-key-usages.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/extended-key-usage/extended-key-usages.yaml'
+  - src: 'cp-EccRootCa-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/certificate-profiles/EccRootCA-{{ organizationNameShort }}-G1.yaml'
+    # Files for the 2nd dump import
+  - src: 'cp-SubCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/SubCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-EccSubCa-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/EccSubCA-{{ organizationNameShort }}-G1.yaml'
+  - src: 'cp-HashiCorp-SubCA-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/HashiCorp-SubCA-G1.yaml'
+  - src: 'cp-tlsPeerConnector.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsPeerConnector.yaml'
+  - src: 'ee-tlsPeerConnMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsPeerConnMgmt.yaml'
+  - src: 'service-DailyCRLUpdate.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/DailyCRLUpdate.yaml'
+  - src: 'service-HSM_Keepalive.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/HSM_Keepalive.yaml'
+  - src: 'ext-id-piv-NACI.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/custom-certificate-extensions/id-piv-NACI.yaml'
+  - src: 'ext-certTempInfo.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/custom-certificate-extensions/certTempInfo.yaml'
+    # Files for the 3rd dump import
+  - src: 'global-acme-configuration.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/acme-config/global-acme-configuration.yaml'
+  - src: 'acme-alias-1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/acme-config/acme-alias-1.yaml'
+  - src: 'ee-AdminInternal.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/AdminInternal.yaml'
+  - src: 'ee-tlsServerAcme.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerAcme.yaml'
+  - src: 'ee-tlsServerOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServer{{ organizationNameShort }}.yaml'
+  - src: 'ee-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/ocspSigner.yaml'
+  - src: 'ee-tlsServerMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerMgmt.yaml'
+  - src: 'ee-userAuthentication.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userAuthentication.yaml'
+  - src: 'ee-userDigitalSignature.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userDigitalSignature.yaml'
+  - src: 'ee-userEncryption.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/userEncryption.yaml'
+  - src: 'ee-intuneDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/intuneDevice.yaml'
+  - src: 'ee-tlsServerApprovalOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/tlsServerApproval{{ organizationNameShort }}.yaml'
+  - src: 'ee-codeSigning.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/codeSigning.yaml'
+  - src: 'ee-domainController.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/domainController.yaml'
+  - src: 'ee-estDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/estDevice.yaml'
+  - src: 'ee-remoteDesktopAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/remoteDesktopAuth.yaml'
+  - src: 'ee-scepDevice.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/scepDevice.yaml'
+  - src: 'ee-signersOrg.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/signers{{ organizationNameShort }}.yaml'
+  - src: 'ee-timeStampingAuthority.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/timeStampingAuthority.yaml'
+  - src: 'ee-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/vpnFirewall.yaml'
+  - src: 'ee-workstations.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/workstations.yaml'
+  - src: 'cp-tlsServerMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerMgmtCA.yaml'
+  - src: 'cp-AdminNoCDPMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/AdminNoCDPMgmtCA.yaml'
+  - src: 'cp-tlsClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuth.yaml'
+  - src: 'cp-tlsServerAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuth.yaml'
+  - src: 'cp-tlsServerClientAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuth.yaml'
+  - src: 'cp-adminMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/adminMgmtCA.yaml'
+  - src: 'cp-DigitalSignature-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/DigitalSignature-2048.yaml'
+  - src: 'cp-Authentication-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Authentication-2048.yaml'
+  - src: 'cp-Encryption-2048.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/Encryption-2048.yaml'
+  - src: 'cp-tlsServerAuthAcme90d.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuthAcme90d.yaml'
+  - src: 'cp-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSigner.yaml'
+  - src: 'cp-ocspSignerEcc-15d.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/ocspSignerEcc-15d.yaml'
+  - src: 'cp-intuneClientAuth-1y.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/intuneClientAuth-1y.yaml'
+  - src: 'cp-tlsServerAuthApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerAuthApproval.yaml'
+  - src: 'cp-tlsClientAuthApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsClientAuthApproval.yaml'
+  - src: 'cp-tlsServerClientAuthApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/tlsServerClientAuthApproval.yaml'
+  - src: 'cp-signerCodeSigning.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signerCodeSigning.yaml'
+  - src: 'cp-signerTimeStampAuthority.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signerTimeStampAuthority.yaml'
+  - src: 'cp-signerPdf-3y.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signerPdf-3y.yaml'
+  - src: 'cp-signer-3y.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/signer-3y.yaml'
+  - src: 'cp-domainController.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/domainController.yaml'
+  - src: 'cp-remoteDesktopAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/remoteDesktopAuth.yaml'
+  - src: 'cp-vpnFirewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/vpnFirewall.yaml'
+  - src: 'cp-workstation.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/certificate-profiles/workstation.yaml'
+  - src: 'est-device.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/est-config/device.yam'
+  - src: 'est-firewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/est-config/firewall.yaml'
+  - src: 'scep-device.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/scep-config/device.yaml'
+  - src: 'scep-firewall.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/scep-config/firewall.yaml'
+  - src: 'role-userEnrollment.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-userEnrollment.yaml'
+  - src: 'role-ra-est.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-est.yaml'
+  - src: 'role-ra-vault.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/admin-roles/role-ra-vault.yaml'
+    # Files for External VA
+  - src: 'service-ocspService.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/va/services/ocspService.yaml'
+    # Files for External RA
+  - src: 'role-ra-peer-connection.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/ra/admin-roles/role-ra-peer-connection.yaml'
+
+configdump_approval_dir_structure:  
+  - "{{ ejbca_home }}/dump/dumpApp/approval-profiles"
+
+configdump_approval_files:
+  - src: 'ap-tlsCertificateApproval.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dumpApp/approval-profiles/tlsCertificateApproval.yaml'
+    

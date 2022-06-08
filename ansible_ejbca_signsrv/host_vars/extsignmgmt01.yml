@@ -1,0 +1,309 @@
+---
+
+hostname: caextsig01.solitude.skyrim
+
+# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+deploy_with_configdump: false
+# Map in the List Dictionaires for the CA's to create in EJBCA. The variable to map in 
+# are sourced from the include_vars above.
+add_certification_authorities: "{{ mgmt_add_certification_authorities }}"
+# Map in List Dictionaires for the configdump directory structure and configdump files
+configdump_directory_structure: "{{ mgmt_configdump_dir_structure }}"
+configdump_import_files: "{{ mgmt_configdump_files }}"
+
+# EJBCA version and deployment info
+ejbca_version: 7.9.0
+# If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
+use_local_repository: false
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_9_0.zip
+# EJBCA URL to download the zip release file
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_9_0.zip
+ejbca_src_dir_name: ejbca_ee_7_9_0
+ejbca_type: CA
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+# Safenet Luna shared client
+#hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+
+# Super Admin accounts to create
+management_add_end_entities:
+  - username: "SkyrimSuperAdministrator"
+    dn: "C={{ countryName }},O={{ organizationName }},OU=Administrators,CN={{ superAdminCn }}"
+    caname: "ManagementCA"
+    token: "P12"
+    password: "{{ encrypted_superadmin_enrollment_code | default('foo123') }}"
+    certprofile: adminMgmtCA
+    eeprofile: AdminInternal  
+
+# Super Admin entities to add to the Super Admin Role
+management_add_administrators:
+  - role: "Super Administrator Role"
+    caname: "ManagementCA"
+    match_with: "WITH_COMMONNAME"
+    match_value: "{{ superAdminCn }}"
+
+# Variables to confgure the Widfly datasource for connecting to the applicable DB
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    #Connection type is mariadb or sqlserver
+    database_connection_type: mariadb
+    #driver class is org.mariadb.jdbc.Driver or com.microsoft.sqlserver.jdbc.SQLServerDriver
+    database_driver_class: org.mariadb.jdbc.Driver
+    #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
+    database_jar_filename: mariadb-java-client.jar
+    host: 127.0.0.1
+    backup_host: ejbca01.solitude.skyrim
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
+    #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
+    #connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
+
+wildfly_enable_kerberos: false
+krb_conf_use_os_file: true
+wildfly_kerberos_enable_debug_log: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:
+# URL to download the keytab file used for kerberos.
+wildfly_kerberos_keytab_file_url: 
+# SHA256 checksum of the keytab file
+wildfly_kerberos_keytab_file_url_checksum: 
+wildfly_kerberos_keytab_principal: SERVICENAME@INTERNAL.PRIMEKEY.COM
+
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+  - src: custom.properties.j2
+    dest:  "{{ ejbca_home }}/../ejbca-custom/conf/custom.properties"
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# Set this to true to use P11NG with EJBCA 
+web_use_p11ng: true
+
+# CLI access info
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+
+#cesecore.properties
+core_disable_audit_log_to_db: true
+
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ hostname }}"
+
+#Enable/Disable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: false
+databaseprotection_enableverify_AuditRecordData: false
+
+# EJBCA audit log database protection configurations
+# slot_index: Index of HSM slot used for database integrity protection
+# slot_identifier_type: Type of identifier; SLOT_LABEL
+# slot_identifier_value: Name or index of the slot
+# signature_algorithm: Algorithm used to sign database rows
+# tokenpass: PIN used to access HSM slot. Should be encrypted with Ansible vault
+# crypto_token: Specify the keys in a list/dict to generate
+#   - key_label: Label of key used for database integrity protection
+#     key_size: Size of the key
+#     key_type: Type of key; RSA, ECDSA
+ejbca_databaseprotection:
+  - slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: DB_Protect_SLOT
+    signature_algorithm: SHA256WithRSA
+    tokenpass: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+    crypto_token:
+      - key_label: dbProtect0001
+        key_size: 3072
+        key_type: "RSA"
+        type: dbprotect
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+
+# List of certification authorities that should be added using CLI
+# caname: CA name
+# certprofile: Certificate profile
+# dn: CA distinguished name
+# subjectaltname: CA subject alt name
+# validity: Validity time or end date
+# policy: "null" or policy oid
+# keytype: RSA, DSA or ECDSA
+# keyspec: Size of RSA keys, size of DSA keys or name of curve for ECDSA keys
+# signalg: Signature algorithm
+# tokentype: "soft" or "org.cesecore.keys.token.PKCS11CryptoToken"
+# tokenpass: Password for the CA token
+# pkcs11_token: Dict of parameters needed for PKCS11 token
+# slot_identifier_type: "SLOT_LABEL", "SLOT_INDEX" or "SLOT_NUMBER"
+# slot_identifier_value: Slot identifier
+# signkey_label: Signing key label
+# defaultkey_label: Default (encryption) key label
+# testkey_label: Test key label
+mgmt_add_certification_authorities:
+  - caname: "ManagementCA"
+    certprofile: "managementCA"
+    dn: "CN=ManagementCA,OU=Certification Authorities,O={{ organizationName }},C={{ countryName }}"
+    rootDn: "External"
+    eeprofile:
+    token: "USERGENERATED"
+    subjectaltname: ""
+    validity: "3650"
+    validity_yml: "10y"
+    policy: "null"
+    signalg: "SHA256WithRSA"
+    serial_number_octet_size: 20
+    pre_produce_ocsp_responses: false
+    store_responses_on_demand: false
+    use_append_only_table: false
+    use_utf8_in_policy_notice_text: false
+    #defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
+    defaultCRLDP: "http://crl.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+    defaultOCSPServiceLocator: "http://ocsp.{{ organizationDomainName }}/ocsp"
+    #authorityInformationAccess: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
+    #certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/CertsIssuedTo{{ organizationName }}-mgmtca.p7b"
+    authorityInformationAccess: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    certificateAiaDefaultCaIssuerUri: "http://aia.{{ organizationDomainName }}/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}&level=1"
+    crlPeriod: 259200000
+    crlPeriod_yml: 6mo
+    crlIssueInterval: 0
+    crlIssueInterval_yml: 0m
+    crl_overlap_time: 600000
+    crl_overlap_time_yml: 10m
+    delta_crl_period: 0m
+    useLdapDnOrder: false
+    enforce_unique_public_keys: true
+    enforce_key_renewal: false
+    enforce_unique_dn: true
+    user_storage: true
+    certificate_storage: true
+    accept_revocations_for_non_existing_entries: false
+    finish_user: true
+    ca_healthcheck_enabled: true
+    request_processor: null
+    external_caname: IT-Root-CA
+    external_root_cachain_local_repository: false
+    external_root_cachain_local_file: ~/Downloads/certs/rootCA.crt
+    external_root_cachain_url: http://it-ca01.pkihosted-dev.c2company.com/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-271613628&format=pem
+    external_root_cachain_file: /var/tmp/rootca.pem
+    external_signed_ca_cert_file_local_repository: false
+    external_signed_ca_cert_file_url: http://172.16.170.133:8080/ejbca/extMgmtCa.pem
+    external_signed_ca_cert_file: extMgmtCa.pem
+    cryptotoken_enable_auto_activate: true
+    tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
+    tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: "Management_CA_SLOT"
+    force_used_slots: true
+    crypto_token:
+      - key_label: "signKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: sign
+      - key_label: "defaultKey0001"
+        key_size: 3072
+        key_type: "RSA"
+        type: default
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+
+mgmt_configdump_dir_structure:
+  - "{{ ejbca_home }}/dump/dump2/custom-certificate-extensions"
+  - "{{ ejbca_home }}/dump/dump2/certificate-profiles"
+  - "{{ ejbca_home }}/dump/dump2/certification-authorities"
+  - "{{ ejbca_home }}/dump/dump2/end-entity-profiles"
+  - "{{ ejbca_home }}/dump/dump2/extended-key-usage"
+  - "{{ ejbca_home }}/dump/dump2/services"
+
+mgmt_configdump_files:
+  - src: 'cp-tlsPeerConnector.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsPeerConnector.yaml'
+  - src: 'cp-adminMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/adminMgmtCA.yaml'
+  - src: 'cp-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/ocspSigner.yaml'
+  - src: 'cp-ocspSignerEcc-15d.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/ocspSignerEcc-15d.yaml'
+  - src: 'cp-tlsServerMgmtCA.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerMgmtCA.yaml'
+  - src: 'cp-tlsServerAuth.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/tlsServerAuth.yaml'
+  - src: 'cp-EccSubCa-G1.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/certificate-profiles/cp-EccSubCa-G1.yaml.j2'
+  - src: 'ee-AdminInternal.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/AdminInternal.yaml'
+  - src: 'ee-tlsServerMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsServerMgmt.yaml'
+  - src: 'ee-userAuthentication.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/userAuthentication.yaml'
+  - src: 'ee-ocspSigner.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/ocspSigner.yaml'
+  - src: 'ee-tlsPeerConnMgmt.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/end-entity-profiles/tlsPeerConnMgmt.yaml'
+  - src: 'ext-certTempInfo.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/custom-certificate-extensions/certTempInfo.yaml'
+  - src: 'extended-key-usages.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/extended-key-usage/extended-key-usages.yaml'
+  - src: 'service-DailyCRLUpdate.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/DailyCRLUpdate.yaml'
+  - src: 'service-HSM_Keepalive.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump2/services/HSM_Keepalive.yaml'
+
+# Dirty mapping of httpd cert file name till something better is used 
+httpd_identity_info:
+  id_name: "{{ identity_info[0].name }}"
+  id_ca_cert_file: "{{ identity_info[0].caname }}.crt"
+
+# Info to create HTTPD end entity in EJBCA for the TLS certificate
+httpd_identity_info:
+  id_dn: "ou=Devices,O={{ organizationName }},C={{ countryName }}"
+  id_name: "{{ inventory_hostname }}"
+  id_full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN={{ inventory_hostname }}"
+  id_username: "ca_httpd_tls_{{ inventory_hostname }}"
+  id_password: "{{ encrypted_httpd_identity_password | default('foo123') }}"
+  id_altname: "dNSName={{ inventory_hostname }}, dNSName=ca.{{ organizationDomainName }}, dNSName=sapi.ca.{{ organizationDomainName }}, dNSName=api.ca.{{ organizationDomainName }}"
+  id_certprofile: tlsServerMgmtCA
+  id_eeprofile: "tlsServerMgmt"
+  id_caname: "ManagementCA"
+
+# CA chains to add to the HTTPD trusted CA certificate file for certauth
+# caname: Name of the CA in EJBCA
+# fullchain: Must be set to true for this to work by getting the issuing CA chain and then adding that chain to the file
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+    fullchain: true

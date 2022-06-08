@@ -1,0 +1,190 @@
+---
+
+hostname: cess01.solitude.skyrim
+
+# Dirty mapping of httpd cert file name till something better is used 
+httpd_identity_info:
+  id_name: "cesign01.{{ organizationDomainName }}"
+  id_ca_cert_file: "{{ organizationNameShort }}-Sub-CA.crt"
+
+# PDF Signer properties
+pdf_signers_enabled: true
+pdf_signers:
+  - id: 20
+    name: PDFSigner
+    AuthType: NOAUTH
+    peer_enable: true
+    Reason: "Officially issued document"
+    Location: "United States"
+    DigestAlgorithm: SHA256
+    Add_Visible_Signature: true
+    Visible_Signature_Page: Last
+    #Tsa_Url: 
+    DisableKeyUsageCounter: false
+    Certification_Level: NO_CHANGES_ALLOWED
+    Tsa_Worker: "{{ tsa_signers[0].name }}"
+    Visable_Signature_Custom_Image_Base64: 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
+    template: pdfsigner.properties.j2
+    CryptoToken: CryptoTokenP11
+    certprofile: signerPdf-3y
+    eeprofile:  "signers{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort}}-Sub-CA"
+    token: USERGENERATED
+    keys_to_gen:
+      - keyalg: RSA
+        keysize: 2048
+        keyalias: signKeyPdfSign0001
+        dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=PDF-Signer-01"
+        sig_alg: SHA256WithRSA
+
+# Timstamp signer properties
+tsa_signers_enabled: true
+tsa_signers:
+  - id: 30
+    name: TimeStampSigner
+    AuthType: NOAUTH
+    peer_enable: true
+    CheckCertValidity: true
+    CheckCertPrivateKeyValidity: true
+    MinRemainingCertValidity: 0
+    KeyUsageLimit: -1
+    DefaultTsaPolicyOid: 1.3.6.1.4.1.22408.1.2.3.45
+    #AcceptedPolicies:
+    AcceptAnyPolicy: true
+    SignatureAlgorithm: SHA256WithRSA
+    DisableKeyUsageCounter: false
+    Verify_Token_Signature: true
+    template: timestamp.properties.j2
+    CryptoToken: CryptoTokenP11
+    certprofile: signerTimeStampAuthority-8y
+    eeprofile: "signers{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort}}-Sub-CA"
+    token: USERGENERATED
+    keys_to_gen:
+      - keyalg: RSA
+        keysize: 4096
+        keyalias: signKeyTsaSign0001
+        dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=Time-Stamp-Authority-01"
+        sig_alg: SHA256WithRSA
+
+# Plain signer properties
+plain_signers_enabled: true
+plain_signers:
+  - id: 70
+    name: PlainSigner
+    AuthType: NOAUTH
+    peer_enable: true
+    SignatureAlgorithm: SHA256WithRSA
+    LogRequest_DefaultAlgorithm: SHA256
+    Do_LogRequest_Digest: true
+    DisableKeyUsageCounter: false
+    template: plainsigner.properties.j2
+    CryptoToken: CryptoTokenP11
+    certprofile: signer-3y
+    eeprofile: "signers{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort}}-Sub-CA"
+    token: USERGENERATED
+    keys_to_gen:
+      - keyalg: RSA
+        keysize: 2048
+        keyalias: signKeyPlainSign0001
+        dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=Plain-Signer-01"
+        sig_alg: SHA256WithRSA
+
+# XML signer properties
+xml_signers_enabled: true
+xml_signers:
+  - id: 100
+    name: XMLSigner
+    AuthType: NOAUTH    
+    peer_enable: true
+    SignatureAlgorithm: SHA256WithRSA
+    DigestAlgorithm: SHA256
+    DisableKeyUsageCounter: false
+    template: xmlsigner.properties.j2
+    CryptoToken: CryptoTokenP11
+    certprofile: signer-3y
+    eeprofile: "signers{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort}}-Sub-CA"
+    token: USERGENERATED
+    keys_to_gen:
+      - keyalg: RSA
+        keysize: 2048
+        keyalias: signKeyXmlSign0001
+        dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=XML-Signer-01"
+        sig_alg: SHA256WithRSA
+
+# DNS Zone signer properties
+dns_signers_enabled: true
+dns_signers:
+    - id: 110
+      name: solitude.skyrim
+      AuthType: NOAUTH
+      SignatureAlgorithm: SHA256WithRSA
+      template: dnssignzone.properties.j2
+      CryptoToken: CryptoTokenP11
+      keys_to_gen:
+        - keyalias: solitude.skyrim_K_1
+          keyalg: RSA
+          keysize: 2048
+        - keyalias: solitude.skyrim_K_2
+          keyalg: RSA
+          keysize: 2048
+        - keyalias: solitude.skyrim_Z_1
+          keyalg: RSA
+          keysize: 2048
+        - keyalias: solitude.skyrim_Z_2
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_3
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_4
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_5
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_6
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_7
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_8
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_9
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_10
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_11
+          keyalg: RSA
+          keysize: 2048     
+        - keyalias: solitude.skyrim_Z_12
+          keyalg: RSA
+          keysize: 2048     
+
+# Open PGP signer properties
+pgp_signers_enabled: true
+pgp_signers:
+  - id: 120
+    name: OpenPgpSigner
+    AuthType: NOAUTH    
+    peer_enable: true
+    SignatureAlgorithm: SHA256WithRSA
+    DigestAlgorithm: SHA256
+    detached_signature: true
+    response_format: ARMORED
+    DisableKeyUsageCounter: false
+    template: open_pgp_signer.properties.j2
+    CryptoToken: CryptoTokenP11
+    keys_to_gen:
+      - keyalg: RSA
+        keysize: 2048
+        keyalias: signKeyPgpSign0001
+        pgp_dn: "C={{ countryName }},O={{ organizationName }},OU=Signers,CN=PGP-Signer-01"
+        sig_alg: SHA256WithRSA
+        

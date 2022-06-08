@@ -1,9 +1,0 @@
----
-
-- hosts: ejbcaCaServers[0]
-  become: yes
-  become_method: sudo
-  pre_tasks:
-    - include_vars: deployment_info/add_ca_vars.yml
-  roles:
-    - ansible-ejbca-deploy-pki-add-ca

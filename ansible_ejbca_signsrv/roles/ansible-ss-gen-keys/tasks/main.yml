@@ -1,0 +1,470 @@
+---
+# tasks file for ansible-ss-gen-keys
+
+- name: Initialize an empty list for the signers
+  set_fact:
+    createSignersList: []
+
+- name: PDF Signers
+  block:
+
+    - name: Generate keys  PDF
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ pdf_signers |subelements('keys_to_gen') if pdf_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for PDF Signers
+      set_fact:
+        cacheable: yes
+        PDFSigners: |
+          [
+          {% for line in pdf_signers %}
+          {{ '{' }} 'name':'{{ line.name }}',  
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %}
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: PDFSignersResult
+
+    #- name: Debug PDFSignersResult
+    #  debug:
+    #    var: PDFSignersResult
+
+    - name: Append PDF Signers to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + PDFSigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - pdf_signers_enabled is defined
+    - pdf_signers_enabled|bool
+
+- name: TSA Signers
+  block:
+
+    - name: Generate keys for TSA
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ tsa_signers |subelements('keys_to_gen') if tsa_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for TSA Signers
+      set_fact:
+        cacheable: yes
+        TSASigners: |
+          [
+          {% for line in tsa_signers %}
+          {{ '{' }} 'name':'{{ line.name }}', 
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %} 
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: TSASignersResult
+
+    #- name: Debug TSASignersResult
+    #  debug:
+    #    var: TSASignersResult
+
+    - name: Append TSASigners to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + TSASigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - tsa_signers_enabled is defined
+    - tsa_signers_enabled|bool
+
+- name: Code Signers
+  block:
+
+    - name: Generate keys for Code Signing
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ ms_code_signers |subelements('keys_to_gen') if ms_code_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for Code Signers
+      set_fact:
+        cacheable: yes
+        CodeSigners: |
+          [
+          {% for line in ms_code_signers %}
+          {{ '{' }} 'name':'{{ line.name }}',  
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %}
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: CodeSignersResult
+
+    #- name: Debug CodeSignersResult
+    #  debug:
+    #    var: CodeSignersResult
+
+    - name: Append Code Signers to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + CodeSigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - ms_code_signers_enabled is defined
+    - ms_code_signers_enabled|bool
+
+- name: Microsoft TSA Signers
+  block:
+
+    - name: Generate keys for Microsoft TSA
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ ms_tsa_signers |subelements('keys_to_gen') if ms_tsa_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for Microsoft TSA Signers
+      set_fact:
+        cacheable: yes
+        MSTSASigners: |
+          [
+          {% for line in ms_tsa_signers %}
+          {{ '{' }} 'name':'{{ line.name }}', 
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %} 
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: MSTSASignersResult
+
+    #- name: Debug MSTSASignersResult
+    #  debug:
+    #    var: MSTSASignersResult
+
+    - name: Append MSTSASigners to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + MSTSASigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - ms_tsa_signers_enabled is defined
+    - ms_tsa_signers_enabled|bool
+
+- name: Plain Signers
+  block:
+
+    - name: Generate keys for Plain
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ plain_signers |subelements('keys_to_gen') if plain_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for Plain Signers
+      set_fact:
+        cacheable: yes
+        PlainSigners: |
+          [
+          {% for line in plain_signers %}
+          {{ '{' }} 'name':'{{ line.name }}', 
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %} 
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: PlainSignersResult
+
+    #- name: Debug PlainSignersResult
+    #  debug:
+    #    var: PlainSignersResult
+
+    - name: Append PlainSigners to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + PlainSigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - plain_signers_enabled is defined
+    - plain_signers_enabled|bool
+
+- name: Java Signers
+  block:
+
+    - name: Generate keys for Java
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ java_signers |subelements('keys_to_gen') if java_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for Java Signers
+      set_fact:
+        cacheable: yes
+        JavaSigners: |
+          [
+          {% for line in java_signers %}
+          {{ '{' }} 'name':'{{ line.name }}', 
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %} 
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: JavaSignersResult
+
+    #- name: Debug JavaSignersResult
+    #  debug:
+    #    var: JavaSignersResult
+
+    - name: Append JavaSigners to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + JavaSigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - java_signers_enabled is defined
+    - java_signers_enabled|bool
+
+- name: Java CMS Signers
+  block:
+
+    - name: Generate keys for Java CMS
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ java_cms_signers |subelements('keys_to_gen') if java_cms_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for Java CMS Signers
+      set_fact:
+        cacheable: yes
+        JavaCMSSigners: |
+          [
+          {% for line in java_cms_signers %}
+          {{ '{' }} 'name':'{{ line.name }}', 
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %} 
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: JavaCMSSignersResult
+
+    #- name: Debug JavaCMSSignersResult
+    #  debug:
+    #    var: JavaCMSSignersResult
+
+    - name: Append JavaCMSSigners to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + JavaCMSSigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - java_cms_signers_enabled is defined
+    - java_cms_signers_enabled|bool
+
+- name: XML Signers
+  block:
+
+    - name: Generate keys for XML
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ xml_signers |subelements('keys_to_gen') if xml_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for XML Signers
+      set_fact:
+        cacheable: yes
+        XMLSigners: |
+          [
+          {% for line in xml_signers %}
+          {{ '{' }} 'name':'{{ line.name }}', 
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %} 
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: XMLSignersResult
+
+    #- name: Debug XMLSignersResult
+    #  debug:
+    #    var: XMLSignersResult
+
+    - name: Append XMLSigners to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + XMLSigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - xml_signers_enabled is defined
+    - xml_signers_enabled|bool
+
+- name: Extended CMS Signers
+  block:
+
+    - name: Generate keys for Extended CMS
+      include_tasks: add_gen_signer_key_w_csr.yml
+      loop: "{{ ext_cms_signers |subelements('keys_to_gen') if ext_cms_signers is iterable else [] }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Create a fact for ExtendedCMS Signers
+      set_fact:
+        cacheable: yes
+        ExtendedCMSSigners: |
+          [
+          {% for line in ext_cms_signers %}
+          {{ '{' }} 'name':'{{ line.name }}', 
+          {% for line2 in line.keys_to_gen %} 
+          'dn': '{{ line2.dn }}',
+          {% endfor %} 
+          'caname': '{{ line.caname }}', 
+          'token': '{{ line.token }}', 
+          'certprofile': '{{ line.certprofile }}', 
+          'eeprofile': '{{ line.eeprofile }}',
+          'fullchain': 'true', {{ '}' }},
+          {% endfor %}
+          ]
+      ignore_errors: yes
+      register: ExtendedCMSSignersResult
+
+    #- name: Debug ExtendedCMSSignersResult
+    #  debug:
+    #    var: ExtendedCMSSignersResult
+
+    - name: Append ExtendedCMSSigners to createSignersList
+      set_fact:
+        cacheable: yes
+        createSignersList: "{{ createSignersList + ExtendedCMSSigners }}"
+      ignore_errors: yes
+      register: 
+
+    #- name: Debug createSignersList
+    #  debug:
+    #    var: createSignersList
+
+  when: 
+    - ext_cms_signers_enabled is defined
+    - ext_cms_signers_enabled|bool
+
+- name: Generate keys for DNS
+  include_tasks: add_gen_signer_key_w_csr.yml
+  loop: "{{ dns_signers |subelements('keys_to_gen') if dns_signers is iterable else [] }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when: 
+    - dns_signers_enabled is defined
+    - dns_signers_enabled|bool
+
+- name: Generate keys for PGP
+  include_tasks: add_gen_signer_key_w_csr.yml
+  loop: "{{ pgp_signers |subelements('keys_to_gen') if pgp_signers is iterable else [] }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when: 
+    - pgp_signers_enabled is defined
+    - pgp_signers_enabled|bool
+
+- name: Write CSR info to shared vars directory {{ sharedVarsLocation }}/signserver_signers.yml for use with signing SignServer signers
+  become: no
+  copy:
+    dest: "{{ sharedVarsLocation }}/signserver_signers.yml"
+    content: "{{ createSignersList| to_nice_yaml }}"
+  delegate_to: localhost
+  register: write_the_output_ss_signers
+  no_log: true
+
+#- name: Debug write_the_output_ss_signers
+#  debug:
+#    var: write_the_output_ss_signers
+

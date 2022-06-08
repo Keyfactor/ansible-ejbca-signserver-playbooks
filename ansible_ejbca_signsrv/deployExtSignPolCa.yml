@@ -1,0 +1,9 @@
+---
+
+# ansible-playbook -i inventory -l extSignPolicyCas,extsignpolca01 deployExtSignPolCa.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-1

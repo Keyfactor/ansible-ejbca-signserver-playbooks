@@ -1,0 +1,63 @@
+# {{ ansible_managed | comment }}
+# Configuration of XMLSigner {{ main_item.0.id }}.
+# Sample configuration of an .
+#
+
+## General properties
+WORKER{{ main_item.0.id }}.TYPE=PROCESSABLE
+WORKER{{ main_item.0.id }}.IMPLEMENTATION_CLASS=org.signserver.module.xmlsigner.XMLSigner
+WORKER{{ main_item.0.id }}.NAME={{ main_item.0.name }}
+
+# Authentication. One of NOAUTH, CLIENTCERT, org.signserver.server.UsernamePasswordAuthorizer, org.signserver.server.UsernameAuthorizer
+WORKER{{ main_item.0.id }}.AUTHTYPE={{ main_item.0.AuthType }}
+
+# Crypto token: CryptoTokenP12, CryptoTokenP11, CryptoTokenP11NG1, CryptoTokenP11NG1KeyWrapping
+WORKER{{ main_item.0.id }}.CRYPTOTOKEN={{ main_item.0.CryptoToken }}
+
+# Using key from sample keystore
+WORKER{{ main_item.0.id }}.DEFAULTKEY={{ main_item.1.keyalias }}
+# Key using ECDSA
+#{{ main_item.0.id }}.DEFAULTKEY=signer00002
+
+{% if inventory_hostname in groups['eeSignServers'] %}
+# Allow peering with EJBCA
+WORKER{{ main_item.0.id }}.PEERS_VISIBLE={{ main_item.0.peer_enable |default('true') }}
+{% endif %}
+
+# Signature algorithm
+# Default: SHA256 with RSA, DSA or ECDSA depending on key
+# Values: SHA256withRSA, SHA256withDSA, SHA256withECDSA
+WORKER{{ main_item.0.id }}.SIGNATUREALGORITHM={{ main_item.0.SignatureAlgorithm }}
+
+# Digest algorithm
+# Default: depends on signature algorithm. Ex: SHA256 for SHA256withRSA/SHA256withECDSA & SHA512 for SHA512withRSA/SHA512withECDSA
+WORKER{{ main_item.0.id }}.DIGESTALGORITHM={{ main_item.0.DigestAlgorithm }}
+
+# If the key usage counter is disabled
+WORKER{{ main_item.0.id }}.DISABLEKEYUSAGECOUNTER={{ main_item.0.DisableKeyUsageCounter }}
+
+## Archiving properties
+
+# Using the base 64 archiver
+WORKER{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.base64dbarchiver.Base64DatabaseArchiver
+
+# Using the old database archiver
+#{{ main_item.0.id }}.ARCHIVERS=org.signserver.server.archive.olddbarchiver.OldDatabaseArchiver
+
+# Archiving only requests
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST
+
+# Archiving only responses
+#{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=RESPONSE
+
+# Archiving both requests and responses
+WORKER{{ main_item.0.id }}.ARCHIVER0.ARCHIVE_OF_TYPE=REQUEST_AND_RESPONSE
+
+# Store forwarded address (from the X-Forwarded-For header) as the request address
+#{{ main_item.0.id }}.ARCHIVER0.USE_FORWARDED_ADDRESS=true
+
+# Include additional forwarded addresses (apart from the last), only applies if the property above is set
+#{{ main_item.0.id }}.ARCHIVER0.MAX_FORWARDED_ADDRESSES=3
+
+# Included direct (non-forwarded address) at the end of forwarded addresses
+#{{ main_item.0.id }}.ARCHIVER0.INCLUDE_DIRECT_ADDRESS=true

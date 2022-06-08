@@ -1,0 +1,11 @@
+---
+
+# ansible-playbook -i inventory -l extSignMgmtCaServers,extsignmgmt01 deployExtSignMgmtCaPost.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-3
+    - ansible-ejbca-deploy-pki-ext-signed-sub-2
+    - ansible-pki-ss-httpd

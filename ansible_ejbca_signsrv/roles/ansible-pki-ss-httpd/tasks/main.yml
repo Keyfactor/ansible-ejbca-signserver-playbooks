@@ -1,0 +1,15 @@
+---
+# tasks file for ansible-ejbca-httpd
+
+- name: Install HTTPD
+  include_tasks: install.yml
+
+- name: Request TLS cert for HTTPD
+  include_tasks: ca_req_cert.yml
+  when: 
+    - inventory_hostname in groups['eeCaServers']
+    #- ejbca_type is defined
+    #- ejbca_type == "CA"
+
+- name: Configure HTTPD web server
+  include_tasks: configure.yml

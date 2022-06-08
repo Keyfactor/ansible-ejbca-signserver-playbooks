@@ -1,0 +1,18 @@
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+# SignServer variables
+APPSRV_HOME={{ wildfly_home| default('/opt/wildfly') }}
+signsrv_home={{ signsrv_home| default('/opt/signsrv') }}
+JAVA_HOME={{ signsrv_java_home | default('/usr/lib/jvm/jre-11') }}
+ANT_HOME=/usr/share/ant 
+SIGNSERVER_NODEID={{ inventory_hostname }}
+CLASSPATH=/opt/ejbca:$CLASSPATH
+JAVA_OPTS="-Djava.security.disableSystemPropertiesFile"
+
+PATH=$PATH:$HOME/.local/bin:$HOME/bin:${APPSRV_HOME}/bin:${signsrv_home}/bin:${JAVA_HOME}/bin:${ANT_HOME}/bin:$PATH
+export PATH APPSRV_HOME signsrv_home JAVA_HOME JAVA_OPTS ANT_HOME SC_READER CS_DEVICE CLASSPATH SIGNSERVER_NODEID JAVA_OPTS

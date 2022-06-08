@@ -1,6 +1,0 @@
----
-# defaults file for ansible-hostname
-
-# The hostname to set. By default whatever the inventory is set to.
-hostname: "{{ inventory_hostname }}"
-ipaddress: "{{ ansible_default_ipv4.address }}"

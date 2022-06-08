@@ -1,0 +1,33 @@
+---
+
+- name: Configdump prepare the RA peering role for import into the external RA
+  include_role: 
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: config_configdump
+  vars:
+    configdump_directory_structure: "{{ configdump_dir_structure_ra }}"
+    configdump_import_files: "{{ configdump_ra_files_dump1 }}"
+  when: 
+    - ejbca_type == "RA"
+
+- name: Configdump prepare the VA peering role for import into the external RA
+  include_role: 
+    name: ansible-ejbca-cnfdump-stage
+    tasks_from: config_configdump
+  vars:
+    configdump_directory_structure: "{{ configdump_dir_structure_va }}"
+    configdump_import_files: "{{ configdump_va_files_dump1 }}"
+  when: 
+    - ejbca_type == "VA"
+
+- name: Import Dump files for Dump1
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    -l {{ ejbca_home }}/dump/dump1 
+    --overwrite update 
+    --non-interactive continue
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes 
+  become_user: "{{ ejbca_user }}"

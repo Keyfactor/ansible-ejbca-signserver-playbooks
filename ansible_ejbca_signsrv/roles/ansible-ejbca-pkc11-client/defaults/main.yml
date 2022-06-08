@@ -1,0 +1,77 @@
+---
+# defaults file for ansible-ejbca-pkc11-client
+
+#ejbca_group: wildfly
+#ejbca_user: wildfly
+
+#use_softhsm: true
+
+# New installs for EJBCA CA nodes using softHSM set this to true. If deploying a
+# second EJBCA CA node in a cluster set this to false. RA's and VA's should set
+# this to true for unite keys per instance
+create_softhsm_slots: true
+
+softhsm_gen_hsm_slots:
+  - slot_name: Management_CA_SLOT
+    slot_so_pin: "{{ encrypted_mgmtca_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
+  - slot_name: Root_CA_SLOT
+    slot_so_pin: "{{ encrypted_rootca_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_rootca_token_pin | default('foo123') }}"
+  - slot_name: Root2_CA_SLOT
+    slot_so_pin: "{{ encrypted_rootca2_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_rootca2_token_pin | default('foo123') }}"
+  - slot_name: Sub_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca_token_pin | default('foo123') }}"
+  - slot_name: Sub2_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca2_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca2_token_pin | default('foo123') }}"
+  - slot_name: Sub3_CA_SLOT
+    slot_so_pin: "{{ encrypted_subca3_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_subca3_token_pin | default('foo123') }}"
+  - slot_name:  DB_Protect_SLOT
+    slot_so_pin: "{{ encrypted_databaseprotection_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+  - slot_name: KeyBinding_SLOT
+    slot_so_pin: "{{ encrypted_peerkeybind_so_token_pin | default('foo123') }}"
+    slot_pin: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+  - slot_name: POLICY1_CA_SLOT
+    slot_so_pin: "{{ encrypted_policyca1_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_policyca1_token_pin | default('foo123') }}"
+  - slot_name: POLICY2_CA_SLOT
+    slot_so_pin: "{{ encrypted_policyca2_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_policyca2_token_pin | default('foo123') }}"
+  - slot_name: LDAP_AUTH_SLOT
+    slot_so_pin: "{{ encrypted_ldap_auth_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_ldap_auth_token_pin | default('foo123') }}"
+  - slot_name: AZURE_AUTH_SLOT
+    slot_so_pin: "{{ encrypted_azure_auth_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_azure_auth_token_pin | default('foo123') }}"
+
+# Cloudhsm variables
+use_liquidsec: false
+cloudhsm_home: /opt/cloudhsm
+cloudhsm_client_url: https://s3.amazonaws.com/cloudhsmv2-software/CloudHsmClient/EL7/
+cloudhsm_client_file: cloudhsm-client-latest.el7.x86_64.rpm
+cloudhsm_dest: /var/tmp
+cloudhsm_pcks11_url: https://s3.amazonaws.com/cloudhsmv2-software/CloudHsmClient/EL7/
+cloudhsm_pkcs11_file: cloudhsm-client-pkcs11-latest.el7.x86_64.rpm
+cloudhsm_service: cloudhsm-client
+cloudhsm_ip: '172.16.2.209'
+hsm_config_files: '{{ playbook_dir }}/hsm_config_files'
+customerCA_cert: customerCA.crt
+cloudhsm_tar_file: cloudhsm-May11-2020.tar.gz
+liquidsec: cloudhsm/lib/libliquidsec_pkcs11.so
+
+# URL and Checksum vars for softhsm rpm for distro to use
+download_softhsm_url: "{{ download_softhsm_alma_url }}"
+download_softhsm_url_checksum: "{{ download_softhsm_alma_url_checksum }}"
+
+# Rocky Linux
+download_softhsm_rocky_url: https://nyc.mirrors.clouvider.net/rocky/8.5/AppStream/x86_64/os/Packages/s/softhsm-2.6.0-5.module%2Bel8.4.0%2B429%2B6bd33fea.x86_64.rpm
+download_softhsm_rocky_url_checksum: sha256:7740f70af798f2585f0625a2f89eddf094b7ea21353cc936484d1843736cecce
+
+# Alma Linux
+download_softhsm_alma_url: https://repo.almalinux.org/almalinux/8/AppStream/x86_64/os/Packages/softhsm-2.6.0-5.module_el8.6.0%2B2881%2B2f24dc92.x86_64.rpm
+download_softhsm_alma_url_checksum: sha256:811210ae191e3e43bd6c050dc62929aa8ceffa91282ea200b96845b8a1425de2

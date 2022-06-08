@@ -1,0 +1,5 @@
+---
+
+# To automate signing the signer certificates, the info needed to sign the CSR 
+# is stored as a fact in that yaml file
+identity_csr_info: "{{ lookup('file', '~/ansible/ansibleCacheDir/signserver_signers.yml' ) | from_yaml }}"

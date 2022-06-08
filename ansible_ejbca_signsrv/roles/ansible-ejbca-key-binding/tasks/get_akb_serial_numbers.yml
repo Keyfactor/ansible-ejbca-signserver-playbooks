@@ -1,0 +1,53 @@
+---
+# tasks file for roles/ansible-ejbca-key-binding
+
+- name: Query Key Binding
+  command: "{{ ejbca_sh }} keybind list"
+  become: yes
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_list
+  changed_when: false
+  failed_when: keybinding_list.rc >= 2
+
+#- name: Debug keybinding_list
+#  debug:
+#    var: keybinding_list 
+
+#- name: Create fact of all the hexidecimal strings from listing the Key Bindings
+#  set_fact:
+#    kb_hex_strings: |
+#      "{{ keybinding_list.stdout | regex_findall('\b[0-9A-F]+\b') }}"
+      
+#- name: Debug kb_hex_strings
+#  debug:
+#    var: kb_hex_strings
+
+#- name: set fact only certificate serial numbers (40 bit hex string)
+#  set_fact:
+#    kb_hex_serial_numbers: |
+#      "{{ kb_hex_strings | regex_findall('\b[0-9A-F]{40}\b') }}"
+      
+#- name: Debug kb_hex_serial_numbers
+#  debug:
+#    var: kb_hex_serial_numbers
+
+- name: Create fact with Key Binding certificate serial numbers an the type of use (RA/SS/VA)
+  set_fact:
+    peer_cert_serial_numbers: |
+      [
+      {% for outer in keybinding_list.stdout_lines %}
+      {% for inner in ejbca_keybinding %}
+      {% if inner.name in outer %}
+      {{ '{' }} 'name':'{{ inner.name }}', 'serial':'{{ outer | regex_findall('\b[0-9A-F]{40}\b') | first }}', 'type':'{{ inner.useType }}', 'ca':'{{ inner.caname }}' {{ '}' }},
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
+      ]
+
+- name: Write cert serial numbers to shared vars directory {{ sharedVarsLocation }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
+  become: no
+  copy:
+    dest: "{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml"
+    content: "{{ peer_cert_serial_numbers| to_nice_yaml }}"
+  delegate_to: localhost
+  register: write_the_output2

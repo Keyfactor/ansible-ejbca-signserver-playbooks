@@ -1,0 +1,46 @@
+Object Type: Role
+Version: 1
+Name: RA-Peer-Connection
+{% if ra_peer_cert_serial_numbers is defined and ra_peer_cert_serial_numbers|length %}
+Role Members:
+{% for line in ra_peer_cert_serial_numbers %}
+- Token Type: CertificateAuthenticationToken
+  Issuer: line.caname
+  Match With: WITH_SERIALNUMBER
+  Match Value: line.cert_serial_Number
+  Description: line.cert_serial_Number
+{% endfor %}
+{% else %}
+Role Members: []
+{% endif %}
+Namespace: ''
+RA Style Id: 0
+Access Rules:
+  /administrator/: Allow
+  /ca/: Allow
+  #/ca/{{ organizationNameShort }}-Root-CA/: Deny
+  /ca/ManagementCA/: Deny
+  /ca_functionality/create_certificate/: Allow
+  /ca_functionality/view_ca/: Allow
+  /ca_functionality/view_certificate/: Allow
+  /endentityprofilesrules/: Allow
+  /endentityprofilesrules/EMPTY/: Deny
+  /endentityprofilesrules/tlsPeerConnMgmt/: Deny
+  /endentityprofilesrules/tlsServerMgmt/: Deny
+  /endentityprofilesrules/AdminInternal/: Deny
+  /protocol/acme/: Allow
+  /protocol/cmp/: Allow
+  /protocol/est/: Allow
+  /protocol/rest/: Allow
+  /protocol/scep/: Allow
+  /protocol/web_services/: Allow
+  /ra_functionality/approve_end_entity/: Allow
+  /ra_functionality/create_end_entity/: Allow
+  /ra_functionality/delete_end_entity/: Allow
+  /ra_functionality/edit_end_entity/: Allow
+  /ra_functionality/revoke_end_entity/: Allow
+  /ra_functionality/view_approvals/: Allow
+  /ra_functionality/view_end_entity/: Allow
+  /ra_functionality/view_end_entity_history/: Allow
+  /ra_functionality/view_end_entity_profiles/: Allow
+  /ra_master/invoke_api/: Allow

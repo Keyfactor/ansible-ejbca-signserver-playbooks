@@ -1,0 +1,48 @@
+---
+
+- hosts: eeCaServers[0]
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/internal_ca_subdorinate_vars.yml
+  vars:
+    # Deploy Management, Root, and Sub CA all on a single EJBCA node. This is the original task setup for this playbook. 
+    deploy_mgmt_root_sub: false
+    # Deploy a CA that is subordinated to a Root CA that could be external or on the same EJBCA node.
+    # The current outcome is to manually sign the CSR.
+    deploy_subordinate_ca: true
+    # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+    # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+    # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+    # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+    deploy_with_configdump: false
+    # Map in the List Dictionaires for the CA's to create in EJBCA. The variable to map in 
+    # are sourced from the include_vars above.
+    add_certification_authorities: "{{ sub_add_certification_authorities }}"
+  roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-1
+
+- hosts: eeRootCaServers[0]
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/internal_ca_subdorinate_vars.yml
+  roles:
+    - ansible-ejbca-deploy-pki-ext-root-sign-ca
+
+- hosts: eeCaServers[0]
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - include_vars: deployment_info/internal_ca_subdorinate_vars.yml
+  vars:
+    # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+    # an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+    # using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+    # EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+    deploy_with_configdump: false
+    # Map in the List Dictionaires for the test HSM slots, generate hsm keys, and add CA's. The variable to map in 
+    # are sourced from the include_vars above.
+    add_certification_authorities: "{{ sub_add_certification_authorities }}"
+  roles:
+    - ansible-ejbca-deploy-pki-ext-signed-sub-3

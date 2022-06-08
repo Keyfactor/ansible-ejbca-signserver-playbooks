@@ -1,0 +1,149 @@
+---
+
+all:
+  hosts:
+    ejbcart01.solitude.skyrim
+    ejbca01.solitude.skyrim
+    ejbcava01.solitude.skyrim
+    ejbcara01.solitude.skyrim
+    webrepo.solitude.skyrim
+  children:
+    eeRootCaServers:
+      hosts:
+        rt01:
+          ansible_host: 172.16.170.13
+    eeCaServers:
+      hosts:
+        ca01:
+          ansible_host: 172.16.170.170
+    extSignMgmtCaServers:
+      hosts:
+        extsignmgmt01:
+          ansible_host: 172.16.170.178
+    extSignPolicyCas:
+      hosts:
+        extsignpolca01:
+          ansible_host: 172.16.170.178
+    policyCaSignIssuingCas:
+      hosts:
+        polcasignissueca:
+          ansible_host: 172.16.170.178
+    peerconfigCas:
+      hosts:
+        peerca01:
+          ansible_host: 172.16.170.178 
+    extEeRootCaServers:
+      hosts:
+        extroot01:
+          ansible_host: 172.16.170.180
+    eeSubCaServers:
+      hosts:
+        subca01:
+          ansible_host: 172.16.170.179
+    eeRaServers:
+      hosts:
+        ra01:
+          ansible_host: 172.16.170.172
+    eeVaServers:
+      hosts:
+        va01:
+          ansible_host: 172.16.170.173
+    eeSignServers:
+      hosts:
+        ss01:
+          ansible_host: 172.16.170.178
+    ceSignServers:
+      hosts:
+        cess01:
+          ansible_host: 172.16.170.179
+    dbServers:
+      hosts:
+        webrepo.solitude.skyrim:
+          ansible_host: 172.16.170.133       
+    vaSigners:
+      hosts:
+        va01:
+          ansible_host: 172.16.170.173
+    ceServers:
+      hosts:
+        ce01:
+          ansible_host: 172.16.170.177
+    conServers:
+      hosts:
+        docker02.solitude.skyrim:
+          ansible_host: 172.16.170.8
+    pkiTlsCerts:
+      hosts:
+        ca01:
+          ansible_host: 172.16.170.170
+    pkiCsrCerts:
+      hosts:
+        pkiCsrEnrollmentCa:
+          ansible_host: 172.16.170.170
+    ssTlsCerts:
+      hosts:
+        ssTlsEnrollmentCa:
+          ansible_host: 172.16.170.170 
+    ssCsrCerts:
+      hosts:
+        ssCsrEnrollmentCa:
+          ansible_host: 172.16.170.170   
+    httpdServers:
+      children:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+        eeSignServers:
+        ceSignServers:
+        extSignMgmtCaServers:
+        peerconfigCas:
+        extEeRootCaServers:
+        eeSubCaServers: 
+    mariadbServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+        eeSignServers:
+        ceSignServers:
+        extSignMgmtCaServers:
+        extEeRootCaServers:
+        eeSubCaServers:  
+    applicationServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        ceServers:
+        eeSignServers:
+        ceSignServers:
+        extSignMgmtCaServers:
+        extSignPolicyCas:
+        policyCaSignIssuingCas:
+        extEeRootCaServers:
+        eeSubCaServers:
+    upgradeEeServers:
+      children:
+        eeRootCaServers:
+        eeCaServers:
+        eeVaServers:
+        eeRaServers:
+        extEeRootCaServers:
+        eeSubCaServers:  
+    upgradeCeServers:
+      children:
+        ceServers:   
+    pkiServers:
+      children:
+        mariadbServers:
+        applicationServers:
+        httpdServers:
+    signServers:
+      children:
+        mariadbServers:
+        applicationServers:
+        httpdServers:

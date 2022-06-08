@@ -1,0 +1,93 @@
+---
+
+# Set the default Python interpreter
+#ansible_python_interpreter: /usr/bin/python3
+
+# Configure the Orgnaization variables used for templating DN's and FQDN's
+organizationName: Solitude
+organizationNameShort: "{{ organizationName }}"
+organizationNameCRL: "{{ organizationName }}"
+organizationDomainName: solitude.skyrim
+countryName: US
+superAdminCn: "Skyrim-Keyfactor-SA"
+sharedVarsLocation: ~/ansible/ansibleCacheDir
+
+# Deployment locations for all the servers
+ejbca_root_dir: /opt
+ejbca_src_link_dir: "{{  ejbca_root_dir }}/ejbca"
+ejbca_home: "{{ ejbca_root_dir }}/ejbca"
+ejbca_sh: "{{ ejbca_home }}/bin/ejbca.sh"
+signsrv_root_dir: /opt
+signsrv_home: "{{ signsrv_root_dir }}/signsrv"
+wildfly_install_dir: /opt
+wildfly_home: "{{ wildfly_install_dir }}/wildfly"
+ejbca_group: wildfly
+ejbca_user: wildfly
+signsrv_group: wildfly
+signsrv_user: wildfly
+identity_batch_output_dir: /var/tmp
+
+# Manage the OS user that will run wildfly
+ejbca_manage_user: true
+ejbca_user_profile: "/home/{{ ejbca_user }}"
+signsrv_manage_user: true
+signsrv_user_profile: "/home/{{ signsrv_user }}"
+
+# Elytron password file location used in the EJBCA and SS prep roles
+wildfly_elytron_pass_dir: /opt/elytron
+wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
+
+# Directories to store files on Ansible controller
+ejbca_crl_dir_output: "{{ playbook_dir }}/ejbcaCRLs"
+ejbca_cacrt_dir_output: "{{ playbook_dir }}/ejbcaCaCerts"
+ejbca_csr_dir_output: "{{ playbook_dir }}/ejbcaCSR"
+
+# Create Root Node TLS end entity to Issuing Cluster and copy down to Ansible controller
+create_root_tls_cert: true
+
+# If configuring peering, the serial numbers used in the EJBCA roles are stored as a fact in that yaml file
+peer_ca_cert_serial_numbers: "{{ lookup('file', '~/ansible/ansibleCacheDir/peer_cert_serial_numbers.yml', errors='ignore' ) | from_yaml }}"
+ra_peer_cert_serial_numbers: "{{ lookup('file', '{{ ejbca_csr_dir_output }}/ra_peer_cert_serial_numbers.yml', errors='ignore' ) | from_yaml }}"
+
+# EJBCA CLI password to configure for the CLI account
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+
+# Location to write the CRL files on server
+ejbca_crl_dir_enabled: false
+ejbca_crl_dir:
+  - /opt/web/CRLs
+  - /opt/web/AIA
+
+# Apache Ant
+apache_ant_remote_dir: ~/Downloads/PK-Software/apache-ant-1.10.12-bin.tar.gz
+ant_version: apache-ant-1.10.12-bin.tar.gz
+ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}" 
+ant_checksum: sha256:4b3b557279bae4fb80210a5679180fdae3498b44cfd13368e3386e2a21dd853b
+
+# JDBC driver when sourcing locally instead of downloading
+ejbca_jdbc_remote_dir: ~/Downloads/PK-Software/mariadb-java-client-2.7.2.jar
+ejbca_jdbc_gen_name: "{{ appsrv_datasources[0].database_jar_filename }}"
+
+# CA chains to add to the HTTPD trusted CA certificate file for certauth
+# caname: Name of the CA in EJBCA
+# fullchain: Must be set to true for this to work by getting the issuing CA chain and then adding that chain to the file
+httpd_trusted_cas:
+  - caname: "ManagementCA"
+    fullchain: true
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: true
+
+# List of CA's to export the CA cert from EJBCA CA nodes and import as an external CA into external RA/VA nodes.
+# This variable is also used for exporting CRL's from EJBCA CA node to import into external RA/VA's
+# caname: Name of the CA in EJBCA
+# The superadmincn can be added to each CA to add a Common Name to the superadmin role.
+# fullchain: Must be set to false for this to work by getting each CA certificate to import as an external CA
+ejbca_ca_import:
+  - caname: "ManagementCA"
+    superadmincn: "{{ superAdminCn }}"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Sub-CA"
+    fullchain: false
+  - caname: "{{ organizationNameShort }}-Root-CA"
+    fullchain: false

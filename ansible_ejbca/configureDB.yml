@@ -1,9 +1,0 @@
----
-
-- hosts: ejbcaCaServers
-  become: yes
-  become_method: sudo
-  pre_tasks:
-    - include_vars: deployment_info/internal_ca_vars.yml
-  roles:
-    - roles/ansible-ejbca-database-config

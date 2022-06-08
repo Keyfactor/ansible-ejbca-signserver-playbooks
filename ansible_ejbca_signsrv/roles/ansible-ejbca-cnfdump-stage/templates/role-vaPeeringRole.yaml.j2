@@ -1,0 +1,34 @@
+Object Type: Role
+Version: 1
+Name: ocspIncomingCaPeer
+Role Members:
+#- Token Type: CertificateAuthenticationToken
+#  Issuer: ManagementCA
+#  Match With: WITH_FULLDN
+#  Match Value: {{ ca_peer_cert_info[0].dn| default('') }}
+#  Description: CA Peer Connection to VA with authkeybinding credential
+{% for item in peer_ca_cert_serial_numbers %}
+{% if item.type == "ocsp" %}
+- Token Type: CertificateAuthenticationToken
+  Issuer: {{ item.ca }}
+  Match With: WITH_SERIALNUMBER
+  Match Value: {{ item.serial }}
+  Description: CA Peer Connection to VA with authkeybinding credential
+{% endif %}  
+{% endfor %}
+Namespace: ''
+RA Style Id: 0
+Access Rules:
+{% for item in ejbca_va_keybinding %}
+  /ca/{{ item.caname }}/: Allow
+  /internalkeybinding/modify/{{ item.name }}/: Allow
+  /internalkeybinding/view/{{ item.name }}/: Allow
+{% endfor %}
+# TODO - Make the crypto token name a variable instead of hard coded 
+  /cryptotoken/keys/generate/ocspCryptoToken/: Allow
+  /cryptotoken/use/ocspCryptoToken/: Allow
+  /cryptotoken/view/ocspCryptoToken/: Allow
+  /peerincoming/: Allow
+  /peerpublish/readcert/: Allow
+  /peerpublish/writecert/: Allow
+  /peerpublish/writecrl/: Allow

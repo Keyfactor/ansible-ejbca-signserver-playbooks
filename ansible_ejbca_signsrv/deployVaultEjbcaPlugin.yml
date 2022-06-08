@@ -1,0 +1,26 @@
+---
+
+#
+
+- hosts: eeCaServers[0]
+  gather_facts: false
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-certreq-cli
+    - ansible-ejbca-ca-add-sn-to-admin-role
+
+- hosts: conServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-role-docker
+
+- hosts: conServers
+  become: no
+  become_method: sudo
+  pre_tasks:
+    - setup:
+        filter: ansible_env.HOME
+  roles:
+    - ansible-ejbca-vault-container

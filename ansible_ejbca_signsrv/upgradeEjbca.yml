@@ -1,0 +1,59 @@
+---
+
+# ansible-playbook -i inventory -l upgradeEeServers,upgradeCeServers
+
+- hosts: upgradeCeServers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - ansible-ejbca-upgrade
+
+- hosts: upgradeCeServers:ceServers[0]
+  become: yes
+  become_method: sudo
+  gather_facts: false  
+  roles:
+    - ansible-ejbca-complete-upgrade
+
+- hosts: upgradeEeServers:eeCaServers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - ansible-ejbca-upgrade
+
+- hosts: upgradeEeServers:eeCaServers[0]
+  become: yes
+  become_method: sudo
+  gather_facts: false  
+  roles:
+    - ansible-ejbca-complete-upgrade
+
+- hosts: upgradeEeServers:eeRaServers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - ansible-ejbca-upgrade
+
+- hosts: upgradeEeServers:eeRaServers
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - ansible-ejbca-complete-upgrade
+
+- hosts: upgradeEeServers:eeVaServers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - ansible-ejbca-upgrade
+
+- hosts: upgradeEeServers:eeVaServers
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - ansible-ejbca-complete-upgrade
