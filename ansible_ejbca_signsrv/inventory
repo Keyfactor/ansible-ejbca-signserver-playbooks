@@ -74,7 +74,7 @@ all:
           ansible_host: 172.16.170.8
     pkiTlsCerts:
       hosts:
-        pkiEnrollmentCa:
+        ca01:
           ansible_host: 172.16.170.170
     pkiCsrCerts:
       hosts:

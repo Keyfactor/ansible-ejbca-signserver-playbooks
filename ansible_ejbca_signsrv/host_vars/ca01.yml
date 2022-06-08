@@ -6,7 +6,7 @@ hostname: ejbca01.solitude.skyrim
 #ejbca_type: CA
 
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
-identity_info:
+tls_identity_info:
   - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
     name: "ca01.{{ organizationDomainName }}"
     full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"
@@ -135,7 +135,9 @@ ejbca_peerConnector:
     type: sign
     state: ENABLED
     enabled: "{{ use_external_ss }}"
-    
+
+# If enabled configures Approval Profiles in EJBCA
+use_approval_profiles: true    
 
 # List of certification authorities that should be added using CLI
 # caname: CA name

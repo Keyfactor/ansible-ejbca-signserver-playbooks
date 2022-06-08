@@ -147,8 +147,8 @@
     - ra_batch_result is defined
     - ra_batch_result.changed|bool
  
- - name: VA Specific
-   block:
+- name: VA Specific
+  block:
 
     - name: Create fact for VA {{ item.username }} certificate serial number
       set_fact: 
@@ -183,7 +183,7 @@
     name: ansible-ejbca-key-binding
     tasks_from: get_akb_serial_numbers
   when:
-    - peer_cert_serial_numbers | length == 0
+    - peer_ca_cert_serial_numbers | length == 0
 
 - name: Copy file to Ansible controller when PEM file and RA/VA/SS or External Root Node
   block:

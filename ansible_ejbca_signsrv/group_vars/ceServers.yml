@@ -28,7 +28,8 @@ ejbca_version: 7.4.3.2
 use_local_repository: false
 ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_4_3_2.zip
 # EJBCA URL to download the zip release file
-ejbca_software_url: https://sourceforge.net/projects/ejbca/files/ejbca7/ejbca_ce_7_4_3_2.zip/download
+#ejbca_software_url: https://sourceforge.net/projects/ejbca/files/ejbca7/ejbca_ce_7_4_3_2.zip/download
+ejbca_software_url: https://github.com/Keyfactor/ejbca-ce/archive/refs/tags/EJBCA_7_9_0_1_20220525.zip
 ejbca_src_dir_name: ejbca_ce_7_4_3_2
 ejbca_type: CA
 

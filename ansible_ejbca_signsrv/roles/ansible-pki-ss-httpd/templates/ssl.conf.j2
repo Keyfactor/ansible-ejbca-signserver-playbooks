@@ -61,8 +61,8 @@
   # https://mozilla.github.io/server-side-tls/ssl-config-generator/
 
   SSLEngine on
-  #SSLProtocol -all +TLSv1.2
-  SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1
+  SSLProtocol -all +TLSv1.2
+  #SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1
   SSLCipherSuite          ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
   SSLHonorCipherOrder     off
   SSLSessionTickets       off
@@ -74,7 +74,7 @@
   #SSLCARevocationPath /etc/httpd/crl/
   ProxyPreserveHost on
   SSLProxyEngine On
-  SSLProxyCipherSuite PROFILE=SYSTEM
+  #SSLProxyCipherSuite PROFILE=SYSTEM
   SSLProxyCheckPeerName off
   SSLProxyCheckPeerCN off
   ProxyRequests Off

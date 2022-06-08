@@ -191,3 +191,6 @@ crl_service_time_unit: HOURS
 # Configure the RA Peering requests
 ra_peer_max_parallel_reqs: 50
 ra_peer_min_parallel_reqs: 2
+
+# Map the identity_info to create the TLS certs for the EJBCA CA instances
+identity_info: "{{ tls_identity_info }}"

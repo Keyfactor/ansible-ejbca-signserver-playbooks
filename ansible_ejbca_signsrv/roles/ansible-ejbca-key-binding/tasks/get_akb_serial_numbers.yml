@@ -3,7 +3,6 @@
 
 - name: Query Key Binding
   command: "{{ ejbca_sh }} keybind list"
-  no_log: true
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_list
@@ -34,12 +33,12 @@
 
 - name: Create fact with Key Binding certificate serial numbers an the type of use (RA/SS/VA)
   set_fact:
-    the_loops: |
+    peer_cert_serial_numbers: |
       [
       {% for outer in keybinding_list.stdout_lines %}
       {% for inner in ejbca_keybinding %}
       {% if inner.name in outer %}
-      {{ '{' }} 'name':'{{ inner.name }}', 'serial':'{{ outer | regex_findall('\b[0-9A-F]{40}\b') }}', 'type':'{{ inner.useType }}', 'ca':'{{ innter.caname }}' {{ '}' }},
+      {{ '{' }} 'name':'{{ inner.name }}', 'serial':'{{ outer | regex_findall('\b[0-9A-F]{40}\b') | first }}', 'type':'{{ inner.useType }}', 'ca':'{{ inner.caname }}' {{ '}' }},
       {% endif %}
       {% endfor %}
       {% endfor %}

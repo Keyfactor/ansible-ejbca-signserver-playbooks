@@ -19,7 +19,7 @@ mariadb_users:
 use_local_repository: false
 # Location to download SignServer binary zip file
 #signsrv_software_url: https://sourceforge.net/projects/signserver/files/signserver/5.2/signserver-ce-5.2.0.Final-bin.zip/download
-signsrv_software_url: http://172.16.170.133:8080/ejbca/signserver-ce-5.9.0.Final-bin.zip
+signsrv_software_url: https://github.com/Keyfactor/signserver-ce/releases/download/v5.9.1.Final/signserver-ce-5.9.1.Final-bin.zip
 # Version of SignServer to deploy
 signsrv_version: "5.9.0"
 # SignServer filename. This will either be ee or ce

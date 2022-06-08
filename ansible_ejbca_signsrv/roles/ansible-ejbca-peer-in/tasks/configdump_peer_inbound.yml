@@ -15,8 +15,8 @@
     name: ansible-ejbca-cnfdump-stage
     tasks_from: config_configdump
   vars:
-    configdump_directory_structure: "{{ configdump_dir_structure_ra }}"
-    configdump_import_files: "{{ configdump_ra_files_dump1 }}"
+    configdump_directory_structure: "{{ configdump_dir_structure_va }}"
+    configdump_import_files: "{{ configdump_va_files_dump1 }}"
   when: 
     - ejbca_type == "VA"
 
