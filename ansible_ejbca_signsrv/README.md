@@ -37,7 +37,7 @@ Below you will find the steps to run some common tasks.
 2. Run:
 
 ```bash
-ansible-playbook -i inventory -l ceServers,ce01 deployCeNode.yml --ask-become-pass
+ansible-playbook -i inventory -l ce01 deployCeNode.yml --ask-become-pass
 ```
 
 ### Deploy Community SignServer version
@@ -45,7 +45,7 @@ ansible-playbook -i inventory -l ceServers,ce01 deployCeNode.yml --ask-become-pa
 2. Run:
 
 ```bash
-ansible-playbook -i inventory -l ceSignServers,cess01,ssTlsCerts,ssCsrCerts deployCeSS.yml --ask-become-pass
+ansible-playbook -i inventory -l cess01,ssTlsCerts,ssCsrCerts deployCeSS.yml --ask-become-pass
 ```
 
 ### Deploy Enterprise SignServer version
@@ -53,7 +53,7 @@ ansible-playbook -i inventory -l ceSignServers,cess01,ssTlsCerts,ssCsrCerts depl
 2. Run:
 
 ```bash
-ansible-playbook -i inventory -l eeSignServers,ss01,ssTlsCerts,ssCsrCerts deploySS.yml --ask-become-pass
+ansible-playbook -i inventory -l ss01,ssTlsCerts,ssCsrCerts deploySS.yml --ask-become-pass
 ```
 
 ### Deploy an Enterprise CA
@@ -61,7 +61,7 @@ ansible-playbook -i inventory -l eeSignServers,ss01,ssTlsCerts,ssCsrCerts deploy
 2. Run:
 
 ```bash
-ansible-playbook -i inventory -l eeCaServers,ca01 deployCA.yml --ask-become-pass
+ansible-playbook -i inventory -l ca01 deployCA.yml --ask-become-pass
 ```
 
 ### Deploy an Enterprise external RA
@@ -69,7 +69,7 @@ ansible-playbook -i inventory -l eeCaServers,ca01 deployCA.yml --ask-become-pass
 2. Run:
 
 ```bash
-ansible-playbook -i inventory -l eeRaServers,ra01,pkiTlsCerts deployRa.yml --ask-become-pass
+ansible-playbook -i inventory -l ra01,pkiTlsCerts deployRa.yml --ask-become-pass
 ```
 ### Deploy an Enterprise external VA
 1. Edit _group_vars/eeVaServers.yml_, _group_vars/pkiTlsCerts.yml_, _group_vars/pkiCsrCerts.yml_, _host_vars/va01.yml_, and _inventory_.
@@ -96,12 +96,12 @@ To use the Database source failover/failback use the following commands:
 
 #### Failover 
 ```bash
-ansible-playbook -i inventory -l eeCaServers,ca01,ca02 -e failover_wildfly_db=true configureDB.yml
+ansible-playbook -i inventory -l ca01,ca02 -e failover_wildfly_db=true configureDB.yml
 ```
 
 #### Failback
 ```bash
-ansible-playbook -i inventory -l eeCaServers,ca01,ca02 -e failback_wildfly_db=true configureDB.yml 
+ansible-playbook -i inventory -l ca01,ca02 -e failback_wildfly_db=true configureDB.yml 
 ```
 
 ### Use Ansible Vault
