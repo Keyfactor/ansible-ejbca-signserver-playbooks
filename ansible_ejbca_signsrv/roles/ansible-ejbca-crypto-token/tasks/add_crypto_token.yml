@@ -35,7 +35,7 @@
   failed_when: add_cryptotoken.rc >= 2
   when: 
     - (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or 
-      (item.canme is defined and item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
+      (item.caname is defined and item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
 
 #- name: debug add_cryptotoken
 #  debug:
