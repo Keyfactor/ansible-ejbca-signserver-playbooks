@@ -1,6 +1,6 @@
 ---
 
-# ansible-playbook -i inventory -l eeRaServers,ra01,pkiTlsCerts deployRa.yml
+# ansible-playbook -i inventory -l ,ra01,pkiTlsCerts deployRa.yml
 
 - hosts: pkiServers:eeRaServers
   become: yes
@@ -19,7 +19,7 @@
   gather_facts: false
   roles:
     - ansible-ejbca-certreq-cli
-
+# TODO New role to create the peer_cert_serial_numbers.yml
 - hosts: pkiServers:eeRaServers
   become: yes
   become_method: sudo

@@ -46,7 +46,7 @@ CRL Expiration Period: {{ item.crlPeriod_yml }}
 CRL Issue Interval: {{ item.crlIssueInterval_yml }}
 CRL Overlap Time: {{ item.crl_overlap_time_yml }}
 Delta CRL Period: {{ item.delta_crl_period }}
-{% if ejbca_version >= '7.5' %}
+{% if ejbca_version is version('7.5.0', '>=') %}
 Generate CRL Upon Revocation: {{ item.generate_crl_upon_revocation | default('false') }}
 {% endif %}
 Default CRL Distribution Point: {{ item.defaultCRLDP }}
@@ -56,7 +56,7 @@ AIA CA Issuer URIs:
 Finish User: {{ item.finish_user  | default('true') }}
 CA Healthcheck Enabled: {{ item.ca_healthcheck_enabled  | default('true') }}
 Request Processor: {{ item.request_processor  | default('null') }}
-{% if ejbca_version >= '7.7' %}
+{% if ejbca_version is version('7.7.0', '>=') %}
 Microsoft CA Compatible Mode Used: {{ item.ms_ca_compat_mode  | default('false') }}
 {% endif %}
 {% if item.publishers is defined and item.publishers|length > 1 %}

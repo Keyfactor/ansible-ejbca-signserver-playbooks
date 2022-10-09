@@ -4,7 +4,7 @@
   command: "{{ ejbca_sh }} ra findendentity {{ item.username }}"
   args:
     chdir: "{{ ejbca_home }}"
-  become_method: sudo
+  become: yes
   become_user: "{{ ejbca_user }}"
   changed_when: false
   failed_when: false
@@ -102,7 +102,8 @@
     - item.useType is defined
     - (item.useType == "ra") or (item.useType == "va")
     - ra_batch_result is defined
-    - ra_batch_result.changed|bool
+    - ra_batch_result.changed|bool or
+      ra_force_batch_again is defined and ra_force_batch_again|bool
 
 - name: RA specific
   block:
@@ -125,7 +126,7 @@
         tasks_from: peer_add_sn_to_role
       vars:
         ejbca_ra_admin_role_name: "RA-Peer-Connection"
-        certificate_serial_number: cert_serialNumber
+        certificate_serial_number: "{{ ra_peer_cert_serial_numbers }}"
       no_log: true
 
     - name: Write RA cert serial numbers to file for use with EJBCA VA or RA playbooks 
@@ -145,7 +146,8 @@
     - item.useType is defined
     - (item.useType == "ra")
     - ra_batch_result is defined
-    - ra_batch_result.changed|bool
+    - ra_batch_result.changed|bool or 
+      ra_force_batch_again is defined and ra_force_batch_again|bool
  
 - name: VA Specific
   block:
@@ -176,7 +178,8 @@
     - item.useType is defined
     - (item.useType == "va")
     - ra_batch_result is defined
-    - ra_batch_result.changed|bool
+    - ra_batch_result.changed|bool or
+      ra_force_batch_again is defined and ra_force_batch_again|bool
 
 - name: Create peer_cert_serial_numbers variable if it is empty
   include_role: 
@@ -217,7 +220,8 @@
     - item.useType is defined
     - (item.useType == "ra") or (item.useType == "va") or (item.useType == "root") or (item.useType == "signserver")
     - ra_batch_result is defined
-    - ra_batch_result.changed|bool
+    - ra_batch_result.changed|bool or
+      ra_force_batch_again is defined and ra_force_batch_again|bool
 
 - name: Cleanup the cert files in /var/tmp
   file:

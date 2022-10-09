@@ -12,7 +12,7 @@
   command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli finduser USERNAME EQUALS {{ vault_int_pki_name }}"
   args:
     chdir: "{{ ejbca_toolbox }}"
-  become_method: sudo
+  become: true
   become_user: "{{ ejbca_user }}"
   changed_when: False
   register: endentity_exists
@@ -25,7 +25,7 @@
       command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli edituser {{ vault_int_pki_name }} {{ vault_int_pki_passwd }} false '{{ vault_int_ca_ejbca_dn }}' NULL NULL {{ vault_int_ca_ejbca_rootca_sign }} 1 USERGENERATED {{ vault_int_ca_ejbca_status }} {{ vault_int_ca_ejbca_endentityprofile }} {{ vault_int_ca_ejbca_certprofile }}"
       args:
         chdir: "{{ ejbca_toolbox }}"
-      become_method: sudo
+      become: true
       become_user: "{{ ejbca_user }}"
       register: create_endentity
       no_log: true
@@ -37,7 +37,7 @@
       command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli pkcs10req {{ vault_int_pki_name }} {{ vault_int_pki_passwd }} /var/tmp/{{ vault_int_pki_name }}.csr PEM NONE /var/tmp/"
       args:
         chdir: "{{ ejbca_toolbox }}"
-      become_method: sudo
+      become: true
       become_user: "{{ ejbca_user }}"
       register: submit_pkcs10
       no_log: true

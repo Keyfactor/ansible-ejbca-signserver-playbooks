@@ -19,3 +19,7 @@ Access Rules:
 {% endfor %}
   /peerincoming/: Allow
   /ra_slave/manage/: Allow
+{% if ejbca_version is version('7.10.0', '>=') %}  
+  /ca_functionality/use_username/: Allow
+  /ca_functionality/use_approval_request_id/: Allow
+{% endif %}  

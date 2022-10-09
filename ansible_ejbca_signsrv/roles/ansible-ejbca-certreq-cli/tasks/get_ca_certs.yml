@@ -55,6 +55,8 @@
       changed_when: ejbca_get_ca_chain.rc == 0
       tags: ejbca-cli-cacert
 
+# TODO Add a when to only export if the certificate is not in the list?
+
     - name: Copy {{ item.caname }} Chain file to Ansible controller
       become: no
       fetch:
