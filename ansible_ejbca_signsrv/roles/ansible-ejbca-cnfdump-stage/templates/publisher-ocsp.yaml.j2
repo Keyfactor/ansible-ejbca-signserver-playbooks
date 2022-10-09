@@ -13,9 +13,9 @@ Settings:
 Only Use in Queue: true
 Keep Published in Queue: false
 Use Queue for CRLs: true
-Use Queue for Certificates: true {% if ejbca_version >= '7.4' %}  
+Use Queue for Certificates: true {% if ejbca_version is version('7.4.0', '>=') %}  
 Use Queue for OCSP Responses: true
-{% endif %} {% if ejbca_version >= '7.8' %} 
-Use Safe Direct Publishing: false
+{% endif %}{% if ejbca_version is version('7.8.0', '>=') %}
+Use Safe Direct Publishing: true
 {% endif %}
 Description: 'Validation Authority Peer Publisher'

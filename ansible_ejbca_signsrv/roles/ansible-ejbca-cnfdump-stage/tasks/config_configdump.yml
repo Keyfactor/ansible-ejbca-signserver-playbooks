@@ -11,7 +11,7 @@
     chdir: "{{ ejbca_home }}"
     creates: "{{ ejbca_home }}/dist/configdump/configdump.jar"
   become_user: "{{ ejbca_user }}"
-  become_method: sudo
+  become: true
   when: not cfgdump_exists.stat.exists
 
 - name: Create configdump file structure for all the imports

@@ -2,14 +2,14 @@
 
 - name: Install packages
   become: yes
-  become_method: sudo
+  become: true
   package:
     name: "{{ vault_packages }}"
     state: present
 
 - name: Install Python Docker
   become: yes
-  become_method: sudo
+  become: true
   pip:
     name: "{{ vault_python_packages }}"
 

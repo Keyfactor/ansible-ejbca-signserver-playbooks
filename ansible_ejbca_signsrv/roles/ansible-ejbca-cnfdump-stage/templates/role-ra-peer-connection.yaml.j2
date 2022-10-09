@@ -7,8 +7,8 @@ Role Members:
 - Token Type: CertificateAuthenticationToken
   Issuer: line.caname
   Match With: WITH_SERIALNUMBER
-  Match Value: line.cert_serial_Number
-  Description: line.cert_serial_Number
+  Match Value: {{ line.cert_serial_Number }}
+  Description: {{ line.cert_serial_Number }}
 {% endfor %}
 {% else %}
 Role Members: []

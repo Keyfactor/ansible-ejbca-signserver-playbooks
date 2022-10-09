@@ -1,6 +1,6 @@
 ---
 
-# ansible-playbook -i inventory -l eeCaServers,ca01 deployCA.yml
+# ansible-playbook -i inventory -l ca01 deployCA.yml
 
 - hosts: pkiServers
   become: yes

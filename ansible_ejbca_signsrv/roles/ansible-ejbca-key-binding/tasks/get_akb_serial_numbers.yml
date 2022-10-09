@@ -31,7 +31,7 @@
 #  debug:
 #    var: kb_hex_serial_numbers
 
-- name: Create fact with Key Binding certificate serial numbers an the type of use (RA/SS/VA)
+- name: Create fact with 40 bit Key Binding certificate serial numbers and the type of use (RA/SS/VA)
   set_fact:
     peer_cert_serial_numbers: |
       [

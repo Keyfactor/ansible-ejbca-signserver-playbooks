@@ -16,6 +16,10 @@ all:
       hosts:
         ca01:
           ansible_host: 172.16.170.170
+    ejbcaCaAddNodes:
+      hosts:
+        ca02:
+          ansible_host: 172.16.170.202
     extSignMgmtCaServers:
       hosts:
         extsignmgmt01:
@@ -74,7 +78,7 @@ all:
           ansible_host: 172.16.170.8
     pkiTlsCerts:
       hosts:
-        ca01:
+        pkiTlsEnrollmentCA:
           ansible_host: 172.16.170.170
     pkiCsrCerts:
       hosts:
@@ -100,6 +104,7 @@ all:
         peerconfigCas:
         extEeRootCaServers:
         eeSubCaServers: 
+        ejbcaCaAddNodes:
     mariadbServers:
       children:
         eeRootCaServers:
@@ -111,7 +116,8 @@ all:
         ceSignServers:
         extSignMgmtCaServers:
         extEeRootCaServers:
-        eeSubCaServers:  
+        eeSubCaServers:
+        ejbcaCaAddNodes:
     applicationServers:
       children:
         eeRootCaServers:
@@ -126,6 +132,7 @@ all:
         policyCaSignIssuingCas:
         extEeRootCaServers:
         eeSubCaServers:
+        ejbcaCaAddNodes:
     upgradeEeServers:
       children:
         eeRootCaServers:

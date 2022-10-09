@@ -19,3 +19,7 @@ wildfly_disable_infinispan: true
 
 # Manage the Wildfly service with Ansible
 wildfly_manage_service: true
+
+# Elytron password file location used in the EJBCA and SS prep roles
+wildfly_elytron_pass_dir: /opt/elytron
+wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"

@@ -37,26 +37,35 @@
 
 - name: Create fact for member vaules in {{ ejbca_ra_admin_role_name }}
   set_fact:
-    ra_serial_numbers_hex: "{{ ra_serial_numbers_hex | default( [] ) + [item.split('\"')[3]] }}"
+    ra_serial_numbers_hex: "{{ ra_serial_numbers_hex | default( [] ) + [inner_item.split('\"')[3]] }}"
   loop: "{{ sn_in_role_result.stdout_lines }}"
+  loop_control:
+    loop_var: inner_item
   when:
     - sn_in_role_result is defined
-    - ( ejbca_ra_admin_role_name in role_exists_result.stdout)
+    - ( ejbca_ra_admin_role_name in role_exists_result.stdout )
 
-- name: Use CLI to add serial number {{ certificate_serial_number.stdout.split('=')[1] }} to {{ ejbca_ra_admin_role_name }}
+#- name: Debug certificate_serial_number
+#  debug:
+#    var: certificate_serial_number
+
+- name: Use CLI to add serial number {{ inner_item.certificate_serial_number }} to {{ ejbca_ra_admin_role_name }}
   command: >
     {{ ejbca_sh }} roles addrolemember 
     --role '{{ ejbca_ra_admin_role_name }}' 
-    --caname '{{ item.caname }}' 
+    --caname '{{ inner_item.caname }}' 
     --with CertificateAuthenticationToken:WITH_SERIALNUMBER 
-    --value '{{ certificate_serial_number.stdout.split('=')[1] }}'
-    --description '{{ certificate_serial_number.stdout.split('=')[1] }}'
+    --value '{{ inner_item.certificate_serial_number }}'
+    --description '{{ inner_item.certificate_serial_number.stdout }}'
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
   become: yes
+  loop: "{{ certificate_serial_number }}"
+  loop_control:
+    loop_var: inner_item
   register: add_sn_to_role_result
   tags: ra_peer_sn_role, certreq-cli-batch
   when: 
   - ra_serial_numbers_hex is defined
-  - not certificate_serial_number.stdout.split('=')[1] in ra_serial_numbers_hex
+  - not inner_item.certificate_serial_number in ra_serial_numbers_hex

@@ -4,7 +4,7 @@
   command: "{{ ejbca_sh }} ra findendentity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}"
   args:
     chdir: "{{ ejbca_home }}"
-  become_method: sudo
+  become: true
   become_user: "{{ ejbca_user }}"
   changed_when: False
   failed_when: "'FAILED' in endentity_exists.stderr"
@@ -39,7 +39,7 @@
         --certprofile {{ item.certprofile }}
         --eeprofile {{ item.eeprofile }}
       no_log: true
-      become_method: sudo
+      become: true
       become_user: "{{ ejbca_user }}"
       register: adding_csr_end_entity
       failed_when: adding_csr_end_entity.rc >= 2

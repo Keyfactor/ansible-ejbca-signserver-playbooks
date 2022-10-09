@@ -1,6 +1,6 @@
 ---
 
-# ansible-playbook -i inventory -l eeVaServers,va01,pkiTlsCerts,pkiCsrCerts deployVa.yml
+# ansible-playbook -i inventory -l va01,pkiTlsCerts,pkiCsrCerts deployVa.yml
 
 - hosts: pkiServers:eeVaServers
   become: yes
