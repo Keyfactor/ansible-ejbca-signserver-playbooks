@@ -1,0 +1,14 @@
+---
+
+- name: Write package change to log
+  lineinfile:
+    path: "{{ change_log_path }}"
+    line: "{{ lookup('pipe', 'date +%Y%m%d-%H:%M:%S') }} - {{ log_entry }}"
+  delegate_to: localhost
+  loop: |
+    {% if manage_default_packages is changed %}{{ manage_default_packages.results | sort }}
+    {% elif manage_pip_packages is changed %}{{ manage_pip_packages.stdout_lines | select('search', 'Successfully') | trim }} {% endif %}
+  loop_control:
+    label: "{{ log_entry }}"
+    loop_var: log_entry
+  register: lineinfile_task

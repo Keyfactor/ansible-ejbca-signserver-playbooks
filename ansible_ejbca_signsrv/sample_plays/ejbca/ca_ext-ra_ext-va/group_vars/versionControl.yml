@@ -1,0 +1,488 @@
+---
+
+## Refer to the ansible-software role README for more information on populating this vars file
+
+## Logging ##
+# change log output for all installed and updated packages
+# log will be created for each host in play using a loop
+logging_dir: "{{ playbook_dir }}/_logfiles"
+change_log_path: "{{ logging_dir }}/{{ inventory_hostname }}_change.log"
+change_log: true
+
+## Applications ##
+# These applications are binary packages that need to be download from an internet location, a network share, or copied from the Ansible controller, and are not downloaded from a package repository
+# Each item currently listed are recommended to support an Ansible deployment of EJBCA or SignServer
+
+# Root installation directory for all applications
+apps_root_dir: /opt
+
+# Users and Groups
+# Created to use for applications directory permissions
+# You can use vars set in other group/host var file as long as the inventory hostname is nested in that inventory group
+# Set state to 'present' to create or leave in place or 'absent' to remove a user or group
+# Set create_home to 'yes' or 'no'
+
+# set to false when not managing remote users and groups with the lists below
+apps_groups_manage: false
+apps_profile_dir: /home
+
+apps_groups:
+  - name: wildfly
+    state: present
+
+apps_users:
+  - name: wildfly
+    group: wildfly
+    create_home: yes
+    state: present
+
+# Application List Global Vars
+# If any values are listed as a global var and as a var for an application in the list, the global var will take precedence. 
+# Global vars set at the application level should not include the prefix 'apps_'
+
+# Descriptions
+# _install - set to 'true' to install a application listed below on the remote host
+# _upgrade - set to 'true' to upgrade an existing application to the version listed below for each application
+# _remove - set to 'true' to enable the _remove_type varible. do not use with upgrade/downgrade
+# _remove_type - set to one of the following:
+#   none - remove no applications
+#   current - to remove the application in the list
+#   previous - remove all previous installations of an application not listed below
+#   all - remove all versions of the application
+# _validate_certs - set to 'yes' to validate tls certfictate of download site
+# _download_localhost - set to 'true' to download to Ansible controller then copy to remote host
+# apps_install: false
+# apps_upgrade: false
+# apps_downgrade: false
+
+# apps_remove_type: previous
+# apps_validate_certs: yes
+# apps_download_localhost: true
+
+# Application list
+# A 'sample-app' has been included at the top of the list and includes all current vars included in the tasks. This app will be filtered out by any current tasks.
+# If you add any vars or tasks, or updated any current tasks with new vars, it is recommended you add them to the sample-app list to track allow other users the ability to understand the available options.
+apps:
+    # sample app
+  - name: sample-app # used in conditional values and used as the symlink name
+    link: sample # symlink name. do not include the directory. only required if the link needs to be different than the application name
+    home_dir: "{{ apps_root_dir }}/sample-app-1.2.3" # home directory on the remote host
+    filename: sample-app-1.2.3-Final.zip # filename for download, copy, and unarchive
+    version: 1.2.3 # must include an integer. this will be evaulated for during version checks
+    # install/upgrade/removal options
+    install: false # set to 'true' to install a application listed below on the remote host
+    upgrade: false # set to 'true' to upgrade an existing application to the version listed below for each application
+    remove_previous: false # remove previously installed versions with same app name. can be used with upgrade as true or false.
+    # permission controls
+    owner: user # folder owner
+    group: group # folder owner group
+    # download
+    download: true # set to true to download from internet location
+    download_localhost: true # download on ansible controller for copy to remote host
+    download_validate_certs: yes # validate tls certs
+    download_provider: aws # list of internet locations to download. options include 'http', 'aws', and 'azure'
+    download_params: # remove the parameter types you dont need based on the prefix
+      - name: http
+        url: https:/download.com/releases/binaries # url where file is located. do not include filename
+        checksum: sha256:7db54556acf6d5654bf3e2882e3ff45220dea689160ac2e5964ac94635843df8 # file checksum required for Ansible to accept the download
+      - name: aws
+        bucket: kf-packages
+        credential_profile: primekeydev
+        region: us-east-1
+        access_key: "{{ encrypted_access_key | default() }}"
+        access_secret: "{{ encrypted_access_secret | default() }}"
+      - name: azure
+        credential_profile:
+        api_key: "{{ encrypted_api_key | default() }}"
+        api_secret: "{{ encrypted_api_secret | default() }}"
+    # copy options
+    remote_dir: /opt/software # do not include filename
+    # version control
+
+    # apache
+  - name: apache-ant
+    version: 1.10.12
+    filename: apache-ant-1.10.12-bin.tar.gz
+    home_dir: "{{ apps_root_dir }}/apache-ant-1.10.12"
+    # install/upgrade/removal options
+    install: false 
+    upgrade: false 
+    remove_previous: false
+    # permission controls
+    owner: wildfly
+    group: wildfly
+    # download
+    download: true
+    download_localhost: false
+    download_validate_certs: yes
+    download_provider: http
+    download_params:
+      - name: http
+        url: https://mirror.olnevhost.net/pub/apache/ant/binaries
+        checksum: sha256:4b3b557279bae4fb80210a5679180fdae3498b44cfd13368e3386e2a21dd853b
+        #checksum: sha256:7db54556acf6d5654bf3e2882e3ff45220dea689160ac2e5964ac94635843df8
+    # copy options
+    remote_dir: /Users/jtgarner/Software
+
+    # galleon
+  - name: galleon
+    version: 4.2.8.Final
+    filename: galleon-4.2.8.Final.zip
+    home_dir: "{{ apps_root_dir }}/galleon-4.2.8.Final"
+    # install/upgrade/removal options
+    install: false
+    upgrade: false
+    remove_previous: false
+    # permission controls
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    # download
+    download: true
+    download_localhost: false
+    download_validate_certs: yes
+    download_provider: http
+    download_params:
+      - name: http
+        url: https://github.com/wildfly/galleon/releases/download/4.2.8.Final
+        checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06
+    # copy options
+    remote_dir: /Users/jtgarner/Software
+
+    # wildfly
+  - wildfly: true
+    name: wildfly
+    # version controls
+    version: 26.0.1.Final
+    filename: wildfly-26.0.1.Final.tar.gz
+    home_dir: "{{ apps_root_dir }}/wildfly-26.0.1.Final"
+    # installation controls
+    install: false
+    upgrade: false
+    remove_previous: false
+    use_galleon: true
+    # permission controls
+    owner: wildfly
+    group: wildfly
+    # download and copy controls
+    download: true
+    download_localhost: false
+    download_validate_certs: yes
+    download_provider: http
+    download_params:
+      - name: http
+        url: https://download.jboss.org
+        checksum: sha256:63ced690c05149f444e8d0418c1d76ab82941d1e3763ef4c49b0c43de5f95ae7
+    remote_dir: /Users/jtgarner/Software/EJBCA_7.10
+    # app specific variable controls
+    kerberos_enable: false
+    kerberos_file_path:
+    kerberos_keytab_file:
+    kerberos_keytab_file_url:
+    kerberos_keytab_file_url_checksum:
+    elytron_pass_dir: /opt/elytron
+    elytron_pass_file: /opt/elytron/wildfly_pass
+    standalone_file: standalone-26.xml.datasource.j2
+    infinispan_disable: true
+
+    # ejbca
+  - ejbca: true
+    name: ejbca-ee
+    link: ejbca
+    # version controls
+    version: 7.9.1.Final
+    filename: ejbca_ee_7_9_1.zip
+    home_dir: "{{ apps_root_dir }}/ejbca-ee-7.9.1.Final"
+    # version: 7.10.0.1.Final
+    # filename: ejbca_ee_7_10_0_1.zip
+    # home_dir: "{{ apps_root_dir }}/ejbca-ee-7.10.0.1.Final"
+    # installation controls
+    install: true
+    upgrade: false
+    remove_previous: false
+    # permissions controls
+    owner: wildfly
+    group: wildfly
+    # download and copy controls
+    download: true
+    download_localhost: true
+    download_validate_certs: yes
+    download_provider: aws
+    download_params:
+      - name: aws
+        bucket: kf-packages
+        credential_profile: primekeydev
+        access_key: "{{ encrypted_access_key | default() }}"
+        access_secret: "{{ encrypted_access_secret | default() }}"
+      - name: azure
+        credential_profile:
+        resource_group: product_delivery_lab_environment-ansible-upgrade-signserver2-892905
+        storage_account: ansibleblobtesting
+        container: newcontainer
+        api_key: "{{ encrypted_api_key | default() }}"
+        api_secret: "{{ encrypted_api_secret | default() }}"
+    remote_dir: /Users/jtgarner/Software/SS_5.10
+    # app specific variable controls
+    build_statedump: false
+    build_configdump: true
+    statedump_src: 
+    crl_dir_enabled: false
+    crl_dir:
+      - /opt/web/CRLs
+      - /opt/web/AIA
+
+    # signserver
+  - signserver:
+    name: signserver-ee
+    link: signsrv
+    # version: 5.9.0.Final
+    # filename: signserver-ee-5.9.0.Final-bin.zip
+    # home_dir: "{{ apps_root_dir }}/signserver-ee-5.9.0.Final"
+    # checksum: sha256:7db54556acf6d5654bf3e2882e3ff45220dea689160ac2e5964ac94635843df8
+    version: 5.10.0.Final
+    filename: signserver-ee-5.10.0.Final-bin.zip
+    home_dir: "{{ apps_root_dir }}/signserver-ee-5.10.0.Final"
+    checksum: sha256:7db54556acf6d5654bf3e2882e3ff45220dea689160ac2e5964ac94635843df8
+    # install/upgrade/removal options
+    install: true
+    upgrade: false
+    remove_previous: false
+    # permissions controls
+    owner: wildfly
+    group: wildfly
+    # download options
+    download: true
+    download_localhost: true
+    download_validate_certs: yes
+    download_provider: aws
+    download_params:
+      - name: aws
+        bucket: kf-packages
+        credential_profile: primekeydev
+        access_key: "{{ encrypted_access_key | default() }}"
+        access_secret: "{{ encrypted_access_secret | default() }}"
+      - name: azure
+        credential_profile:
+        resource_group: product_delivery_lab_environment-ansible-upgrade-signserver2-892905
+        storage_account: ansibleblobtesting
+        container: newcontainer
+        api_key: "{{ encrypted_api_key | default() }}"
+        api_secret: "{{ encrypted_api_secret | default() }}"
+    # copy options
+    remote_dir: /Users/jtgarner/Software/SS_5.10
+
+# Application supporting Jar files
+# TODO - Add Jar files to each application in list
+apps_jar_files:
+  - name: mariadb-java-client
+    version: 3.0.8
+    home_dir: "{{ apps_root_dir }}/wildfly-26.0.1.Final/standalone/deployments"
+    url: https://dlm.mariadb.com/2531428/Connectors/java/connector-java-3.0.8/mariadb-java-client-3.0.8.jar
+    checksum: sha256:83697e1c44e77476123ab63cd8bb2ca96c1a349269f307c339f97caced2d0dd6
+  - name: jboss-client
+    version: 26.0.1
+    home_dir: "{{ apps_root_dir }}/wildfly-26.0.1.Final/bin/client/"
+    url: https://repo1.maven.org/maven2/org/wildfly/wildfly-client-all/26.0.1.Final/wildfly-client-all-26.0.1.Final.jar
+    checksum: sha256:859e69844bf047193f4ab461c7cc2b7c4b18ec76d1f32ebebcb9470097ef7dcd
+  - name: elytron-tool
+    version: 1.17.2
+    home_dir: "{{ apps_root_dir }}/wildfly-26.0.1.Final/bin"
+    url: https://repo1.maven.org/maven2/org/wildfly/security/wildfly-elytron-tool/1.17.2.Final/wildfly-elytron-tool-1.17.2.Final.jar
+    checksum: sha256:07b62bc174f6e8e132690d748681621b93b91468ecb9dcef2c1080549ae9e939
+
+## Packages
+# packages names that will appear in the package_facts dump
+# names and version will be evaluted to make sure they meet the following
+# add or remove packages from each list as needed
+# set version as 'latest' to install/upgrade to recent build. only one version can be set
+# add 'manager' to specify a package manager to use for download
+
+# Packages List Global Vars
+# If any values are listed as a global var and as a var for an application in the list, the global var will take precedence. 
+# Global vars set at the application level should not include the prefix 'apps_'
+
+# Options
+# _install - set to true to intiate the package install loop listed below on the remote host
+# _upgrade - set to true to upgrade an existing packages to the version listed below for each package
+# _downgrade - to ensure a lower version of an installed package is installed, set to 'true'. this is useful during a rollback after upgrade
+# _remove - set to true to remove a package to initiate the task and set the package version you want to remove to 'remove'
+
+# Base packages needed for all ansible deployment nodes
+base_packages_install: false
+base_packages_upgrade: false
+base_packages_downgrade: false
+base_packages_remove: false
+
+# Set the varibale below to allow application level vars to override global vars a global vars
+# Use this option to prevent looping whole list if only wanting to manage one var
+# base_packages_allow_global_override: false
+
+base_packages_managers:
+  - name: python3-pip
+    version: latest
+
+# Package list
+base_packages:
+  - name: sample-package # beginning value used in package download and only value if version is 'latest'
+    version: 1.2.3 # concatenated with 'name' in download command if not set to 'latest'
+    manager: pip3 # only necessary if manager needed to download is not the default OS manager. do not add if default OS manager can be used for the package
+    # downgrade: false
+    # remove: false
+  - name: java-1.8.0-openjdk-devel
+    version: 1.8.0.242.b08
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: java-1.8.0-openjdk-headless
+    version: 1.8.0.242.b08
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: unzip
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: nss-tools
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: wget
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: python3-libsemanage
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: jq
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: vim-common
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: firewalld
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: boto3 # aws modules
+    version: latest
+    manager: pip3
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  # - name: ansible[azure] # azure modules
+  #   version: latest
+  #   manager: pip3
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  # - name: msrestazure # azure modules
+  #   version: latest
+  #   manager: pip3
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: httpd
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+  - name: mod_ssl
+    version: latest
+    # install: false
+    # upgrade: false
+    # downgrade: false
+    # remove: false
+
+# MariaDB 
+mariadb_packages_install: false
+mariadb_packages_upgrade: false
+mariadb_packages_downgrade: false
+mariadb_packages_remove: false
+# Alma/CentOS/Oracle/RedHat/Rocky 8
+mariadb_packages:
+  - name: MariaDB-client
+    version: 10.5.17
+  - name: MariaDB-common
+    version: 10.5.17
+  - name: MariaDB-server
+    version: 10.5.17
+  - name: MariaDB-shared
+    version: 10.5.17
+  - name: python3-PyMySQL
+    version: latest
+# Centos 7 - delete list if not needed
+mariadb_packages_centos7:
+  - name: MariaDB-client
+    version: 10.5.17
+  - name: MariaDB-common
+    version: 10.5.17
+  - name: MariaDB-server
+    version: 10.5.17
+  - name: MariaDB-backup
+    version: 10.5.17
+  - name: MySQL-python
+    version: latest
+# RHEL 7 - delete list if not needed
+mariadb_packages_rhel7:
+  - name: rh-mariadb103-mariadb
+    version: 10.5.17
+  - name: rh-mariadb103-mariadb-backup
+    version: 10.5.17
+  - name: rh-mariadb103-mariadb-common
+    version: 10.5.17
+  - name: MariaDB-client
+    version: 10.5.17
+  - name: MySQL-python
+    version: latest
+
+## Patching
+# perform a check-update for security
+security_update: true
+# perform a check-update for bugfix
+bugfix_update: true
+
+## System checks
+# General
+check_database: true
+check_healthcheck: true
+check_hsm_connectivity: true
+check_external_access: true
+
+# EJBCA
+check_ocsp_check: true
+check_crl_get: true
+check_crl_publish: true
+check_rest_api: true
+check_msae: true
+check_scep: true
+
+# SignServer
+check_codesigning: true
+check_timestamping: true
+
+# intialize version arrays
+greater_version: []
+same_version: []
+lower_version: []

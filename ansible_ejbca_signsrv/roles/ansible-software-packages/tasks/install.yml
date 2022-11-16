@@ -1,0 +1,36 @@
+
+- name: Install{% if item.version == 'latest' %} latest version {% else %} version {{ item.version }} {% endif %}of {{ item.name }} using default package manager
+  package:
+    name: "{% if item.version == 'latest' %}{{ item.name }}{% else %}{{ item.name }}-{{ item.version }}{% endif %}"
+    state: "{% if item.version == 'latest' %}latest{% else %}present{% endif %}"
+    allow_downgrade: no
+  register: manage_default_packages
+  when:
+    - packages[item.name][0].name is not defined
+    - item.manager is not defined
+
+- name: Install{% if item.version == 'latest' %} latest version {% else %} version {{ item.version }} {% endif %}of {{ item.name }} using pip package manager
+  pip:
+    name: "{% if item.version == 'latest' %}{{ item.name }}{% else %}{{ item.name }}-{{ item.version }}{% endif %}"
+    state: "{% if item.version == 'latest' %}latest{% else %}present{% endif %}"
+    allow_downgrade: no
+  register: manage_pip_packages
+  when:
+    - item.manager is defined
+    - item.manager == 'pip3'
+    - not installed_pip_packages.stdout_lines | select('search', item.name)
+
+- name: Write {{ item.name }} install changes to log
+  include_role:
+    name: ansible-changelog
+    tasks_from: packages.yml
+    apply:
+      become: false
+  when:
+    - (manage_default_packages is defined and manage_default_packages.changed) or
+      (manage_pip_packages is defined and manage_pip_packages.changed)
+
+
+
+
+

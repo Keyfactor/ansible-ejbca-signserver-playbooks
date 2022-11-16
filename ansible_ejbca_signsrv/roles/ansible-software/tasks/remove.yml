@@ -1,0 +1,45 @@
+---
+
+- name: Remove packages
+  block:
+
+  - name: Remove package {{ item.name }} with default package manager
+    package:
+      name: "{{ item.name }}"
+      state: absent
+    register: manage_default_packages
+    tags: manage-packages
+    when: 
+      - item.version == "remove"
+      - item.manager is not defined or item.manager is defined and item.manager != 'pip3'
+
+  - name: Remove package {{ item.name }} with pip
+    pip:
+      name: "{{ item.name }}"
+      state: absent
+    register: manage_pip_packages
+    tags: manage-packages
+    when: 
+      - item.version == 'remove'
+      - item.manager is defined and item.manager == 'pip3'
+
+  - debug:
+      var: manage_pip_packages
+
+  become: yes
+  become_method: sudo
+
+  when:
+    - (package_type is defined and package_type == 'base') or
+      (package_type is defined and package_type == 'mariadb')
+
+- name: Write {{ item.name }} changes to log
+  include_role:
+    name: ansible-changelog
+    tasks_from: write_packages_log.yml
+  become: false
+  when:
+    - install_results is defined and install_results.changed or
+      upgrade_downgrade_results is defined and upgrade_downgrade_results.changed or
+      manage_default_packages is defined and manage_default_packages.changed or
+      manage_pip_packages is defined and manage_pip_packages.changed

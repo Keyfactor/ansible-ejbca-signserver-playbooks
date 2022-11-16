@@ -1,0 +1,30 @@
+---
+
+- block: 
+
+  - name: Manage application groups
+    group:
+      name: "{{ item.name }}"
+      state: "{{ item.state }}"
+    loop: "{{ apps_groups }}"
+    loop_control:
+      label: "{{ item.name }}"
+    register: manage_app_groups_results
+    when: apps_groups is defined and apps_groups | length > 0
+
+  - name: Manage application users
+    user:
+      name: "{{ item.name }}"
+      group: "{{ item.group }}"
+      createhome: "{{ item.create_home }}"
+      state: "{{ item.state }}"
+    loop: "{{ apps_users }}"
+    loop_control:
+      label: "{{ item.name }}"
+    register: manage_app_users_results
+    when: apps_users is defined and apps_users | length > 0
+
+  become: yes
+  become_method: sudo
+
+# TO DO - ADD CHANGE LOG

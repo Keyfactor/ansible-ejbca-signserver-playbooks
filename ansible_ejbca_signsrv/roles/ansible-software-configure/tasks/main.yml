@@ -1,0 +1,27 @@
+---
+
+# - name: Configure Wildfly
+#   include_role: ansible-ejbca-prep
+#   when:
+#     - item.name is match('wildfly')
+
+- name: Configure EJBCA
+  include_role:
+    name: ansible-ejbca-prep
+  vars:
+    # deploy with version control set in versionControl group_var
+    version_control: true
+    ejbca_list: "{{ apps | selectattr('name', 'match', 'ejbca') | list }}"
+    wildfly_list: "{{ apps | selectattr('name', 'match', 'wildfly') | list }}"
+  loop: "{{ ejbca_list | zip(wildfly_list) | list }}"
+
+# - name: Configure SignServer
+#   include_role: 
+#     name: ansible-ss-prep
+#   loop: "{{ apps }}"
+#   loop_control:
+#     label: "{{ item.name }}"
+#   when:
+#     - (item.ejbca is defined and item.ejbca or item.name is match('signserver'))
+#     - (inventory_hostname in groups['eeSignServers']) or
+#       (host_type is defined and host_type is match('signserver'))

@@ -1,0 +1,37 @@
+- block:
+
+  - name: Check if log directory directory exists
+    stat:
+      path: "{{ logging_dir }}"
+    
+    register: existing_upgrade_dir_check
+
+  - name: Create log directory
+    file:
+      path: "{{ logging_dir }}"
+      state: directory
+      mode: '0755'
+    register: log_dir_result
+    when: existing_upgrade_dir_check.stat.exists is false
+
+  - name: Check if change log exists for each host
+    stat:
+      path: "{{ change_log_path }}"
+    register: existing_change_log_check
+
+  - name: Create change log file for each host
+    copy:
+      content: ""
+      dest: "{{ change_log_path }}"
+      force: no
+    when: existing_change_log_check.stat.exists is false
+    register: create_change_log
+
+  - name: Add create date to change log
+    lineinfile:
+      path: "{{ change_log_path }}"
+      line: "Change log create for {{ inventory_hostname }} on {{ lookup('pipe', 'date +%Y%m%d-%H:%M:%S') }}"
+    when: create_change_log is changed
+    register: lineinfile_task
+
+  delegate_to: localhost

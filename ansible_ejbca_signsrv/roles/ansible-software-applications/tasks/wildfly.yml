@@ -1,0 +1,92 @@
+---
+# task file for wildfly
+
+- block:
+
+  - name: Install Wildfly using Galleon
+    command: >
+      {% for galleon in apps if galleon.name == 'galleon' %}{{ galleon.home_dir }}{% endfor %}/bin/galleon.sh install wildfly:current#{{ item.version }}
+      --dir={{ item.home_dir }} 
+      --default-configs=standalone/standalone.xml
+      {% if item.version is version('25.0.0', '>=') %} 
+      --layers=cloud-server,deployment-scanner,ejb,io,jsf,mail,webservices,-jsonb,-jms-activemq,-observability,-jmx-remoting,core-management,core-tools,management
+      {% elif item.version is version('24.0.0', '=<') %} 
+      --layers=cdi,core-tools,datasources,deployment-scanner,ee,-jsonb,ejb,io,jaxrs,jpa,jsf,logging,mail,management,webservices,legacy-security
+      {% endif %}
+    register: successful_install
+
+  - name: Write {{ item.name }} installation to log
+    include_role:
+      name: ansible-changelog
+      tasks_from: apps.yml
+      apply:
+        become: false
+    vars:
+      successful_install: "Successfully installed {{ item.name }}-{{ item.version }}"
+    when:
+      - successful_install is defined
+
+  when:
+    - item.use_galleon is defined 
+    - item.use_galleon
+
+- name: Make client dir for jboss-client.jar
+  file:
+    path: "{{ item.home_dir }}/bin/client"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}" 
+    mode: 0750
+
+- name: Download Wildfly jar files
+  get_url:
+    url: '{{ jars.url }}'
+    dest: '{{ jars.home_dir }}'
+    validate_certs: '{{ item.download_validate_certs }}'
+    checksum: '{{ jars.checksum }}'
+  loop: '{{ apps_jar_files }}'
+  loop_control:
+    loop_var: jars
+    label: jars.name
+  when:
+    - item.version is version('25.0.0', '>=')
+
+- name: Fixes for Wildfly 26
+  block:
+
+  - name: Update elytron-tool.sh due to bug with Wildfly 26 Galleon install
+    template:
+      src: elytron-tool.sh.j2
+      dest: "{{ item.home_dir }}/bin/elytron-tool.sh"
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}" 
+      force: yes
+      mode: 0755
+
+  - name: Download wildfly-elytron-tool.jar that has main class to  work with the elytron-tool.sh script
+    get_url:
+      url: "{{ elytron.url }}"
+      dest: "{{ item.home_dir }}/wildfly-elytron-tool.jar"
+      validate_certs: "{{ item.download_validate_certs }}"
+      checksum: "{{ elytron.checksum }}"
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}"
+      force: yes
+    loop: "{{ apps_jar_files }}"
+    loop_control:
+      loop_var: elytron
+      label: elytron.name
+    when:
+      - elytron.name is match('elytron')
+
+  when:
+    - item.version is version('26.0.0', '>=')
+    - item.use_galleon
+
+- name: Configure ownership on wildfly installed with Galleon
+  file:
+    path: "{{ item.home_dir }}"
+    state: directory
+    recurse: yes
+    owner: '{{ item.owner }}'
+    group: '{{ item.group }}'

@@ -1,0 +1,49 @@
+---
+
+- name: Download {{ item.filename }} from HTTP on the remote host
+  get_url:
+    url: "{{ http.url }}/{{ item.filename }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    dest: "{{ apps_root_dir }}"
+    checksum: "{{ http.checksum }}"
+  loop: "{{ item.download_params }}"
+  loop_control:
+    label: "{{ http.name }}"
+    loop_var: http
+  register: remote_file_http_download
+  when: 
+    - item.download_provider == 'http'
+    - http.name is match('http')
+
+- name: Download {{ item.filename }} from AWS S3 Bucket on the remote host
+  amazon.aws.aws_s3:
+    profile: "{{ aws.credential_profile }}"
+    bucket: "{{ aws.bucket }}"
+    object: "{{ item.filename }}"
+    dest: "{{ apps_root_dir }}"
+    mode: get
+  loop: "{{ item.download_params }}"
+  loop_control:
+    label: "{{ aws.name }}"
+    loop_var: aws
+  register: remote_file_aws_download
+  when:
+    - item.download_provider == 'aws'
+    - aws.name is match('aws')
+
+- name: Download {{ item.filename }} from Azure StorageBlob on the remote host
+  azure.azcollection.azure_rm_storageblob:
+    resource_group: "{{ azure.resource_group }}"
+    storage_account: "{{ azure.storage_account }}"
+    container: "{{ azure.container }}"
+    blob: "{{ item.filename }}"
+    dest: "{{ apps_root_dir }}"
+  loop: "{{ item.download_params }}"
+  loop_control:
+    label: "{{ azure.name }}"
+    loop_var: azure
+  register: remote_file_azure_download
+  when:
+    - item.download_provider == 'azure'
+    - azure.name is match('azure')

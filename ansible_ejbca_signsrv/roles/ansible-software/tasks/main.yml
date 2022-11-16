@@ -1,0 +1,109 @@
+---
+
+- name: Create change log
+  include_role: 
+    name: ansible-changelog
+    tasks_from: create_log.yml
+    apply:
+      become: false
+
+- name: Package Management
+  block:
+
+  # get installed packaged managed by pip if one of the global vars for either the base or mariadb packages is true
+  - name: Get software package list with default manager
+    package_facts:
+      manager: auto
+    register: installed_default_packages
+
+  - name: Package Manager Version Control
+    include_role: 
+      name: ansible-software-packages
+      tasks_from: main.yml
+    loop: "{{ base_packages_managers }}"
+    loop_control:
+      label: "{{ item.name }}"
+    vars:
+      package_type: base
+    tags: base-package-version-control
+    when:
+      - base_packages_managers is defined
+      - base_packages_install
+
+  - name: Base packages
+    block:
+
+    # get installed packaged managed by pip if one of the global vars is true
+    - name: Get software package list with pip manager
+      command: pip3 list
+      register: installed_pip_packages
+      when: base_packages_managers is search('python3-pip')
+
+    - name: Base Package Version Control
+      include_role: 
+        name: ansible-software-packages
+        tasks_from: main.yml
+      loop: "{{ base_packages }}"
+      loop_control:
+        label: "{{ item.name }}"
+      vars:
+        package_type: base
+      tags: base-package-version-control
+      when:
+        - not item.name is match('sample-package')
+
+    when: base_packages_install or base_packages_upgrade or base_packages_downgrade or base_packages_remove
+
+  - name: MariaDB Version Control
+    include_role: 
+      name: ansible-software-packages
+      tasks_from: mariadb.yml
+    vars:
+      package_type: mariadb
+    tags: mariadb-version-control
+    when: 
+      - mariadb_packages is defined and mariadb_packages|length > 0
+      - mariadb_packages_install or mariadb_packages_upgrade or mariadb_packages_downgrade or mariadb_packages_remove
+
+  when:
+    - (base_packages_install or base_packages_upgrade or base_packages_downgrade or base_packages_remove) or
+      (mariadb_packages_install or mariadb_packages_upgrade or mariadb_packages_downgrade or mariadb_packages_remove)
+
+- name: Applications User and Group Management
+  include_tasks: users_groups.yml
+  tags: app-users-groups
+  when: apps_groups_manage
+
+- name: Gather the applications installed in the Application Directory
+  find:
+    paths: "{{ apps_root_dir }}"
+    file_type: directory
+  register: apps_dir_directories
+
+- name: Gather the files located in the Application Directory
+  find:
+    paths: "{{ apps_root_dir }}"
+    file_type: file
+  register: apps_dir_files
+
+- name: Gather the links located in the Application Directory
+  find:
+    paths: "{{ apps_root_dir }}"
+    file_type: link
+    recurse: yes
+  register: apps_dir_links
+
+- name: Applications Version Control
+  include_role: 
+    name: ansible-software-applications
+    tasks_from: main.yml
+  loop: "{{ apps }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: app-version-control
+  when: 
+    - apps is defined and apps|length > 0
+    - item.install or item.upgrade or item.remove_previous
+    - not item.name is match('sample-app')
+    - not item.name is search('ejbca') and groups['eeSignServers'] is defined and inventory_hostname in groups['eeSignServers'] or
+      not item.name is search('signserver') and groups['eeEjbcaServers'] is defined and inventory_hostname in groups['eeEjbcaServers']

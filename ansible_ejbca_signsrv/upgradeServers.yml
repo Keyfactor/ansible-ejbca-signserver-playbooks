@@ -1,0 +1,5 @@
+---
+
+- hosts: versionControl
+  roles:
+    - ansible-software

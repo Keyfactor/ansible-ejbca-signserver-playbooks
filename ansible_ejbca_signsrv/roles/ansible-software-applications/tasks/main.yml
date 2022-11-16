@@ -1,0 +1,245 @@
+---
+
+# query app_root_dir for all applications with same name, but different versions and store in list only when upgrade and remove_previous is true
+# used when removing all versions of the application not listed during upgrade
+- name: Store all previously installed version of {{ item.name }} in a list
+  set_fact:
+   previous_installed_path: "{{ apps_dir_directories.files | map(attribute='path') | select('search', item.name) | reject('search', item.home_dir) }}"
+  when: 
+    - apps_dir_directories.files | map(attribute='path') | select('search', item.name)
+    - item.upgrade or item.remove_previous
+
+# install if app does not currently exist in application directory
+- name: Install/Upgrade
+  block:
+
+  # check if exists on remote host
+  - name: Check if {{ item.filename }} file already exists on the remote host 
+    stat:
+      path: "{{ apps_root_dir }}/{{ item.filename }}"
+    register: app_file_remote_check
+
+  # check if exists on ansible controller only if download_localhost is true
+  - name: Check if {{ item.filename }} file already exists locally 
+    stat:
+      path: "{{ item.remote_dir }}/{{ item.filename }}"
+    become: false
+    delegate_to: localhost
+    run_once: true
+    register: app_file_local_check
+    when:
+      - item.download_localhost
+
+  # download and unzip
+  - name: Download and Unpack
+    block:
+
+    # download on the remote host
+    - name: Download binary on remote host
+      include_tasks: remote.yml
+      when:
+        - item.download_localhost is false
+
+    # download on ansible controller only when local file returned 'ok' and does not exist
+    # condition note: app_file_local_check 'is success' used because if stat task is skipped, it will still be defined and the var will error on not containing a 'stat' key
+    - name: Download binary on Ansible Controller
+      include_tasks: local.yml
+      when:
+        - item.download_localhost
+        - app_file_local_check is success and app_file_local_check.stat.exists is false
+
+    - name: Copy {{ item.name }} from the Ansible controller
+      copy:
+        src: "{{ item.remote_dir }}/{{ item.filename }}"
+        dest: "{{ apps_root_dir }}"
+        owner: '{{ item.owner }}'
+        group: '{{ item.group }}'
+      register: local_file_copy
+      when:
+        # only unarchive when local file returned 'ok' and exists or if file was downloaded from the internet
+        # app_file_local_check 'is success' or a download task changed
+        - item.download_localhost
+        - (app_file_local_check is success and app_file_local_check.stat.exists) or
+          (local_file_http_download.changed or local_file_aws_download.changed or local_file_azure_download.changed)
+
+    # unzip only when a download task changed
+    - name: Unarchive {{ item.name }}
+      unarchive:
+        src: "{{ apps_root_dir }}/{{ item.filename }}"
+        dest: "{{ apps_root_dir }}"
+        owner: '{{ item.owner }}'
+        group: '{{ item.group }}'
+        remote_src: yes
+      register: filename_unzip
+      when:
+        - app_file_remote_check is success and app_file_remote_check.stat.exists or
+          local_file_copy is success
+
+    - name: Write {{ item.name }} installation to log
+      include_role:
+        name: ansible-changelog
+        tasks_from: apps.yml
+        apply:
+          become: false
+      vars:
+        successful_install: "Successfully installed {{ item.name }}-{{ item.version }}"
+      when:
+        # if archive successfully unzipped
+        - filename_unzip is changed
+        - item.install    
+
+    - name: Download the JDBC Driver
+      get_url:
+        url: "{{ jars.url }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        dest: "{% for wildfly in apps if wildfly.name == 'wildfly' %}{{ wildfly.home_dir }}{% endfor %}/standalone/deployments/{{ jars.name }}.jar"
+        checksum: "{{ jars.checksum }}"
+      loop: '{{ apps_jar_files }}'
+      loop_control:
+        loop_var: jars
+        label: jars.name
+      when:
+        # check if wildfly directory exists to download file to
+        # uses registered list and parses for wildfly in any of the directory names
+        - apps_dir_directories.files | map(attribute='path') | select('search', 'wildfly')
+        # only select the jdbc driver from the jars list
+        - jars.name is search('mariadb-java')
+        # only download if the application is ejbca or signserver
+        - item.name is search('ejbca') or
+          item.name is search('signserver')
+
+    when:
+      # downloads if installation file does not exist in the app root dir
+      - app_file_remote_check.stat.exists is false
+      # downloads if galleon is not used to install wildfly
+      - item.use_galleon is undefined or
+        item.use_galleon is defined and item.use_galleon is false
+
+  # include task for wildfly installation
+  - name: Install and Configure Wildfly {{ item.version }}
+    include_tasks: wildfly.yml
+    when:
+      - item.name is match('wildfly')
+
+  when:
+    # uses registered list and does not contain the concatenated name and version of app in app root dir
+    - not apps_dir_directories.files | map(attribute='path') | select('search', item.home_dir)
+    # installs if install or upgrade is true
+    - item.install or item.upgrade
+      
+# remove installation file if it previously existed or was just download and app was installed
+- name: Remove {{ item.filename }} from {{ apps_root_dir }}
+  file:
+    path: "{{ apps_root_dir }}/{{ item.filename }}"
+    state: absent
+  register: remove_archive_file
+  become: yes
+  become_method: sudo
+  when:
+    - item.filename is defined
+    - (filename_unzip is not skipped and filename_unzip.failed is false) or
+      (apps_dir_files.files | map(attribute='path') | select('search', item.filename))
+
+- name: Rename EJBCA/SignServer directory
+  block:
+
+    - name: Change EJBCA directory name
+      command: mv "{{ apps_root_dir }}/{{ item.filename | regex_replace('\.[^.]*$', '') }}" "{{ item.home_dir }}"
+      when: item.name is search('ejbca')
+
+    - name: Change SignServer directory name
+      command: mv "{{ apps_root_dir }}/{{ item.filename | regex_replace('\-[^-]*$', '') }}" "{{ item.home_dir }}"
+      when: item.name is search('signserver')
+
+  when:
+    - item.name is search('ejbca') or
+      item.name is search('signserver')
+
+# remove/create links
+- name: Links
+  block:
+
+  # remove any links for previously install versions of the application only if link is defined for application and link exists in any app_root_dir child directory
+  # if link is not defined for the application, the name is checked as a link
+  # logic included for 'ant' which is hardcoded
+  # only run if upgrade/downgrade/remove is true and only remove is all or current
+  - name: Remove previous link for {{ item.name }}
+    file:
+      path: "{% if item.name is search('ant') %}/usr/bin/ant{% else %}{{ apps_root_dir }}/{% if item.link is defined %}{{ item.link }}{% else %}{{ item.name }}{% endif %}{% endif %}"
+      state: absent
+    register: link_removed
+    when:
+      - item.remove_previous or item.upgrade
+      - (item.link is defined and apps_dir_links.files | map(attribute='path') | select('search', apps_root_dir + '/' + item.link)) or
+        (item.link is undefined and apps_dir_links.files | map(attribute='path') | select('search', item.name))
+
+  # create a link for current version of the application only if link is defined for application if link does not already exist in any app_root_dir child directory
+  # if link is not defined for the application, the name is used to create a a link
+  # or previousl link just removed
+  # logic included for 'ant' which is hardcoded
+  # only if remove is false or remove is true and current/all are not true
+  - name: Create link for {{ item.name }}
+    file:
+      src: "{{ item.home_dir }}{% if item.name is search('ant') %}/bin/ant{% endif %}"
+      dest: "{% if item.name is search('ant') %}/usr/bin/ant{% else %}{{ apps_root_dir }}/{% if item.link is defined %}{{ item.link }}{% else %}{{ item.name }}{% endif %}{% endif %}"
+      state: link
+    register: link_created
+    when: 
+      - (item.link is defined and not apps_dir_links.files | map(attribute='path') | select('search', apps_root_dir + '/' + item.link)) or
+        (item.link is undefined and not apps_dir_links.files | map(attribute='path') | select('search', item.name)) or 
+        (link_removed is changed)
+
+  when:
+    - not item.name is match('galleon')
+
+# upgrade ejbca and/or signserver if application name matches and upgrade is true
+- name: Upgrade EJBCA/SignServer
+  block:
+
+  - name: Upgrade EJBCA to version {{ item.version }}
+    include_tasks: upgrade.yaml
+    when: item.name is search('ejbca')
+
+  - name: Upgrade Signserver to version {{ item.version }}
+    include_tasks: upgrade.yaml
+    when: item.name is search('signserver')
+
+  when:
+    - item.upgrade
+    - item.name is search('ejbca') or
+      item.name is search('signserver')
+
+
+# remove versions of the application if remove is true
+- name: Remove previously installed versions of {{ item.name }}
+  file:
+    path: "{{ path }}"
+    state: absent
+  loop: "{{ previous_installed_path }}"
+  loop_control:
+    loop_var: path
+  become: yes
+  become_method: sudo
+  register: previous_installed_removed
+  when:
+    - previous_installed_path is defined and previous_installed_path | length > 0
+    - item.remove_previous
+
+# - debug: msg={{ previous_installed_removed }}
+
+- name: Write {{ item.name }} application removal to log
+  include_role:
+    name: ansible-changelog
+    tasks_from: apps.yml
+    apply:
+      become: false
+  when:
+    - previous_installed_removed is changed
+
+# reset registered vars for next item in loop
+- name: Reset facts
+  set_fact:
+    previous_installed_removed: []
+    successful_install: []
+  register: reset_log_facts

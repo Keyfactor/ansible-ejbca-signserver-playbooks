@@ -1,0 +1,29 @@
+---
+
+- name: Remove package {{ item.name }} with default package manager
+  package:
+    name: "{{ item.name }}"
+    state: absent
+  register: manage_default_packages
+  become: yes
+  become_method: sudo
+  when: 
+    - item.manager is not defined or item.manager is defined and item.manager != 'pip3'
+
+- name: Remove package {{ item.name }} with pip
+  pip:
+    name: "{{ item.name }}"
+    state: absent
+  register: manage_pip_packages
+  become: yes
+  become_method: sudo
+  when: 
+    - item.manager is defined and item.manager == 'pip3'
+
+- name: Write {{ item.name }} install changes to log
+  include_role:
+    name: ansible-changelog
+    tasks_from: packages.yml
+  become: false
+  when:
+    - manage_default_packages is defined and manage_default_packages.changed

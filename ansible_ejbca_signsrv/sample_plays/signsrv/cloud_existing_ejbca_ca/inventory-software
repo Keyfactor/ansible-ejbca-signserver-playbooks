@@ -1,0 +1,52 @@
+---
+
+all:
+  hosts:
+    signserver01.ansible.test
+    signserver02.ansible.test
+  children:
+    aws:
+      children:
+        awsEjbca:
+          children:
+            awsCa:
+              children:
+                awsInitialNode:
+                  # hosts:
+                  #   aws-ca01:
+                  #     ansible_host: 52.200.29.250
+                awsAddNodes:
+            awsVa:
+              hosts:
+            awsRa:
+              hosts:
+        awsSignServer:
+          hosts:
+            aws-ss01:
+              ansible_host: 34.233.125.168
+            # aws-ss02:
+            #   ansible_host: 54.87.46.109
+      vars:
+          ansible_user: ec2-user
+          ansible_ssh_private_key_file: ~/.ssh/c2-ssh.pem
+    eeServers:
+      children:
+        azure:
+        aws:
+    eeEjbcaServers:
+      children:
+        awsEjbca:
+    eeCaServers:
+      children:
+        awsCa:
+    eeSignServers:
+      children:
+        awsSignServer:
+    upgradeServers:
+      children:
+        azureSignServer:
+        awsSignServer:
+    eeSoftware:
+      children: 
+        eeEjbcaServers:
+        eeSignServers:

@@ -1,0 +1,4 @@
+---
+
+- name: Create logs for each host in the play on the Ansible Controller
+  include_tasks: create_log.yml

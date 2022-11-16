@@ -1,0 +1,21 @@
+---
+
+- name: Write application removal(s) to change log
+  lineinfile:
+    path: "{{ change_log_path }}"
+    line: "{{ lookup('pipe', 'date +%Y%m%d-%H:%M:%S') }} - Successfully removed {{ entry }}"
+  loop: "{{ previous_installed_removed.results | map(attribute='path') }}"
+  loop_control:
+    loop_var: entry
+  delegate_to: localhost
+  when:
+    - previous_installed_removed is defined
+    - previous_installed_removed | length > 0
+
+- name: Write application installation to change log
+  lineinfile:
+    path: "{{ change_log_path }}"
+    line: "{{ lookup('pipe', 'date +%Y%m%d-%H:%M:%S') }} - {{ successful_install }}"
+  delegate_to: localhost
+  when:
+    - successful_install is defined

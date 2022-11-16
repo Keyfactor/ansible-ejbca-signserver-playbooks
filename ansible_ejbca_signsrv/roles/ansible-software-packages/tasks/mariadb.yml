@@ -1,0 +1,68 @@
+---
+
+- name: Install Redhat binary compatible OS 8 MariaDB
+  block:
+ 
+  - name: Check if MariaDB repo file exists
+    stat:
+      path: /etc/yum.repos.d/MariaDB.repo
+    register: mariadb_repo_file_check
+    changed_when: false
+
+  - name: Add official MariaDB repository
+    yum_repository:
+      name: MariaDB
+      description: Official MariaDB repository
+      baseurl: "http://{{ mariadb_mirror }}/{{ mariadb_version }}/{{ ansible_distribution|lower|regex_replace('redhat', 'rhel')|regex_replace('oraclelinux', 'centos')|regex_replace('rocky', 'centos')|regex_replace('almalinux', 'centos') }}{{ ansible_distribution_major_version }}-amd64"
+      gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+      gpgcheck: true
+    when: 
+      - not mariadb_repo_file_check.stat.exists
+      
+  - name: Ensure "module_hotfixes=1 is in section "[MariaDB]" in specified file
+    ini_file:
+      path: /etc/yum.repos.d/MariaDB.repo
+      section: MariaDB
+      option: module_hotfixes
+      value: '1'
+      backup: yes
+    tags: mariadb
+    when: 
+      - not mariadb_repo_file_check.stat.exists
+
+  when:
+    - (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == "8" or "2")
+
+- name: Manage packages
+  block:
+
+  - name: Manage MariaDB packages
+    include_tasks: main.yml
+    loop: "{{ mariadb_packages }}"
+    loop_control:
+      label: "{{ item.name }}"
+    when:
+    - (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == "8" or "2")
+
+  - name: Manage Centos 7 MariaDB packages
+    include_tasks: main.yml
+    loop: "{{ mariadb_packages_centos7 }}"
+    loop_control:
+      label: "{{ item.name }}"
+    when: 
+      - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+
+  - name: Manage RedHat 7 Mariadb packages
+    include_tasks: main.yml
+    loop: "{{ mariadb_packages_rhel7 }}"
+    loop_control:
+      label: "{{ item.name }}"
+    when: 
+      - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+
+  when:
+    - package_type == 'mariadb' and mariadb_packages_install or 
+      mariadb_packages_upgrade or 
+      mariadb_packages_downgrade or 
+      mariadb_packages_remove
+    - mariadb_packages is defined and mariadb_packages|length > 0

@@ -1,0 +1,129 @@
+---
+
+# # EJBCA version and deployment info
+# ejbca_version: 7.10.0.1
+# # If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
+# use_local_repository: false
+# ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_10_0_1_VA.zip
+# # EJBCA URL to download the zip release file
+# ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_10_0_1_VA.zip
+# ejbca_src_dir_name: ejbca_ee_7_10_0_1_VA
+# ejbca_type: VA
+
+# # EJBCA Upgrade version
+# ejbca_upgrade_version: 7.11.0
+# # EJBCA Upgrade version URL to download the zip release file
+# ejbca_upgrade_software_url:
+# # Directory name of EJBCA Upgrade version
+# ejbca_upgrade_src_dir: ejbca_ee_7_11_0_VA
+
+# EJBCA VA property files
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+  - src: ocsp.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ocsp.properties"
+  - src: custom.properties.j2
+    dest: "{{ ejbca_home }}/conf/custom.properties"
+
+# Variables to confgure the Widfly datasource for connecting to the applicable DB
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    #Connection type is mariadb or sqlserver
+    database_connection_type: mariadb
+    #driver class is org.mariadb.jdbc.Driver or com.microsoft.sqlserver.jdbc.SQLServerDriver
+    database_driver_class: org.mariadb.jdbc.Driver
+    #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
+    database_jar_filename: mariadb-java-client.jar
+    host: 127.0.0.1
+    backup_host: 
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
+    #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
+    #connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"    
+
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+
+# Slots to create for SoftHSM PKCS11
+softhsm_gen_hsm_slots:
+  - slot_name: OCSP_KeyBinding_SLOT
+    slot_so_pin: "{{ encrypted_ocsp_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+  - slot_name: AZURE_AUTH_SLOT
+    slot_so_pin: "{{ encrypted_azure_auth_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_azure_auth_token_pin | default('foo123') }}"
+
+# List of crypto tokens to create on the External VA
+ejbca_va_crypto_tokens:
+  - crypto_token_name: ocspCryptoToken
+    tokentype: Pkcs11NgCryptoToken
+    tokenpass: "{{ encrypted_ocsp_token_pin | default('foo123') }}"
+    cryptotoken_enable_auto_activate: true
+    slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: OCSP_KeyBinding_SLOT
+    force_used_slots: true
+
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+#hsm_shared_library: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+
+# EJBCA CLI password to configure for the CLI account
+ejbca_conf_cli_default_password: "{{ encrypted_ejbca_cli_password | default('ejbca') }}"
+ejbca_conf_ca_cmskeystorepass: "{{ encrypted_ejbca_conf_ca_cmskeystorepass | default('ejbca') }}"
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
+web_httpserver_external_privhttps: 443
+web_reqcertindb: false
+# Set this to true to use P11NG with EJBCA 
+web_use_p11ng: true
+
+# Configdump dicectory structure for staging the import of the admin role to 
+# allow the CA to peer inbound to the external VA
+configdump_dir_structure_va:
+  - "{{ ejbca_home }}/dump/dump1/admin-roles"
+
+# List dict of EJBCA role templates that are imported into the external VA that
+# allows the CA to connect inbound to the external RA
+configdump_va_files_dump1:
+  - src: 'role-vaPeeringRole.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump1/admin-roles/role-vaPeeringRole.yaml.j2'

@@ -1,0 +1,11 @@
+---
+
+- name: Write remove change to log
+  lineinfile:
+    path: "{{ change_log_path }}"
+    line: "{{ lookup('pipe', 'date +%Y%m%d-%H:%M:%S') }} - Removed {{ change }}"
+  delegate_to: localhost
+  loop: "{{ remove_changes }}"
+  loop_control:
+    loop_var: change
+  register: lineinfile_task

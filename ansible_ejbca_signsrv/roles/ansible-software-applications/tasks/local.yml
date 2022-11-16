@@ -1,0 +1,58 @@
+---
+
+- block:
+
+  - name: Download {{ item.filename }} to the Ansible Contoller
+    get_url:
+      url: "{{ http.url }}/{{ item.filename }}"
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}"
+      dest: "{{ item.remote_dir }}/{{ item.filename }}"
+      checksum: "{{ http.checksum }}"
+    loop: "{{ item.download_params }}"
+    loop_control:
+      label: "{{ http.name }}"
+      loop_var: http
+    #run_once: true
+    register: local_file_http_download
+    when: 
+      - item.download_provider == 'http'
+      - http.name is match('http')
+
+  - name: Download {{ item.filename }} from AWS S3 Bucket to the Ansible Contoller
+    amazon.aws.aws_s3:
+      profile: "{{ aws.credential_profile }}"
+      bucket: "{{ aws.bucket }}"
+      object: "{{ item.filename }}"
+      dest: "{{ item.remote_dir }}/{{ item.filename }}"
+      mode: get
+    loop: "{{ item.download_params }}"
+    loop_control:
+      label: "{{ aws.name }}"
+      loop_var: aws
+    #run_once: true
+    register: local_file_aws_download
+    when:
+      - item.download_provider == 'aws'
+      - aws.name is match('aws')
+
+  - name: Download {{ item.filename }} from Azure StorageBlob to the Ansible Contoller
+    azure.azcollection.azure_rm_storageblob:
+      resource_group: "{{ azure.resource_group }}"
+      storage_account: "{{ azure.storage_account }}"
+      container: "{{ azure.container }}"
+      blob: "{{ item.filename }}"
+      dest: "{{ item.remote_dir }}/{{ item.filename }}"
+    loop: "{{ item.download_params }}"
+    loop_control:
+      label: "{{ azure.name }}"
+      loop_var: azure
+    #run_once: true
+    register: local_file_azure_download
+    when:
+      - item.download_provider == 'azure'
+      - azure.name is match('azure')
+
+  become: false
+  delegate_to: localhost
+  run_once: true

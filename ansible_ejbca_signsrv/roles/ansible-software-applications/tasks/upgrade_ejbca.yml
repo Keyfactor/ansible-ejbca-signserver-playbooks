@@ -1,0 +1,82 @@
+---
+
+- name: Configure EJBCA cache configuration in persistence-ds-template.xml
+  template:
+    src: persistence-ds-template.xml.j2
+    dest: "{{ item.home_dir }}/modules/ejbca-entity/resources/persistence-ds-template.xml"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  when: wildfly_disable_infinispan|bool
+
+- name: Ensure statedump package is unpacked if statedump is being built
+  unarchive:
+    src: "{{ ejbca_statedump_src }}"
+    dest: "{{ item.home_dir }}/modules/"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    creates: "{{ item.home_dir }}/modules/statedump"
+  when: ejbca_build_statedump | bool
+  register: unpacked_statedump
+
+- name: Compile EJBCA into ear file
+  block:
+
+  - name: Ensure EJBCA EAR file is built
+    command: >
+      ant -q clean build
+      {% if ejbca_build_configdump %}configdump{% endif %}
+      {% if ejbca_build_statedump %}statedump{% endif %}
+    become: yes
+    become_user: "{{ item.owner }}"
+    environment:
+      EJBCA_HOME: "{{ item.home_dir }}"
+      APPSRV_HOME: "{% for wildfly in apps if wildfly.name == 'wildfly' %}{{ wildfly.home_dir }}{% endfor %}"
+    args:
+      chdir: "{{ item.home_dir }}"
+
+  - name: Ensure EJBCA EAR file is copied to application server if application server exists
+    copy:
+      src: "{{ item.home_dir }}/dist/ejbca.ear"
+      remote_src: yes
+      force: yes
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}"
+      dest: "{% for wildfly in apps if wildfly.name == 'wildfly' %}{{ wildfly.home_dir }}{% endfor %}/standalone/deployments/ejbca.ear"
+
+  when:
+    - unpacked_ejbca.changed or
+      unpacked_statedump.changed or 
+      ejbca_force_build_ear
+
+- name: Check if clientToolBox directory exists
+  stat:
+    path: "{{ apps_root_dir }}/clientToolBox"
+  register: found_clienttoolbox
+  changed_when: false
+
+- name: Ensure clientToolBox is removed before rebuilding and moving
+  block:
+
+    - name: Remove existing clientToolBox
+      file:
+        state: absent
+        path: "{{ apps_root_dir }}/clientToolBox"
+
+    - name: Ensure clientToolBox is built
+      command: ant clientToolBox
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      args:
+        chdir: "{{ ejbca_home }}"
+
+    - name: Ensure clientToolBox has been copied outside of EJBCA dist folder
+      copy: 
+        src: "{{ item.home_dir }}/dist/clientToolBox"
+        dest: "{{ apps_root_dir }}"
+        remote_src: yes
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+
+  when: 
+    - unpacked_ejbca.changed
+    - found_clienttoolbox.stat.exists

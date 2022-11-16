@@ -1,0 +1,29 @@
+---
+
+- name: Install package {{ item.name }}
+  include_role: 
+    name: ansible-software-packages
+    tasks_from: install.yml
+  when: 
+    - packages[item.name][0].name is not defined
+    - (package_type == 'base' and base_packages_install) or
+      (package_type == 'mariadb' and mariadb_packages_install)
+
+- name: Modify installed version {{ item.name }} 
+  include_role: 
+    name: ansible-software-packages
+    tasks_from: change.yml
+  when: 
+    - (installed_pip_packages is defined and installed_pip_packages is success and (installed_pip_packages.stdout_lines | select('search', item.name) and not installed_pip_packages.stdout_lines | select('search', item.name) | select('search', item.version))) or
+      (packages[item.name][0].name is defined and (packages[item.name][0].version != item.version or item.version == 'latest'))
+
+    - (package_type == 'base' and (base_packages_upgrade or base_packages_downgrade)) or
+      (package_type == 'mariadb' and mariadb_packages_upgrade or mariadb_packages_downgrade)
+
+- name: Remove package {{ item.name }}
+  include_role: 
+    name: ansible-software-packages
+    tasks_from: remove.yml
+  when: 
+    - (package_type == 'base' and base_packages_remove and item.version == 'remove') or
+      (package_type == 'mariadb' and mariadb_packages_remove)

@@ -1,0 +1,17 @@
+---
+
+- name: Upgrade/Downgrade version of {{ item.name }} from {{ packages[item.name][0].version }} to {{ item.version }}
+  package:
+    name: "{% if item.version == 'latest' %}{{ item.name }}{% else %}{{ item.name }}-{{ item.version }}{% endif %}"
+    state: "{% if item.version == 'latest' %}latest{% else %}present{% endif %}"
+    allow_downgrade: "{% if package_type == 'base' and base_packages_downgrade is true %}yes{% elif package_type == 'mariadb' and mariadb_packages_downgrade is true %}yes{% else %}no{% endif %}"
+  register: manage_default_packages
+
+- name: Write {{ item.name }} install changes to log
+  include_role:
+    name: ansible-changelog
+    tasks_from: packages.yml
+    apply:
+      become: false
+  when:
+    - manage_default_packages is defined and manage_default_packages.changed
