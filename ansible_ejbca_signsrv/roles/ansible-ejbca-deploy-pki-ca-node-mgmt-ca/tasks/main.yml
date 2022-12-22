@@ -128,6 +128,18 @@
   become: yes 
   become_user: "{{ ejbca_user }}"
 
+- name: Import configdump of EE profiles in dump3
+  command: >
+    ./configdump.sh import 
+    --ignore-errors 
+    --overwrite update 
+    --non-interactive continue 
+    -l {{ ejbca_home }}/dump/dump3
+  args:
+    chdir: "{{ ejbca_home }}/dist/configdump"
+  become: yes
+  become_user: "{{ ejbca_user }}"
+
 - name: Configure EJBCA Enrollment protocols
   include_role:
     name: ansible-ejbca-enroll-protocols
