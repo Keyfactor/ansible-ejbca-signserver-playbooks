@@ -139,6 +139,9 @@
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes
   become_user: "{{ ejbca_user }}"
+  when:
+    - import_configdump_dump3 is defined
+    - import_configdump_dump3|bool
 
 - name: Configure EJBCA Enrollment protocols
   include_role:
