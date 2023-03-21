@@ -86,7 +86,7 @@
     --dir={{ wildfly_dir }} 
     --default-configs=standalone/standalone.xml
     {% if wildfly_version.split('.')[0]|int >= 25 %} 
-    --layers=cloud-server,deployment-scanner,ejb,io,jsf,mail,webservices,-jsonb,-jms-activemq,-observability,-jmx-remoting,core-management,core-tools,management
+    --layers=cloud-server,deployment-scanner,ejb-lite,remoting,resource-adapters,undertow,io,jsf,mail,webservices,-jsonb,-jms-activemq,-observability,-jmx-remoting,-messaging-activemq
     {% elif wildfly_version.split('.')[0]|int <= 24 %} 
     --layers=cdi,core-tools,datasources,deployment-scanner,ee,-jsonb,ejb,io,jaxrs,jpa,jsf,logging,mail,management,webservices,legacy-security
     {% endif %}

@@ -5,8 +5,8 @@ mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('Prim
 mariadb_binlog_format: ROW
 mariadb_databases:
   - name: ejbca
-    collation: "utf8_general_ci"
-    encoding: "utf8"
+    collation: "utf8mb4_unicode_520_ci"
+    encoding: "utf8mb4"
 mariadb_users:
   - name: ejbca-usr
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
