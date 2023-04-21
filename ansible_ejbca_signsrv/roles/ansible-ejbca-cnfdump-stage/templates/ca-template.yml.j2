@@ -49,6 +49,9 @@ Delta CRL Period: {{ item.delta_crl_period }}
 {% if ejbca_version is version('7.5.0', '>=') %}
 Generate CRL Upon Revocation: {{ item.generate_crl_upon_revocation | default('false') }}
 {% endif %}
+{% if ejbca_version is version('7.11.0', '>=') and item.revocationchanging is defined %}
+Allow Changing Revocation Reason: {{ item.revocationchanging }}
+{% endif %}
 Default CRL Distribution Point: {{ item.defaultCRLDP }}
 OCSP Service Default URI: {{ item.defaultOCSPServiceLocator }}
 AIA CA Issuer URIs:
