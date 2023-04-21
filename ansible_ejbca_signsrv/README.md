@@ -61,7 +61,7 @@ ansible-playbook -i inventory -l ss01,ssTlsCerts,ssCsrCerts deploySS.yml --ask-b
 2. Run:
 
 ```bash
-ansible-playbook -i inventory -l ca01 deployCA.yml --ask-become-pass
+ansible-playbook -i inventory -l ca01 deployCa.yml --ask-become-pass
 ```
 
 ### Deploy an Enterprise external RA
