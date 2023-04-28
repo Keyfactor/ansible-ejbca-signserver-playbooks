@@ -24,6 +24,7 @@
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
       (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Install SoftHSM on Alma or Rocky Linux

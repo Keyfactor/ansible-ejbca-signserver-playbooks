@@ -11,6 +11,7 @@
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
         (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
         (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8")
 
@@ -24,6 +25,7 @@
   tags: mariadb
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
         (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") 
 
 - name: Install packages CentOS 7
@@ -50,5 +52,6 @@
   tags: mariadb
   when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or 
+        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
         (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "Rocy" and ansible_facts['distribution_major_version'] == "8")

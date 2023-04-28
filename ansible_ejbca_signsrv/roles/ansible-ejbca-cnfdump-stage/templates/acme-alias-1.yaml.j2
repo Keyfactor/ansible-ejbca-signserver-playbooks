@@ -23,3 +23,6 @@ Require External Account Binding: false
 Approval Profile for newAccount: -1
 Approval Profile for keyChange: -1
 {% endif %}
+{% if ejbca_version is version('7.11.0', '>=') %}
+Require Client Authentication: false
+{% endif %}
