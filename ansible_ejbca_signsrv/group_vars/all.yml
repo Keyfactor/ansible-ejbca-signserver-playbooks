@@ -56,10 +56,10 @@ ejbca_crl_dir:
   - /opt/web/AIA
 
 # Apache Ant
-apache_ant_remote_dir: ~/Downloads/PK-Software/apache-ant-1.10.12-bin.tar.gz
-ant_version: apache-ant-1.10.12-bin.tar.gz
+apache_ant_remote_dir: ~/Downloads/PK-Software/apache-ant-1.10.14-bin.tar.gz
+ant_version: apache-ant-1.10.14-bin.tar.gz
 ant_url: "https://mirror.olnevhost.net/pub/apache/ant/binaries/{{ ant_version }}" 
-ant_checksum: sha256:4b3b557279bae4fb80210a5679180fdae3498b44cfd13368e3386e2a21dd853b
+ant_checksum: sha256:e2852fddaaddc1ab76a099ca0d7b2ee47a907b8a91a64f70f6aa9e6a3d0dd504
 
 # JDBC driver when sourcing locally instead of downloading
 ejbca_jdbc_remote_dir: ~/Downloads/PK-Software/mariadb-java-client-2.7.2.jar

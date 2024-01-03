@@ -103,7 +103,7 @@
       become_user: "{{ ejbca_user }}"
       args:
         creates: "{{ wildfly_home }}/standalone/configuration/credentials"
-      no_log: true
+      no_log: false
 
     - name: Add Database password to credential store
       command: >
@@ -115,7 +115,7 @@
       become: yes  
       become_user: "{{ ejbca_user }}"
       loop: "{{ appsrv_datasources }}"
-      no_log: true
+      no_log: false
 
   when: 
     - not elytron_pass_file_exists.stat.exists

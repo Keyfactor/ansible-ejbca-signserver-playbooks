@@ -1,17 +1,17 @@
 ---
 # tasks file for roles/ansible-ejbca-deploy-pki-sample
 
-- name: Prepare configdump template files
-  include_role: 
-    name: ansible-ejbca-cnfdump-stage
-    tasks_from: config_configdump
+# - name: Prepare configdump template files
+#   include_role: 
+#     name: ansible-ejbca-cnfdump-stage
+#     tasks_from: config_configdump
 
-- name: Check deployment
-  include_role: 
-    name: ansible-ejbca-restart-wildfly
-  vars:
-    restart_wildfly: true
-  tags: check_deployment
+# - name: Check deployment
+#   include_role: 
+#     name: ansible-ejbca-restart-wildfly
+#   vars:
+#     restart_wildfly: true
+#   tags: check_deployment
 
 - name: Use Configdump to create the Management & Root CA's
   block:
@@ -21,7 +21,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: false
 
     - name: Generate keys for Management & Root CA's on crypto token
       include_role:

@@ -1,0 +1,193 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    become: yes
+    become_method: sudo
+    gather_facts: no
+
+    vars:
+      ejbca_user: wildfly
+      #ejbca_shell: /opt/ejbca/bin/ejbca.sh
+      ejbca_shell: /opt/ejbca
+      ca: Development-Issuing-CA
+      bind: Third Bind
+      token: Peering
+      alias: signKeyTest
+      type: auth
+      spec: 2048
+      field: EnforceKeyRenewal
+      value: True
+    
+    tasks:
+
+      - name: create module
+        ejbca_keybind:
+          cmd: create
+          bind: "{{ bind }}"
+          token: "{{ token }}"
+          key: "{{ alias}}"
+          type: "{{ type }}"
+          properties:
+            protocol: TLSv1.2;TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create_auth
+
+      - name: Create OcspKeyBinding
+        ejbca_keybind:
+          cmd: create
+          bind: DelegatedOcspSigner
+          token: OcspSigning
+          key: signKeyIssuingCa
+          type: OcspKeyBinding
+          properties:
+            non_good: true
+            non_revoked: false
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create_ocsp
+
+      - name: Modify OcspKeyBinding Properties
+        ejbca_keybind:
+          cmd: modify
+          bind: SecondOcspSigner
+          properties:
+            non_good: true
+            non_unauthorized: false
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: modify-props-ocsp
+
+      - name: Modify RemoteAuthBinding Properties
+        ejbca_keybind:
+          cmd: modify
+          bind: RemoteAuth
+          properties:
+            protocol: TLSv1.2;TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: modify-props-auth
+
+      - name: Add Authentication Trusted CA
+        ejbca_keybind:
+          cmd: modify
+          bind: RemoteAuth
+          trust:
+            action: add
+            ca: Development-Issuing-CA
+            serial: 1E372A7D7BE39757CDC4D5C0D5941D6CF7A300E9
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: modify-trust-add
+
+      - name: Remove Authentication Trusted CA
+        ejbca_keybind:
+          cmd: modify
+          bind: RemoteAuth
+          trust:
+            action: remove
+            ca: Development-Issuing-CA
+            serial: 1E372A7D7BE39757CDC4D5C0D5941D6CF7A300E9
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: modify-trust-remove
+
+      - name: Add Sign On Behalf
+        ejbca_keybind:
+          cmd: modify
+          bind: SecondOcspSigner
+          sign_on_behalf:
+            action: add
+            ca: Development-Issuing-CA
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: modify-sign-add
+
+      - name: Remove Sign On Behalf
+        ejbca_keybind:
+          cmd: modify
+          bind: SecondOcspSigner
+          sign_on_behalf:
+            action: remove
+            ca: Development-Issuing-CA
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: modify-sign-remove
+
+      - name: Delete keybinding
+        ejbca_keybind:
+          cmd: delete
+          bind: aTestSignOnBehalf
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: delete
+
+      - name: list module
+        ejbca_keybind:
+          cmd: list
+          #type: AuthenticationKeyBinding
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list
+
+      - name: Export a key binding public certificate
+        ejbca_keybind:
+          cmd: exportcert
+          bind: RemoteAuth
+          file: "/var/tmp/RemoteAuth.pem"
+          path: /opt/ejbca
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: exportcert
+
+      - name: Generate a CSR for a key binding
+        ejbca_keybind:
+          cmd: gencsr
+          bind: RemoteAuth
+          file: "/var/tmp/RemoteAuth.csr"
+          path: /opt/ejbca
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: gencsr
+
+      - name: Import a signed pem file for a key binding
+        ejbca_keybind:
+          cmd: import
+          bind: RemoteAuth
+          file: /var/tmp/RemoteAuth1.crt
+          path: /opt/ejbca
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: import
+
+      - name: Disable keybinding
+        ejbca_keybind:
+          cmd: setstatus
+          bind: RemoteAuth
+          active: false
+          path: /opt/ejbca
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: setstatus
+
+      - name: debug
+        stat:
+          path: "{{ playbook_dir }}"
+        register: module_output
+        tags: debug
+
+      - name: dump module output
+        debug:
+          msg: "{{ module_output }}"
+        tags: always

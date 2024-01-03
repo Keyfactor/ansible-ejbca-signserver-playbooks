@@ -1,0 +1,131 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    become: yes
+    become_method: sudo
+    gather_facts: no
+
+    vars:
+      ejbca_user: wildfly
+      #ejbca_shell: /opt/ejbca/bin/ejbca.sh
+      ejbca_shell: /opt/ejbca
+      ca: Development-Issuing-CA
+      token: SoftTestToken
+      alias: signKeyTest1
+      spec: 2048
+      field: EnforceKeyRenewal
+      value: True
+    
+    tasks:
+
+      # activate
+      - name: activate token module
+        ejbca_cryptotoken:
+          cmd: activate
+          token: SoftTestToken
+          pin: foo123
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: activate
+
+      # create
+      - name: create token module
+        ejbca_cryptotoken:
+          cmd: create
+          token: ModuleValidationTest
+          type: SoftCryptoToken
+          pin: foo123
+          path: "{{ ejbca_shell }}"
+          return_output: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create
+
+      # deactivate
+      - name: deactivate module
+        ejbca_cryptotoken:
+          cmd: deactivate
+          token: SoftTestToken
+          path: "{{ ejbca_shell }}"
+          return_output: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: deactivate
+
+      # delete
+      - name: delete token module
+        ejbca_cryptotoken:
+          cmd: delete
+          token: ModuleValidationTest
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: delete
+
+      # generatekey
+      - name: generatekey module
+        ejbca_cryptotoken:
+          cmd: generatekey
+          token: SoftTestToken
+          key_alias: signKeyTest2
+          key_spec: 3072
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: generatekey
+
+      # list
+      - name: list module
+        ejbca_cryptotoken:
+          cmd: list
+          path: "{{ ejbca_shell }}"
+          #return_output: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list
+
+      # listkeys
+      - name: listkeys module
+        ejbca_cryptotoken:
+          cmd: listkeys
+          token: OcspSigning
+          path: "{{ ejbca_shell }}"
+          return_output: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: listkeys
+
+      # removekey
+      - name: removekey module
+        ejbca_cryptotoken:
+          cmd: removekey
+          token: SoftTestToken
+          key_alias: signKeyTest2
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: removekey
+
+      # testkey
+      - name: testkey module
+        ejbca_cryptotoken:
+          cmd: testkey
+          token: SoftTestToken
+          key_alias: signKeyTest1
+          path: "{{ ejbca_shell }}"
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: testkey
+
+      - name: debug
+        stat:
+          path: "{{ playbook_dir }}"
+        register: module_output
+        tags: debug
+
+      - name: dump module output
+        debug:
+          msg: "{{ module_output }}"
+        tags: always

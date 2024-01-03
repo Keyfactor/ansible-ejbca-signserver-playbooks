@@ -10,3 +10,4 @@
     add_certification_authorities: "{{ sub_add_certification_authorities }}"
   roles:
     - ansible-ejbca-deploy-pki-ext-root-sign-ca
+

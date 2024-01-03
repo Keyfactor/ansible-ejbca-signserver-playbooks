@@ -1,42 +1,59 @@
 ---
 # tasks file for roles/ansible-ejbca-crypto-token
 
-- name: Query crypto tokens
-  command: "{{ ejbca_sh }} cryptotoken list"
-  no_log: true
-  become: yes
-  become_user: "{{ ejbca_user }}"
-  register: cryptoToken_list
-  changed_when: false
-  failed_when: cryptoToken_list.rc >= 1
+# - name: Query crypto tokens
+#   command: "{{ ejbca_sh }} cryptotoken list"
+#   no_log: true
+#   become: yes
+#   become_user: "{{ ejbca_user }}"
+#   register: cryptoToken_list
+#   changed_when: false
+#   failed_when: cryptoToken_list.rc >= 1
 
-- name: Create cryptotoken for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}
-  command: >
-    {{ ejbca_sh }} cryptotoken create 
-    --token {% if item.crypto_token_name is defined %}"{{ item.crypto_token_name }}"{% else %}"{{ item.caname }}"{% endif %} 
-    --pin {{ item.tokenpass }} 
-    --autoactivate {{ item.cryptotoken_enable_auto_activate }} 
-    {% if "soft" == item.tokentype %}--type "SoftCryptoToken" 
-    {% elif "org.cesecore.keys.token.PKCS11CryptoToken" == item.tokentype or "PKCS11CryptoToken" == item.tokentype %}--type "PKCS11CryptoToken" 
-    --lib "{{ hsm_shared_library }}" 
-    --slotlabel "{{ item.slot_identifier_value }}"
-    --slotlabeltype "{{ item.slot_identifier_type }}" 
-    {% elif "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken" == item.tokentype or "Pkcs11NgCryptoToken" == item.tokentype %}--type "Pkcs11NgCryptoToken" 
-    --lib "{{ hsm_shared_library }}" 
-    --slotlabel "{{ item.slot_identifier_value }}"
-    --slotlabeltype "{{ item.slot_identifier_type }}" 
-    {% endif %}
-    {% if item.force_used_slots is defined and item.force_used_slots is sameas true %}
-    --forceusedslots{% endif %}
-  no_log: true
-  become: yes
-  become_user: "{{ ejbca_user }}"
-  register: add_cryptotoken
-  failed_when: add_cryptotoken.rc >= 2
-  when: 
-    - (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or 
-      (item.caname is defined and item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
+# - name: Create cryptotoken for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}
+#   command: >
+#     {{ ejbca_sh }} cryptotoken create 
+#     --token {% if item.crypto_token_name is defined %}"{{ item.crypto_token_name }}"{% else %}"{{ item.caname }}"{% endif %} 
+#     --pin {{ item.tokenpass }} 
+#     --autoactivate {{ item.cryptotoken_enable_auto_activate }} 
+#     {% if "soft" == item.tokentype %}--type "SoftCryptoToken" 
+#     {% elif "org.cesecore.keys.token.PKCS11CryptoToken" == item.tokentype or "PKCS11CryptoToken" == item.tokentype %}--type "PKCS11CryptoToken" 
+#     --lib "{{ hsm_shared_library }}" 
+#     --slotlabel "{{ item.slot_identifier_value }}"
+#     --slotlabeltype "{{ item.slot_identifier_type }}" 
+#     {% elif "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken" == item.tokentype or "Pkcs11NgCryptoToken" == item.tokentype %}--type "Pkcs11NgCryptoToken" 
+#     --lib "{{ hsm_shared_library }}" 
+#     --slotlabel "{{ item.slot_identifier_value }}"
+#     --slotlabeltype "{{ item.slot_identifier_type }}" 
+#     {% endif %}
+#     {% if item.force_used_slots is defined and item.force_used_slots is sameas true %}
+#     --forceusedslots{% endif %}
+#   no_log: true
+#   become: yes
+#   become_user: "{{ ejbca_user }}"
+#   register: add_cryptotoken
+#   failed_when: add_cryptotoken.rc >= 2
+#   when: 
+#     - (item.crypto_token_name is defined and item.crypto_token_name not in cryptoToken_list.stdout) or 
+#       (item.caname is defined and item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
 
-#- name: debug add_cryptotoken
-#  debug:
-#    var: add_cryptotoken
+- name: Create PKCS11 cryptotoken for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}
+  ejbca_cryptotoken:
+    cmd: create
+    token: "{% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}"
+    type: "{{ item.tokentype }}"
+    pin: "{{ item.tokenpass }}"
+    config:
+      auto: "{{ item.cryptotoken_enable_auto_activate }}"
+      lib: "{{ hsm_shared_library }}" 
+      slot_ref: "{{ item.slot_identifier_value }}"
+      slot_ref_type: "{{ item.slot_identifier_type }}" 
+      force_used_slots:  "{% if item.force_used_slots|default(true) %}true{% else %}false{% endif %}"
+    path: "{{ ejbca_home }}"
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: token_create
+  when:
+    - item.tokentype in ['SoftCryptoToken','PKCS11CryptoToken','Pkcs11NgCryptoToken']
+
+#- debug: msg={{ token_create }}

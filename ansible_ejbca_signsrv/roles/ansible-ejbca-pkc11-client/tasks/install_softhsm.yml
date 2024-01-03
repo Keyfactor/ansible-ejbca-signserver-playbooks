@@ -19,7 +19,7 @@
       dnf:
         name: "{{ softhsm_8 }}"
         state: present
-        #disable_gpg_check: yes
+        disable_gpg_check: yes
 
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or

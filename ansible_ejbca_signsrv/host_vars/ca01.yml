@@ -200,7 +200,8 @@ management_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    #tokentype: Pkcs11NgCryptoToken
+    tokentype: SoftCryptoToken
     #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_mgmtca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
@@ -262,7 +263,7 @@ management_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    tokentype: Pkcs11NgCryptoToken
     #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_rootca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"
@@ -346,7 +347,7 @@ sub_add_certification_authorities:
     ca_healthcheck_enabled: true
     request_processor: null
     cryptotoken_enable_auto_activate: true
-    tokentype: "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken"
+    tokentype: PKCS11CryptoToken
     #tokentype: "org.cesecore.keys.token.PKCS11CryptoToken"
     tokenpass: "{{ encrypted_subca_token_pin | default('foo123') }}"
     slot_identifier_type: "SLOT_LABEL"

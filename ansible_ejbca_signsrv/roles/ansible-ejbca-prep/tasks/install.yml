@@ -104,7 +104,7 @@
 
     - name: Download and unpack EJBCA EE archive
       unarchive:
-        src: "{{ ejbca_software_url }}"
+        src: "{{ ejbca_root_dir }}/ejbca_ee_8_0.zip"
         dest: "{{ ejbca_root_dir }}"
         remote_src: yes
       register: unpacked_ejbca
