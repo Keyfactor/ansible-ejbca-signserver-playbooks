@@ -6,9 +6,7 @@
     name: ansible-ejbca-crypto-token
     tasks_from: add_crypto_token
   loop: "{{ key_bindings }}"
-  #vars:
-  #  crypto_tokens: "{{ key_bindings }}"
-  no_log: true
+  no_log: false
   when: 
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
@@ -16,28 +14,12 @@
   include_role:
     name: ansible-ejbca-crypto-token
     tasks_from: generate_keys
-  loop: "{{ key_bindings |subelements('crypto_token') }}"
+  loop: "{{ key_bindings|subelements('crypto_token') }}"
   loop_control:
     label: "{{ key_item.0.slot_identifier_value }}"
     loop_var: key_item
-  no_log: true
-  tags: key_generation
-
-# - name: Query Authentication Key Binding
-#   command: "{{ ejbca_sh }} keybind list"
-#   no_log: true
-#   become: yes
-#   become_user: "{{ ejbca_user }}"
-#   register: keybinding_list
-#   changed_when: false
-#   failed_when: keybinding_list.rc >= 2
-
-#- name: Debug keybinding_list
-#  debug:
-#    var: keybinding_list
-
-#- name: Create Key binding in EJBCA
-#  block:
+  no_log: false
+  when: not key_item[0].name in active_bindings
 
 - name: Generate Random Password
   set_fact:
@@ -61,273 +43,114 @@
   no_log: true
   register: create_binding
   when: 
+    - not item[0].name in active_bindings
     - item.0.enabled
 
-# - name: Create key binding for RA / SignServer / VA
-#   command: >
-#     {{ ejbca_sh }} keybind create 
-#     --name {{ item.0.name }} 
-#     --type AuthenticationKeyBinding 
-#     --token {{ item.0.crypto_token_name }} 
-#     --status ACTIVE  
-#     --alias {{ item.1.key_label }}  
-#     --sigalg {{ item.0.signature_algorithm }} 
-#     --cert null
-#   become: yes
-#   become_user: "{{ ejbca_user }}"
-#   loop: "{{ key_bindings |subelements('crypto_token') }}"
-#   loop_control:
-#     label: "{{ item.0.name }}"
-#   no_log: true
-#   register: keybinding_create
-#   failed_when: keybinding_create.rc >= 2
-#   #changed_when: keybinding_create.rc == 0
-#   when: 
-#     - item.0.name not in keybinding_list.stdout
-#     - item.0.enabled|bool
-
-# - name: Create CSR for Authentication Key Binding
-#   command: >
-#     {{ ejbca_sh }} keybind gencsr 
-#     --name {{ item.name }} 
-#     -f /var/tmp/{{ item.name }}.csr
-#   args:
-#     creates: "/var/tmp/{{ item.name }}.csr"
-#   loop: "{{ key_bindings }}"
-#   loop_control:
-#     label: "{{ item.name }}"
-#   no_log: true
-#   become: yes
-#   become_user: "{{ ejbca_user }}"
-#   register: keybinding_create_csr
-#   failed_when: keybinding_create_csr.rc >= 2
-#   #changed_when: keybinding_create_csr.rc == 0
-#   when: 
-#     - item.name not in keybinding_list.stdout
-#     - item.enabled|bool
-
-# - name: Create end entity 
-#   command: >
-#     {{ ejbca_sh }} ra addendentity
-#     --username "{{ item.name }}"
-#     --dn "{{ item.dn }}"
-#     --caname "{{ item.caname }}"
-#     --type 1
-#     --token {{ item.token }}
-#     --password {{ entity_pass }}
-#     --certprofile {{ item.certprofile }}
-#     --eeprofile {{ item.eeprofile }}
-#   loop: "{{ key_bindings }}"
-#   loop_control:
-#     label: "{{ item.name }}"
-#   no_log: true
-#   become_method: sudo
-#   become_user: "{{ ejbca_user }}"
-#   register: adding_keybind_end_entity
-#   failed_when: adding_keybind_end_entity.rc >= 2
-#   #changed_when: adding_keybind_end_entity.rc == 0
-#   when: 
-#     - item.name not in keybinding_list.stdout
-#     - item.enabled|bool 
- 
-#- debug:
-#    msg: "Adding end entity failed with message: {{ item.0.stdout }}"
-#  when: item.0.rc == 1 
-#  loop: "{{ adding_keybind_end_entity.results }}"
-#  loop_control:
-#    label: "{{ item.0.item.0.name }}"
-
-# - name: Sign CSR for key binding 
-#   command: >
-#     {{ ejbca_sh }} createcert 
-#     --username {{ item.name }} 
-#     --password {{ entity_pass }} 
-#     -c /var/tmp/{{ item.name }}.csr 
-#     -f /var/tmp/{{ item.name }}.crt
-#   args:
-#     creates: "/var/tmp/{{ item.name }}.crt"
-#   loop: "{{ key_bindings }}"
-#   loop_control:
-#     label: "{{ item.name }}"
-#   no_log: true
-#   become: true
-#   become_user: "{{ ejbca_user }}"
-#   register: keybinding_sign_csr
-#   failed_when: keybinding_sign_csr.rc >= 2
-#   #changed_when: keybinding_sign_csr.rc == 0
-#   when: 
-#     - item.name not in keybinding_list.stdout
-#     - item.enabled|bool 
-
-# - name: Import cert for key binding 
-#   command: >
-#     {{ ejbca_sh }} keybind import 
-#     --name {{ item.name }} 
-#     -f /var/tmp/{{ item.name }}.crt
-#   loop: "{{ key_bindings }}"
-#   loop_control:
-#     label: "{{ item.name }}"
-#   no_log: true
-#   become: yes
-#   become_user: "{{ ejbca_user }}"
-#   register: keybinding_import_cert
-#   failed_when: keybinding_import_cert.rc >= 2
-#   #changed_when: keybinding_import_cert.rc == 0
-#   when: 
-#     - item.name not in keybinding_list.stdout
-#     - item.enabled|bool 
-
-# - name: Activate key binding 
-#   command: >
-#     {{ ejbca_sh }} keybind setstatus 
-#     --name {{ item.name }} 
-#     -v Active
-#   loop: "{{ key_bindings }}"
-#   loop_control:
-#     label: "{{ item.name }}"
-#   no_log: true
-#   become: yes
-#   become_user: "{{ ejbca_user }}"
-#   register: keybinding_setstatus
-#   failed_when: keybinding_setstatus.rc >= 2
-#   #changed_when: keybinding_setstatus.rc == 0
-#   when: 
-#     - item.name not in keybinding_list.stdout
-#     - item.enabled|bool 
-
-- block:
-
-  - name: Create CSR for Authentication Key Binding
-    ejbca_keybind:
-      cmd: gencsr
-      bind: "{{ item.name }}"
-      file: "/var/tmp/{{ item.name }}.csr"
-      path: "{{ ejbca_home }}"
-    loop: "{{ key_bindings }}"
-    loop_control:
-      label: "{{ item.name }}"
-    no_log: true
-    become: true
-    become_user: "{{ ejbca_user }}"
-    register: keybinding_create_csr
-
-  - name: Create end entity
-    ejbca_ra:
-      cmd: addendentity
-      username: "{{ item.name }}"
-      caname: "{{ item.caname }}"
-      subject_dn: "{{ item.dn }}"
-      cp: "{{ item.certprofile }}"
-      eep: "{{ item.eeprofile }} "
-      password: "{{ entity_pass }}"
-      token: "{{ item.token }}"
-      type: 1
-      path: "{{ ejbca_home }}"
-    loop: "{{ key_bindings }}"
-    loop_control:
-      label: "{{ item.name }}"
-    become: true
-    become_user: "{{ ejbca_user }}"
-    register: adding_keybind_end_entity
-
-  - name: Sign CSR for key binding 
-    command: >
-      {{ ejbca_sh }} createcert 
-      --username {{ item.name }} 
-      --password {{ entity_pass }} 
-      -c /var/tmp/{{ item.name }}.csr 
-      -f /var/tmp/{{ item.name }}.crt
-    args:
-      creates: "/var/tmp/{{ item.name }}.crt"
-    loop: "{{ key_bindings }}"
-    loop_control:
-      label: "{{ item.name }}"
-    no_log: true
-    become: true
-    become_user: "{{ ejbca_user }}"
-    register: keybinding_sign_csr
-
-  - name: Import cert for key binding
-    ejbca_keybind:
-      cmd: import
-      bind: "{{ item.name }} "
-      file: /var/tmp/{{ item.name }}.crt
-      path: "{{ ejbca_home }}"
-    loop: "{{ key_bindings }}"
-    loop_control:
-      label: "{{ item.name }}"
-    become: true
-    become_user: "{{ ejbca_user }}"
-    register: keybinding_import_cert
-
-  - name: Activate keybinding
-    ejbca_keybind:
-      cmd: setstatus
-      bind: "{{ item.name }}"
-      active: true
-      path: "{{ ejbca_home }}"
-    loop: "{{ key_bindings }}"
-    loop_control:
-      label: "{{ item.name }}"
-    become: true
-    become_user: "{{ ejbca_user }}"
-    register: keybinding_setstatus
-
-  when:
-    - item.enabled
-
-#TODO - Figure out why this can't be set via CLI, but works by setting in the UI
-#- name: Set Next Key Pair Alias 
-#  command: "{{ ejbca_sh }} keybind modify --name {{ item.0.name }} --nextkeypair {{ item.0.key_label }}"
-#  no_log: true
-#  become: yes
-#  become_user: "{{ ejbca_user }}"
-#  register: keybinding_modify
-#  loop: "{{ ejbca_keybinding }}"
-#  when: item.0.name not in keybinding_list.stdout
-
-- name: Determine certificate serial number
-  command: "openssl x509 -noout -serial -in /var/tmp/{{ item.name }}.crt"
+- name: Create CSR for Authentication Key Binding
+  ejbca_keybind:
+    cmd: gencsr
+    bind: "{{ item.name }}"
+    file: "/var/tmp/{{ item.name }}.csr"
+    path: "{{ ejbca_home }}"
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
-  register: cert_serialNumber
-  when: item.enabled|bool
+  no_log: false
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_create_csr
+  when:
+    - not item.name in active_bindings
+    - item.enabled
 
-#- name: Debug cert_serialNumber
-#  debug:
-#    var: cert_serialNumber
+- name: Create/Reset End Entities
+  include_role:
+    name: ansible-ejbca-end-entity
+  loop: "{{ key_bindings }}"
+  loop_control:
+    loop_var: ee
+    label: "{{ ee.name }}"
+  when: 
+    - ee.enabled
+    - not ee.name in active_bindings
 
-- name: Create fact for certificate serial numbers
+- name: Sign CSR for key binding 
+  ejbca_createcert:
+    username: "{{ item.name }}"
+    password: "{{ entity_pass }}"
+    csr: /var/tmp/{{ item.name }}.csr 
+    cert: /var/tmp/{{ item.name }}.crt
+    path: "{{ ejbca_home }}"
+  loop: "{{ key_bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: false
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_sign_csr
+  when: 
+    - not item.name in active_bindings
+    - item.enabled
+
+- name: Import cert for key binding
+  ejbca_keybind:
+    cmd: import
+    bind: "{{ item.name }} "
+    file: /var/tmp/{{ item.name }}.crt
+    path: "{{ ejbca_home }}"
+  loop: "{{ key_bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_import_cert
+  when: 
+    - not item.name in active_bindings
+    - item.enabled
+
+- name: Activate keybinding
+  ejbca_keybind:
+    cmd: setstatus
+    bind: "{{ item.name }}"
+    active: true
+    path: "{{ ejbca_home }}"
+  loop: "{{ key_bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: keybinding_setstatus
+  when:
+    - not item.name in active_bindings
+    - item.enabled
+
+- name: Query key bindings
+  ejbca_keybind:
+    cmd: list
+    path: "{{ ejbca_home }}"
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: keybindings_list
+
+- name: Determine certificate serial numbers
   set_fact: 
-    cacheable: yes
-    peer_cert_serial_numbers: |
-      [
-      {% for line in cert_serialNumber.results %}
-      {% if line.stdout is defined %}
-      {{ '{' }}  'serial':'{{ line.stdout.split('=')[1] }}', 'name':'{{ line.item.name }}', 'type':'{{ line.item.useType}}', 'ca':'{{ line.item.caname}}' {{ '}' }},
-      {% endif %}
-      {% endfor %}
-      ]
-
-#- name: Create fact for certificate serial numbers
-#  set_fact: 
-#    cacheable: yes
-#    peer_cert_serial_numbers: 
-#      - cert_serial_Number: "{{ line.stdout.split('=')[1] }}"
-#        name: "{{ line.item.0.name }}"
-#        type: "{{ line.item.0.useType}}"
+    peer_cert_serial_numbers: "{{ peer_cert_serial_numbers + [{'name':item.name, 'cert':item.cert}] }}"
+  vars:
+    peer_cert_serial_numbers: []
+  loop: "{{ keybindings_list.bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.status == 'ACTIVE'
 
 - name: Create local directory for {{ ejbca_csr_dir_output }}
-  become: no
+  become: true
   file:
     path: "{{ ejbca_csr_dir_output }}"
     state: directory
   delegate_to: localhost
 
 - name: Write cert serial numbers to {{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
-  become: no
+  become: true
   copy:
     dest: "{{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml"
     content: "{{ peer_cert_serial_numbers| to_nice_yaml }}"
@@ -336,7 +159,7 @@
   no_log: true
 
 - name: Write cert serial numbers to shared vars directory {{ sharedVarsLocation }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
-  become: no
+  become: true
   copy:
     dest: "{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml"
     content: "{{ peer_cert_serial_numbers| to_nice_yaml }}"

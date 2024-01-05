@@ -1,0 +1,57 @@
+---
+
+- name: Query {{ ee.name }}
+  ejbca_ra:
+    cmd: findendentity
+    username: "{{ ee.name }}"
+    path: "{{ ejbca_home }}"
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: query_end_entity
+
+- name: Create {{ ee.name }}
+  ejbca_ra:
+    cmd: addendentity
+    username: "{{ ee.name }}"
+    issuing_ca: "{{ ee.caname }}"
+    subject_dn: "{{ ee.dn }}"
+    cert_profile: "{{ ee.certprofile }}"
+    ee_profile: "{{ ee.eeprofile }} "
+    password: "{{ entity_pass }}"
+    token: "{{ ee.token }}"
+    type: 1
+    path: "{{ ejbca_home }}"
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: add_end_entity
+  when:
+    - query_end_entity.entity.exists is false
+
+- block:
+
+  - name: Change end entity password
+    ejbca_ra:
+      cmd: setpwd
+      username: "{{ ee.name }}"
+      password: "{{ entity_pass }}"
+      path: "{{ ejbca_home }}"
+    become: true
+    become_user: "{{ ejbca_user }}"
+    register: setpwd_end_entity
+    when:
+      - query_end_entity.entity.status == '10' 
+
+  - name: Reset end entity
+    ejbca_ra:
+      cmd: resetendentity
+      username: "{{ ee.name }}"
+      password: "{{ entity_pass }}"
+      path: "{{ ejbca_home }}"
+    become: true
+    become_user: "{{ ejbca_user }}"
+    register: reset_end_entity
+    when:
+      - force_ee_reset|default(true)
+      - query_end_entity.entity.status != '10' 
+
+  when: query_end_entity.entity.exists

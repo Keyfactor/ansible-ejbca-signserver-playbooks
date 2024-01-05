@@ -448,8 +448,9 @@ class EjbcaCryptoToken(EjbcaCli):
                 
                 # add the token argument if listkeys
                 if self.cmd in ['listkeys']:
-                    self.args+=f" \
-                        --token {self.token}"
+                    self.args+=(
+                        f' --token "{self.token}"'
+                    )
                 
                 # submit command
                 output=self._shell(self.args)
@@ -461,7 +462,9 @@ class EjbcaCryptoToken(EjbcaCli):
                     self.result.update(keys=self._parser_key_list(iter(output.splitlines())))
                     
             else:
-                self.args=f" --token {self.token}"
+                self.args=(
+                    f' --token "{self.token}"'
+                )
                     
                 if self.cmd in ['create','deactivate','delete','activate']:
                     if self.cmd in ['activate']:
@@ -469,36 +472,41 @@ class EjbcaCryptoToken(EjbcaCli):
 
                     elif self.cmd in ['create']:
                         # create exists variable for updating return value
-                        self.args+=f" \
-                            --pin {self.pin} \
-                            --autoactivate {bool2str(self.config['auto'])} \
-                            --type {self.type}"
+                        self.args+=(
+                            f' --pin "{self.pin}"'
+                            f' --autoactivate {bool2str(self.config["auto"])}'
+                            f' --type {self.type}'
+                        )
                         
                         if self.type == 'AWSKMSCryptoToken':
-                            self.args+=f" \
-                                --awskmsaccesskeyid {self.config['kms_access_key_id']} \
-                                --awskmsregion {self.config['kms_region']}"
+                            self.args+=(
+                                f' --awskmsaccesskeyid "{self.config["kms_access_key_id"]}"'
+                                f' --awskmsregion "{self.config["kms_region"]}"'
+                            )
                         
                         elif self.type == 'AzureCryptoToken':
                             # set akv type to Premium is boolea parameter set to true
                             akv_type='Premium' if self.config['azure_vault_premium'] else 'Standard' 
-                            self.args+=f" \
-                                --azurevaultclientid {self.config['azure_client_id']} \
-                                --azurevaultname {self.config['azure_vault_name']} \
-                                --azurevaulttype {akv_type}"
+                            self.args+=(
+                                f' --azurevaultclientid "{self.config["azure_client_id"]}"'
+                                f' --azurevaultname "{self.config["azure_vault_name"]}"'
+                                f' --azurevaulttype {akv_type}'
+                            )
                             
                             # if a keybinding name was provided as a parameter
                             if self.config['azure_keybinding_name']:
-                                self.args+=f" \
-                                --azurevaultusekeybinding true \
-                                --azurevaultkeybinding {self.config['azure_keybinding_name']}"
+                                self.args+=(
+                                    f' --azurevaultusekeybinding true'
+                                    f' --azurevaultkeybinding "{self.config["azure_keybinding_name"]}"'
+                            )
                                 
-                        elif self.type == ('Pkcs11NgCryptoToken' or 'PKCS11CryptoToken'):
-                            self.args+=f" \
-                                --lib {self.config['lib']} \
-                                --slotlabel {self.config['slot_ref']} \
-                                --slotlabeltype {self.config['slot_ref_type']} \
-                                --forceusedslots {bool2str(self.config['force_used_slots'])}"
+                        elif self.type in ['Pkcs11NgCryptoToken','PKCS11CryptoToken']:
+                            self.args+=(
+                                f' --lib "{self.config["lib"]}"'
+                                f' --slotlabel "{self.config["slot_ref"]}"'
+                                f' --slotlabeltype "{self.config["slot_ref_type"]}"'
+                                f' --forceusedslots {bool2str(self.config["force_used_slots"])}'
+                            )
                                
                         elif self.type != 'SoftCryptoToken':
                             self.module.fail_json(msg=F"A matching crypto token type was not found for {self.type}")
@@ -507,16 +515,17 @@ class EjbcaCryptoToken(EjbcaCli):
                         self.condition_ok=['Unknown CryptoToken']
                         
                 elif self.cmd in ['removekey','testkey','generatekey']:
-                    self.args+=f" \
-                        --alias {self.key_alias}"
+                    self.args+=(
+                        f' --alias "{self.key_alias}"'
+                    )
                     
                     # add the keyspec argument if generatekey
                     if self.cmd in ['generatekey']:
                         # replace exsiting condition list
                         self.condition_ok=['is in use']
-                        self.args+=f" \
-                            --keyspec {self.key_spec}"
-                        
+                        self.args+=(
+                           f' --keyspec "{self.key_spec}"'
+                        )
                 output,rc=self._shell(self.args)
                 self.result[self.cmd]=self._check_result(output.splitlines(),rc)
 

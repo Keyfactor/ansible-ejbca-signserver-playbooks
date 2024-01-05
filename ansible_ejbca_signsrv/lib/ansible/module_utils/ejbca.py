@@ -19,9 +19,13 @@ class EjbcaCli(object):
                 self.path+='/bin/ejbca.sh'
             else:
                 module.fail_json(msg=f"The provided path {self.path} does not exist.")
-                
-            # create base command
-            self.command=f"{self.path} {self.category} {self.cmd}"
+            
+            # create base
+            self.command=f"{self.path} {self.category}"
+            
+            # add command if defined in the parameters
+            if getattr(self,'cmd',False):
+                self.command+=f" {self.cmd}"
                 
         except:
             raise KeyError
@@ -37,10 +41,15 @@ class EjbcaCli(object):
         # initialize empty args for adding in execute function
         self.args=str()
         
-        self.condition_changed=['successfully']
+        # condition evalution matches
         self.condition_ok=['already']
-        self.condition_failed=['failed']
+        self.condition_exists=['already exists']
+        self.condition_changed=['successfully']
+        self.condition_failed=['ERROR','failed','Failure']
         self.condition_exception=None
+        
+        # initialize fail_json condition return status
+        self.condition_failed_msg=str()
     
     def _algorithm_parser(self, val):
         for k in key_algorithms():
@@ -52,50 +61,46 @@ class EjbcaCli(object):
         
     def _check_result(self,output,rc=1):
         # create matching conditions from lists
-        self.condition_ok='|'.join(self.condition_ok)
-        self.condition_changed='|'.join(self.condition_changed)
-        self.condition_failed='|'.join(self.condition_failed)
+        condition_ok='|'.join(self.condition_ok)
+        condition_exists='|'.join(self.condition_exists)
+        condition_changed='|'.join(self.condition_changed)
+        condition_failed='|'.join(self.condition_failed)
         
         # initialize result dict
         modify_result=dict(success=False)
         for line in output:
-            parser=StringParser(line)
             
             # return ok so task doesnt fail
-            if re.findall(self.condition_ok,line): 
+            if re.findall(condition_ok,line): 
                 self.rc=rc
-                id=parser.id()
-                if id !=None:
-                    modify_result.update(id=int(id))
-                self.stdout_lines.append(line)
+                self.stdout_lines.append(line.strip())
+                if re.findall(condition_exists,line):
+                    modify_result.update(exists=True)            
 
             # successful
-            elif re.findall(self.condition_changed,line): 
+            elif re.findall(condition_changed,line): 
                 self.changed=True
                 modify_result.update(success=True)
-                # add id to dict if exists in stdout line
-                id=parser.id()
-                if id !=None:
+                self.stdout_lines.append(line)
+                id=StringParser(line).id()
+                if id != None:
                     modify_result.update(id=int(id))
                 
-                # add line to stdout
-                self.stdout_lines.append(line)
-                
             # failed
-            elif re.findall(self.condition_failed,line):
-                self.rc=1
+            elif re.findall(condition_failed,line):
+                self.rc=rc
                 self.failed=True
+                #self.module.fail_json(msg=self.condition_failed_msg)
                 modify_result.update(success=False)
                 for l in output:
                     self.stderr_lines.append(l)
                 return modify_result
-                
-            # catch all remaining lines and add to stderr/stdout
+            
             else:
-                if self.rc == 0 and self.return_output:
+                if rc == 0:
                     self.stdout_lines.append(line.strip())
                 else:
-                    self.module.fail_json(msg=line.strip())
+                    self.stderr_lines.append(line.strip())
         
         # return updated dictionary
         return modify_result
@@ -110,18 +115,19 @@ class EjbcaCli(object):
         )
         return self.result
     
-    def _shell(self, options=None):
+    def _shell(self,options=None,command=None):
+        if command is None:
+            command=self.command
         if options: 
-            self.command+=options
-
-        #self.module.fail_json(msg=self.command)
+            command+=options
+        
+        #self.module.fail_json(msg=command)
         rc,stdout,stderr=self.module.run_command(
-            args=self.command
+            args=command
         )
         #self.module.fail_json(msg=stdout)
         if stderr:
             stderr_parser=StderrParser()
-            #self.module.fail_json(msg=stderr)
             exception=stderr_parser.java_exception(stderr.splitlines())
             if exception:
                 self.module.fail_json(msg=exception)
@@ -143,7 +149,7 @@ class AttributeParser:
             string_match=re.search(regex, str)
             if string_match != None:
                 return string_match.group(0).split('"')[1].split('"')[0]
-        return None
+        return None  
     
     @staticmethod
     def id(str):
@@ -192,6 +198,10 @@ class StringParser(str):
         
         return self.split(',')[1].split(',')[0].strip()
     
+    def dict_key(self,match=None):
+        string=self.split(':')[0].strip().replace(' ','_').lower()
+        return slugify(string)
+
     def equal_sign(self,before=False):
         """ Gets boolean value after equal symbol """
         if before:
@@ -203,21 +213,27 @@ class StringParser(str):
     def id(self):
         """ Parse ID using regex and if n/a in string, pass to comma function for parsing. """
 
-        #regex=r'\([^\d]*(\d+)[^\d]*\)'
         regex=r'-?\b\d{9,10}\b'
         string_match=re.search(regex,self)
         if string_match != None:
             return string_match.group(0).strip()
-            #return str.strip()
-            #return StringParser(str).parenthesis()
+
+            
+    def int(self):
+        """ Gets number value from line """
+        
+        match=re.search(r'[0-9]+', self)
+        if match != None:
+            return int(match.group(0))
         
     def list(self,list=None):
         """ Gets matched string from list """
         
-        match=''.join([m for m in list if re.search(m, self)])
+        search_string='|'.join(list)
+        match=re.search(search_string,self)
         if match != None:
-            return match
-    
+            return str(match.group(0))
+
     def parenthesis(self,match=False):
         """ Gets string between first set of commas """
         
@@ -229,22 +245,23 @@ class StringParser(str):
             
         return self.split('(')[1].split(')')[0]
     
+    def split_strip(self,delimeter,before=True):
+        """ Splits line, before or after, delimeter and strips leading and trailing whitespace """
+        
+        if before:
+            string=''.join(self.split(delimeter)[0])
+        else:
+            string=''.join(self.split(delimeter)[1])
+        return string.lstrip().strip()
+            
     def tuple(self,tuple:tuple):
         """ Parses string using tuple as start and end index values """
         
-        
-        return self.split(tuple[0])[1].split(tuple[1])[0].strip()
+        return self.split(tuple[0])[1].split(tuple[1])[0].lstrip().strip()
     
     def quotes(self,match=False):
         """ Gets value between first set of commas """
-        
-        # if match:
-        #     regex=r'"(.*?)"'
-        #     string_match=re.search(regex, self)
-        #     if string_match != None:
-        #         return string_match.group(0).split('"')[1].split('"')[0]
-        # return self.split('"')[1].split('"')[0]
-    
+
         regex=r'"(.*?)"'
         string_match=re.search(regex, self)
         if string_match != None:
@@ -264,6 +281,16 @@ def crypto_token_types():
         'SoftCryptoToken',
     ]  
     
+def ee_statuses():
+    return [
+        ('NEW','10'),
+        ('FAILED','11'),
+        ('INITIALIZED','20'),
+        ('INPROCESS','30'),
+        ('GENERATED','40'),
+        ('HISTORICAL','40'),
+    ]  
+    
 def ee_token_types():
     return [
         'USERGENERATED','P12',
@@ -276,6 +303,20 @@ def key_algorithms():
         'Ed448','Ed25519',
         'FALCON-512','FALCON-1024',
         'DILITHIUM2','DILITHIUM3','DILITHIUM5'
+    ]  
+    
+def revocation_reasons():
+    return [
+        ('unspecified','0'),
+        ('keyCompromise','1'),
+        ('cACompromise','2'),
+        ('affiliationChanged','3'),
+        ('superseded','4'),
+        ('cessationOfOperation','5'),
+        ('certificateHold','6'),
+        ('removeFromCRL','8'),
+        ('privilegeWithdrawn','9'),
+        ('aACompromise','10'),
     ]  
 
 def sign_algorithms():
@@ -291,22 +332,13 @@ def slot_ref_types():
         'SLOT_LABEL',
         'SLOT_INDEX'
     ]
-    
-def validate_cli_path(cli_path):
-    if os.path.exists(cli_path):
-        
-        # check if path is a directory
-        # return provided path if path is the binary
-        # if binary was not provide, update cli_path and check for existence
-        if os.path.isdir(cli_path):
-            cli_path+='/bin/ejbca.sh'
-            
-            if not os.path.exists(cli_path):
-                return False
-    
-        return cli_path
-    
-    return False
+
+def slugify(str):
+    str=str.lower().strip()
+    str=re.sub(r'[^\w\s-]', '',str)
+    str=re.sub(r'[\s_-]+', '_',str)
+    str=re.sub(r'^-+|-+$', '',str)
+    return str
 
 def string_converter(str:str):
     """ Convert string to a type that matches a condition below """

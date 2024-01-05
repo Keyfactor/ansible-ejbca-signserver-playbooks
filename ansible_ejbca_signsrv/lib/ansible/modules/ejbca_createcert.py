@@ -14,25 +14,24 @@ author:
     - Jamie Garner (@jtgarner-keyfactor)
 '''
 
-import re
+import os
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ejbca import (
-    EjbcaCli,
-    AttributeParser,
-    StringParser,
-    ee_token_types,
-    bool2str
+    EjbcaCli
 )
-
-def choices_type():
-    return [
-        0,1,256,512
-    ]
 
 def spec_main():
     return dict(
-        username=dict(type='str')
+        cert=dict(
+            required=True,
+            type='path'
+        ),
+        csr=dict(
+            required=True,
+            type='path'
+        ),
         password=dict(
+            required=True,
             type='str',
             no_log=False
         ),
@@ -44,83 +43,30 @@ def spec_main():
             default=True,
             type='bool'
         ),
-        cert=dict(type='str'),
-        csr=dict(
-            type='str',
-            choices=[k for k in ee_token_types()]
-        ),
-        type=dict(
-            type='int',
-            choices=[k for k in choices_type()]
-        ),
-        
+        username=dict(type='str'),
     )
     
-class EjbcaCryptoToken(EjbcaCli):
+class EjbcaCreateCert(EjbcaCli):
     
     def __init__(self, module):
         self.module=module
-        self.category='ra'
+        self.category='createcert'
         super().__init__(module)
-        
-    # def _parser_find(self,output,rc=1):
-    #     entity={}
-    #     self.parser = AttributeParser()
-    #     for line in output:
-    #         if ('Found end entity' in line):
-    #             entity['username'] = line.replace('CA Name:','').strip()
-    #             entity['dn'] = int(next(output).replace('Id:','').strip())
-    #             entity['alt_name'] = next(output).replace('Issuer DN:','').strip()
-    #             entity['directory_attributes'] = next(output).replace('Subject DN:','').strip()
-    #             entity['email'] = int(next(output).replace('Type:','').strip())
-    #             entity['status'] = next(output).replace('Expire time:','').strip()
-    #             entity['type'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['token_type'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['eep'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['cp'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['created'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['modified'] = int(next(output).replace('Signed by:','').strip())
-    #     return entity
-                
+
     def execute(self):
         try:
+            self.condition_failed=['Could not create certificate']
+            #self.condition_ok=['Got request with status GENERATED']
+            self.condition_changed=['certificate written to file']
             self.args+= (
                 f' --username "{self.username}"'
+                f' --password "{self.password}"'
+                f' -c {self.csr}'
+                f' -f {self.cert}'
             )
-            if self.cmd in ['findendentity']:
-                self.result.update(tokens=self._parser_find(iter(output.splitlines())))
-            
-            else:
-                
-                if self.cmd in ['delendentity']:
-                    self.condition_ok=['No such end entity']
-                    self.condition_changed=['Deleted end entity with username']
-                    self.args+=(
-                        ' -force'
-                    )
-                    
-                elif self.cmd in ['addendentity']:
-                    self.condition_changed=['has been added']
-                    # optinal parameters
-                    cert_profile=(
-                        f' --certprofile "{self.cp}"' if self.cp != None else ''
-                    )
-                    ee_profile=(
-                        f' --eeprofile "{self.eep}"' if self.eep != None else ''
-                    )
-                    # build full args string
-                    self.args+= (
-                        f' --caname "{self.caname}"'
-                        f' --dn "{self.subject_dn}"'
-                        f' --type {self.type}'
-                        f' --token {self.token}'
-                        f' --password {self.password}'
-                        f'{cert_profile}'
-                        f'{ee_profile}'
-                    )
-                        
-                output,rc=self._shell(self.args)
-                self.result[self.cmd]=self._check_result(output.splitlines(),rc)
+
+            output,rc=self._shell(self.args)
+            self.result['createcert']=self._check_result(output.splitlines(),rc)
 
             return self._return_results()
             
@@ -133,18 +79,20 @@ def run_module():
     module = AnsibleModule(
         argument_spec=module_args,
         supports_check_mode=True,
-        required_if=[
-            ('cmd','addendentity',['caname','password','subject_dn','type','token','username']),
-            ('cmd','delendentity',['username']),
-            ('cmd','findendentity',['username']),
-        ]
     )
     
     if module.check_mode:
         module.exit_json(**result)
         
+     # validate output/input file path
+    if os.path.isdir(module.params['cert']):
+        module.fail_json(msg=f"{module.params['cert']} is a directory. A file path to output the signed certificate is required.")
+            
+    if os.path.isdir(module.params['csr']):
+        module.fail_json(msg=f"{module.params['csr']} is a directory. A file path to a PEM encoded PKCS#10 is required.")
+        
     # return 
-    command = EjbcaCryptoToken(module)
+    command=EjbcaCreateCert(module)
     result=command.execute()
     module.exit_json(**result)
 

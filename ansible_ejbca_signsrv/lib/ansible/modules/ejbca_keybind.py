@@ -213,8 +213,7 @@ from ansible.module_utils.ejbca import (
 
 def choices_actions():
     return [
-        'add',
-        'remove'
+        'add','remove'
     ]
 
 def choices_binding_type():
@@ -328,6 +327,10 @@ def spec_main():
                 ('protocol','enable_nonce'),
                 ('protocol','omit_reason'),
             ]
+        ),
+        return_output=dict(
+            default=True,
+            type='bool'
         ),
         setting=dict(
             type='str',
@@ -497,8 +500,9 @@ class EjbcaKeyBind(EjbcaCli):
             # add binding to list and finish loop
             self.bind_list.append(bind)
 
-            # add line to stud
-            self.stdout_lines.append(b)
+            # add line to stdout if set to true
+            if self.return_output:
+                self.stdout_lines.append(b)
 
     def execute(self):
         try:
@@ -587,7 +591,7 @@ class EjbcaKeyBind(EjbcaCli):
                         -v {status}"
                     
                 output,rc=self._shell(self.args)
-                self.result[self.cmd]=self._check_result(output.splitlines())
+                self.result[self.cmd]=self._check_result(output.splitlines(),rc)
 
             return self._return_results()
             

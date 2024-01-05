@@ -1,48 +1,56 @@
 ---
 
-- name: Query Peer Connectors
-  command: "{{ ejbca_sh }} peer list"
-  no_log: true
-  become: yes
+- name: List Peer Connections
+  ejbca_peer:
+    cmd: list
+    path: "{{ ejbca_home }}"
+  become: true
   become_user: "{{ ejbca_user }}"
   register: list_peer_connectors
-  failed_when: list_peer_connectors.rc >= 2
-  changed_when: list_peer_connectors.rc == 0
 
-- name: Create Peer Connectors
-  command: >
-    {{ ejbca_sh }} peer create 
-    --name '{{ item.name }}' 
-    --state {{ item.state| default('ENABLED') }} 
-    --url {{ item.url }} 
-    --akb '{{ item.keybinding }}'
-  no_log: false
-  become: yes
+- name: Create Peer Connections
+  ejbca_peer:
+    cmd: create
+    name: "{{ item.name }}"
+    state: "{{ item.state| default('ENABLED') }}"
+    url: "{{ item.url }}"
+    akb: "{{ item.keybinding }}"
+    path: "{{ ejbca_home }}"
+  become: true
   become_user: "{{ ejbca_user }}"
   register: create_peer_connectors
   loop: "{{ ejbca_peerConnector }}"
   loop_control:
     label: "{{ item.name }}"
   when: 
-    - ( item.name not in list_peer_connectors.stdout )
-    - ( item.enabled|bool )
-
-#- debug:
-#    var: create_peer_connectors
+    - not list_peer_connectors.peers|selectattr('name','==',item.name)
+    - item.enabled
 
 - name: Create a fact for peer_connection_info
-  set_fact:
+  set_fact: 
     cacheable: yes
-    peer_connection_info: |
-      [
-      {% for line in create_peer_connectors.results %}
-      {% if line.stdout is defined %}
-      {{ '{' }}  'id':'{{ line.stdout.split(' ')[4] }}', 'name':'{{ line.item.name }}', 'type': '{{ line.item.type }}' {{ '}' }},
-      {% endif %}
-      {% endfor %}
-      ]
-  when: create_peer_connectors is defined
-  ignore_errors: yes
+    peer_connection_info: "{{ peer_connection_info + [{'id':item.id, 'name':item.name}] }}"
+  vars:
+    peer_connection_info: []
+  loop: "{{ create_peer_connectors.results|map(attribute='create') }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: 
+    - create_peer_connectors.results|map(attribute='create')|selectattr('name','==',item.name)
+
+# - name: Create a fact for peer_connection_info
+#   set_fact:
+#     cacheable: yes
+#     peer_connection_info: |
+#       [
+#       {% for line in create_peer_connectors.results %}
+#       {% if line.stdout is defined %}
+#       {{ '{' }}  'id':'{{ line.stdout.split(' ')[4] }}', 'name':'{{ line.item.name }}', 'type': '{{ line.item.type }}' {{ '}' }},
+#       {% endif %}
+#       {% endfor %}
+#       ]
+#   when: create_peer_connectors is defined
+#   ignore_errors: true
 
 #- name: Create a fact for peer_connection_info
 #  set_fact:
@@ -55,13 +63,13 @@
 #  ignore_errors: yes
 
 - name: Write Peer Info to file for use with EJBCA playbooks
-  become: no
+  become: false
   copy:
     dest: "{{ ejbca_csr_dir_output }}/ca_peer_info.yml"
     content: "{{ peer_connection_info| to_nice_yaml }}"
   delegate_to: localhost
   register: write_peer_output
-  no_log: true
+  no_log: false
 
 - name: Query Peer Connection with SQL hack EJBCA <= 7.3.1.4
   command: >
@@ -107,20 +115,20 @@
 #    var: peer_connection_info
 
 - name: Enable Process incoming requests in Peer Connection EJBCA >= 7.4.0
-  command: >
-    {{ ejbca_sh }} peer edit 
-    --id {{ item.id }} 
-    --process-incoming-requests true 
-    --max-parallel-requests {{ ra_peer_max_parallel_reqs|default('50') }} 
-    --min-parallel-requests {{ ra_peer_min_parallel_reqs|default('2') }}
-  become: yes
+  ejbca_peer:
+    cmd: edit
+    id: "{{ item.id }}"
+    max: "{{ ra_peer_max_parallel_reqs|default('50') }}"
+    min: "{{ ra_peer_max_parallel_reqs|default('2') }}"
+    process_incoming: true
+    path: "{{ ejbca_home }}"
+  become: true
   become_user: "{{ ejbca_user }}"
   loop: "{{ peer_connection_info }}"
-  when: ('ra' in item.type) and (ejbca_version is version('7.4.0', '>='))
-  register: peer_con_ra_res
-  #no_log: true
   loop_control:
     label: "{{ item.id }}"
+  register: peer_con_ra_res
+  when: ('ra' in item.type) and (ejbca_version is version('7.4.0', '>='))
 
 #- name: debug peer_con_ra_res
 #  debug:

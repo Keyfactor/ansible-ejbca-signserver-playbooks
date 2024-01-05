@@ -20,9 +20,21 @@ from ansible.module_utils.ejbca import (
     EjbcaCli,
     AttributeParser,
     StringParser,
+    ee_statuses,
     ee_token_types,
-    bool2str
+    revocation_reasons
 )
+
+def choices_actions():
+    return [
+        # supported
+        'addendentity','delendentity','findendentity','resetendentity',
+        'setpwd','setendentitystatus'
+        # in progress
+        # 'getendentitycert',
+        # 'revokecert','revokeendentity','setclearpwd',
+        # 'setsubjectdirattr'
+    ]
 
 def choices_type():
     return [
@@ -34,18 +46,15 @@ def spec_main():
         cmd=dict(
             required=True,
             type='str',
-            choices=[
-                # supported
-                'addendentity','delendentity',
-                # in progress
-                'getendentitycert','findendentity',
-                'revokecert','revokeendentity','setclearpwd',
-                'setendentitystatus','setpwd''setsubjectdirattr'
-            ]
+            choices=[k for k in choices_actions()]
         ),
-        cp=dict(type='str'),
-        eep=dict(type='str'),
-        caname=dict(type='str'),
+        cert_profile=dict(type='str'),
+        ee_profile=dict(type='str'),
+        force_reset=dict(
+            default=True,
+            type='bool'
+        ),
+        issuing_ca=dict(type='str'),
         password=dict(
             type='str',
             no_log=False
@@ -58,7 +67,21 @@ def spec_main():
             default=True,
             type='bool'
         ),
+        revoke_active=dict(
+            default=False,
+            type='bool'
+        ),
+        revoke_reason=dict(
+            default='unspecified',
+            type='str',
+            choices=[k for k,v in revocation_reasons()]
+        ),
         subject_dn=dict(type='str'),
+        status=dict(
+            default='NEW',
+            type='str',
+            choices=[k for k,v in ee_statuses()]
+        ),
         token=dict(
             type='str',
             choices=[k for k in ee_token_types()]
@@ -70,40 +93,121 @@ def spec_main():
         username=dict(type='str')
     )
     
-class EjbcaCryptoToken(EjbcaCli):
+class EjbcaRa(EjbcaCli):
     
     def __init__(self, module):
         self.module=module
         self.category='ra'
         super().__init__(module)
         
-    # def _parser_find(self,output,rc=1):
-    #     entity={}
-    #     self.parser = AttributeParser()
-    #     for line in output:
-    #         if ('Found end entity' in line):
-    #             entity['username'] = line.replace('CA Name:','').strip()
-    #             entity['dn'] = int(next(output).replace('Id:','').strip())
-    #             entity['alt_name'] = next(output).replace('Issuer DN:','').strip()
-    #             entity['directory_attributes'] = next(output).replace('Subject DN:','').strip()
-    #             entity['email'] = int(next(output).replace('Type:','').strip())
-    #             entity['status'] = next(output).replace('Expire time:','').strip()
-    #             entity['type'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['token_type'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['eep'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['cp'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['created'] = int(next(output).replace('Signed by:','').strip())
-    #             entity['modified'] = int(next(output).replace('Signed by:','').strip())
-    #     return entity
-                
+        # get matching number value for provided status and convert to integer
+        self.status_value=int(''.join([v for k,v in ee_statuses() if self.status == k]))
+        self.revoke_reason_value=int(''.join([v for k,v in revocation_reasons() if self.revoke_reason == k]))
+        
+        self.command_base=f"{self.path} {self.category}"
+        
+        #self.module.fail_json(msg=self.status_value)
+        
+        # if self.cmd in ['resetendentity']:
+        #     self.command=f"{self.path} {self.category}"
+
+    def _parser_findendentity(self,output,rc=1):
+        entity_dict=dict(
+            exists=False
+        )
+        self.parser = AttributeParser()
+        for line in output:
+            if ('Found end entity') in line:
+                self.changed=True
+                entity_dict['exists']=True
+                for ee in output:
+                    k=StringParser(ee).dict_key()
+                    v=ee.split(':')[1].strip()
+                    entity_dict[k]=v
+                    self.stdout_lines.append(ee)
+                return entity_dict
+            
+            else:
+                self.stdout_lines.append(line)
+                entity_dict['exists']=False
+                return entity_dict
+
+    def _revokeendentity(self):
+        self.condition_changed=['New status=50']
+        return str(
+            f' {self.command_base} revokeendentity'
+            f' --username "{self.username}"'
+            f' -r {self.revoke_reason_value}'
+        )
+    
+    def _setpwd(self):
+        self.condition_changed=['Setting password']
+        return str(
+            f' {self.command_base} setpwd'
+            f' --username "{self.username}"'
+            f' --password "{self.password}"'
+        )
+        
+    def _setendentitystatus(self):
+        self.condition_changed=['New status for end entity']
+        return str(
+            f' {self.command_base} setendentitystatus'
+            f' --username "{self.username}"'
+            f' -S "{self.status_value}"'
+        )
+ 
     def execute(self):
+        cmd_results=dict(username=self.username)
         try:
-            self.args+= (
+            args=(
                 f' --username "{self.username}"'
             )
-            if self.cmd in ['findendentity']:
-                self.result.update(tokens=self._parser_find(iter(output.splitlines())))
             
+            if self.cmd in ['addendentity']:
+                self.condition_ok=['already exists']
+                self.condition_changed=['has been added']
+
+                # build full args string
+                args+=(
+                    f' --certprofile "{self.cert_profile}"'
+                    f' --dn "{self.subject_dn}"'
+                    f' --eeprofile "{self.ee_profile}"'
+                    f' --caname "{self.issuing_ca}"'
+                    f' --password "{self.password}"'
+                    f' --type {self.type}'
+                    f' --token {self.token}'
+                )
+                    
+                output,rc=self._shell(args)                
+                self.result[self.cmd]=self._check_result(output.splitlines(),rc)
+                self.result[self.cmd].update(
+                    username=self.username
+                )
+
+            elif self.cmd in ['findendentity']:
+                output,rc=self._shell(args)
+                self.result.update(entity=self._parser_findendentity(output.splitlines()))
+                
+            elif self.cmd in ['resetendentity']:
+                
+                # revoke certificates
+                if self.revoke_active:
+                    output,rc=self._shell(command=self._revokeendentity())
+                    if self._check_result(output.splitlines(),rc)['success']:
+                        cmd_results['revoked_certs']=True
+                
+                # reset password
+                output,rc=self._shell(command=self._setpwd())
+                if self._check_result(output.splitlines(),rc)['success']:
+                    cmd_results['reset_pwd']=True
+
+                # reset status
+                output,rc=self._shell(command=self._setendentitystatus())
+                if self._check_result(output.splitlines(),rc)['success']:
+                    cmd_results['status']=self.status_value
+                
+                self.result[self.cmd]=cmd_results
+        
             else:
                 
                 if self.cmd in ['delendentity']:
@@ -113,32 +217,19 @@ class EjbcaCryptoToken(EjbcaCli):
                         ' -force'
                     )
                     
-                elif self.cmd in ['addendentity']:
-                    self.condition_changed=['has been added']
-                    # optinal parameters
-                    cert_profile=(
-                        f' --certprofile "{self.cp}"' if self.cp != None else ''
-                    )
-                    ee_profile=(
-                        f' --eeprofile "{self.eep}"' if self.eep != None else ''
-                    )
-                    # build full args string
-                    self.args+= (
-                        f' --caname "{self.caname}"'
-                        f' --dn "{self.subject_dn}"'
-                        f' --type {self.type}'
-                        f' --token {self.token}'
-                        f' --password {self.password}'
-                        f'{cert_profile}'
-                        f'{ee_profile}'
-                    )
-                        
-                output,rc=self._shell(self.args)
+                elif self.cmd in ['setpwd']:
+                    output,rc=self._shell(command=self._setpwd())
+                    
+                elif self.cmd in ['setendentitystatus']:
+                    output,rc=self._shell(command=self._setendentitystatus())
+
                 self.result[self.cmd]=self._check_result(output.splitlines(),rc)
+                
 
             return self._return_results()
             
         except ValueError as e:
+            self.module.fail_json(msg='test')
             self.module.fail_json(msg=e)
             
 def run_module():
@@ -148,9 +239,10 @@ def run_module():
         argument_spec=module_args,
         supports_check_mode=True,
         required_if=[
-            ('cmd','addendentity',['caname','password','subject_dn','type','token','username']),
+            ('cmd','addendentity',['cert_profile','ee_profile','issuing_ca','password','subject_dn','type','token','username']),
             ('cmd','delendentity',['username']),
             ('cmd','findendentity',['username']),
+            ('cmd','resetendentity',['username','password']),
         ]
     )
     
@@ -158,7 +250,7 @@ def run_module():
         module.exit_json(**result)
         
     # return 
-    command = EjbcaCryptoToken(module)
+    command=EjbcaRa(module)
     result=command.execute()
     module.exit_json(**result)
 

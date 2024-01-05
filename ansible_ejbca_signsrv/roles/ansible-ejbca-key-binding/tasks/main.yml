@@ -1,6 +1,24 @@
 ---
 # tasks file for roles/ansible-ejbca-key-binding
 
+- name: Query Active Key Bindings
+  ejbca_keybind:
+    cmd: list
+    path: "{{ ejbca_home }}"
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: keybindings_list
+
+- name: Create List of Active Bindings
+  set_fact: 
+    active_bindings: "{{ active_bindings + [item.name] }}"
+  vars:
+    active_bindings: []
+  loop: "{{ keybindings_list.bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.status == 'ACTIVE'
+
 - name: Create Authentication Key Binding 
   include_tasks: add_keybinding_ca.yml
   when: 
