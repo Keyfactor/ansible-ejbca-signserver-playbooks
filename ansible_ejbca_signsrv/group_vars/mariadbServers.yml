@@ -5,8 +5,8 @@ mariadb_root_password:  "{{ encrypted_database_rootuser_password | default('Prim
 mariadb_binlog_format: ROW
 mariadb_databases:
   - name: ejbca
-    collation: "utf8_general_ci"
-    encoding: "utf8"
+    collation: "utf8mb4_unicode_520_ci"
+    encoding: "utf8mb4"
 mariadb_users:
   - name: ejbca-usr
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
@@ -21,7 +21,7 @@ mariadb_owner: mysql
 mariadb_group: mysql
 
 mariadb_mirror: yum.mariadb.org
-mariadb_version: '10.9'
+mariadb_version: '10.11'
 
 mariadb_configure_swappiness: true
 mariadb_swappiness: '10'
@@ -40,13 +40,13 @@ mariadb_server_cnf:
 mariadb_custom_cnf: {}
 
 # Maria DB JDBC driver download URL for EjBCA
-ejbca_jdbc_driver: https://dlm.mariadb.com/2531428/Connectors/java/connector-java-3.0.8/mariadb-java-client-3.0.8.jar
+ejbca_jdbc_driver: https://dlm.mariadb.com/2912798/Connectors/java/connector-java-3.1.4/mariadb-java-client-3.1.4.jar
 # Maria DB JDBC driver SHA256 hash
-ejbca_jdbc_driver_checksum: sha256:83697e1c44e77476123ab63cd8bb2ca96c1a349269f307c339f97caced2d0dd6
+ejbca_jdbc_driver_checksum: sha256:eb88b5d727d82e25117e2b6fabcec1daf734633b0a576456c73215884c189ad4
 
 # Maria DB JDBC driver download URL for SignServer
-signsrv_jdbc_driver: https://dlm.mariadb.com/2531428/Connectors/java/connector-java-3.0.8/mariadb-java-client-3.0.8.jar
+signsrv_jdbc_driver: https://dlm.mariadb.com/2912798/Connectors/java/connector-java-3.1.4/mariadb-java-client-3.1.4.jar
 # Maria DB JDBC driver SHA256 hash
-signsrv_jdbc_driver_checksum: sha256:83697e1c44e77476123ab63cd8bb2ca96c1a349269f307c339f97caced2d0dd6
+signsrv_jdbc_driver_checksum: sha256:eb88b5d727d82e25117e2b6fabcec1daf734633b0a576456c73215884c189ad4
 # Generic file name for JDBC file
 signsrv_jdbc_gen_name: mariadb-java-client.jar

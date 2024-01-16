@@ -48,6 +48,9 @@ softhsm_gen_hsm_slots:
   - slot_name: AZURE_AUTH_SLOT
     slot_so_pin: "{{ encrypted_azure_auth_so_token_pin | default('foo123') }}" 
     slot_pin: "{{ encrypted_azure_auth_token_pin | default('foo123') }}"
+  - slot_name: SSH_CA_SLOT
+    slot_so_pin: "{{ encrypted_ssh_ca_so_token_pin | default('foo123') }}" 
+    slot_pin: "{{ encrypted_ssh_ca_token_pin | default('foo123') }}"
 
 # Cloudhsm variables
 use_liquidsec: false

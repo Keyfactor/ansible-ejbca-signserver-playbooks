@@ -29,6 +29,8 @@ Some software is downloaded when running this playbook (JDBC driver, Ant, Wildfl
 ### Role Variables
 There are numerous variables for this playbook. These variables are set in `group_vars` and the `host_vars`. Reference the vars files for the settings used to deploy.
 
+- If you need to re-run the external RA or VA plays to redo anything that failed in the `ansible-ejbca-certreq-cli` role, re-run the play with the variable `-e ra_force_batch_again=true`
+
 ## Quick Start
 Below you will find the steps to run some common tasks. 
 

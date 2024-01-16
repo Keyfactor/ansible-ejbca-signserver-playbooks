@@ -1,11 +1,12 @@
 #{{ ansible_managed | comment }}
 
 allow.external-dynamic.configuration={{ core_allow_external_dynamic_configuration| default('true') }}
-#password.encryption.key={{ core_password_encryption_key| default('changeit') }}
-#ca.keystorepass={{ core_ca_keystorepass| default('changeit') }}
+password.encryption.key={{ core_password_encryption_key| default('Xc9!T6G&SGAItzWgkcv*Dq*!e%FPnFgWu') }}
+ca.keystorepass={{ core_ca_keystorepass| default('jbK6&!9F^n8qnc5yC%Co0K%qoN$9uc!2q') }}
 #ca.rngalgorithm={{ core_ca_rngalgorithm| default('SHA1PRNG') }}
 ca.serialnumberoctetsize={{ core_ca_serialnumberoctetsize| default('20') }}
-certificate.validityoffset=-10m
+certificate.validityoffset={{ core_certificate_validityoffset| default('-10m') }}
+ct.cache.enabled={{ core_ct_cache_enabled| default('true') }}
 {% if core_disable_audit_log_to_db is defined and core_disable_audit_log_to_db is sameas true %}
 securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
 securityeventsaudit.implementation.1=null

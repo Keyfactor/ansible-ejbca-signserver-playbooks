@@ -3,19 +3,22 @@ Version: 2
 Name: validationAuthorityPeerPub-{{ item.name }}
 Type: Validation Authority Peer Publisher
 Settings:
-  Store CRL at the Validation Authority: 'true'
   Peer System: {{ item.name }}
   Store Certificate at the Validation Authority: 'false'
+  Store CRL at the Validation Authority: 'true'
+  Store Ocsp responses at the Validation Authority: 'false'
   Publish Only Revoked Certificates: 'false'
   Include Database Integrity Information: 'false'
   Ignore Newer Entries at Peer: 'false'
   Don't Store Certificate Meta Data Except for CA and OCSP Signing Certificates: 'false'
-Only Use in Queue: true
 Keep Published in Queue: false
 Use Queue for CRLs: true
 Use Queue for Certificates: true {% if ejbca_version is version('7.4.0', '>=') %}  
 Use Queue for OCSP Responses: true
 {% endif %}{% if ejbca_version is version('7.8.0', '>=') %}
 Use Safe Direct Publishing: true
+Only Use in Queue: false
+{% else %}
+Only Use in Queue: true
 {% endif %}
 Description: 'Validation Authority Peer Publisher'

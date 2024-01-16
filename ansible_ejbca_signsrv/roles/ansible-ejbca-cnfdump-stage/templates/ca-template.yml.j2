@@ -6,6 +6,9 @@ Description: {{ item.description | default('Created using configdump') }}
 Serial Number Octet Size: {{ item.serial_number_octet_size | default('20') }}
 Pre-produce OCSP Responses: {{ item.pre_produce_ocsp_responses | default('false') }}
 Store responses on-demand: {{ item.store_responses_on_demand | default('false') }}
+{% if ejbca_version is version('8.2.0', '>=') and item.ocsp_gen_iss_rev is defined %}
+Pre-produce OCSP Responses Upon certificate issuance/revocation: {{ item.ocsp_gen_iss_rev | default('false') }}
+{% endif %}
 Certificate Profile: {{ item.certprofile }}
 Default Certificate Profile: Not used
 Use Append-Only Table: {{ item.use_append_only_table | default('false') }}

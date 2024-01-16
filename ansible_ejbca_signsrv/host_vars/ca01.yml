@@ -62,7 +62,7 @@ ejbca_keybinding:
         key_type: "RSA"
         type: test
     signature_algorithm: SHA256WithRSA
-    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-ocsp"
+    dn: "C={{ countryName }},O={{ organizationName }},OU=Peering,CN=peerClient-ocsp"
     caname: "ManagementCA"
     token: "USERGENERATED"
     certprofile: tlsPeerConnector
@@ -84,7 +84,7 @@ ejbca_keybinding:
         key_type: "RSA"
         type: keybind
     signature_algorithm: SHA256WithRSA
-    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-ra"
+    dn: "C={{ countryName }},O={{ organizationName }},OU=Peering,CN=peerClient-ra"
     caname: "ManagementCA"
     token: "USERGENERATED"    
     certprofile: tlsPeerConnector
@@ -106,7 +106,7 @@ ejbca_keybinding:
         key_type: "RSA"
         type: keybind
     signature_algorithm: SHA256WithRSA
-    dn: "C={{ countryName }},OU=Peering,O={{ organizationName }},CN=peerClient-sign"
+    dn: "C={{ countryName }},O={{ organizationName }},OU=Peering,CN=peerClient-sign"
     caname: "ManagementCA"
     token: "USERGENERATED"
     certprofile: tlsPeerConnector
@@ -170,6 +170,7 @@ management_add_certification_authorities:
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
+    ocsp_gen_iss_rev: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
     defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationName | lower }}-mgmtca.crl"
@@ -232,6 +233,7 @@ management_add_certification_authorities:
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
+    ocsp_gen_iss_rev: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
     defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-rootca-g1.crl"
@@ -316,6 +318,7 @@ sub_add_certification_authorities:
     serial_number_octet_size: 20
     pre_produce_ocsp_responses: false
     store_responses_on_demand: false
+    ocsp_gen_iss_rev: false
     use_append_only_table: false
     use_utf8_in_policy_notice_text: false
     defaultCRLDP: "http://crl.{{ organizationDomainName }}/CRLs/{{ organizationNameShort | lower }}-subca-g1.crl"
@@ -422,6 +425,8 @@ configdump_files:
     dest: '{{ ejbca_home }}/dump/dump3/acme-config/global-acme-configuration.yaml'
   - src: 'acme-alias-1.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/acme-config/acme-alias-1.yaml'
+  - src: 'acme-alias-2.yaml.j2'
+    dest: '{{ ejbca_home }}/dump/dump3/acme-config/acme-alias-2.yaml'
   - src: 'ee-AdminInternal.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump3/end-entity-profiles/AdminInternal.yaml'
   - src: 'ee-tlsServerAcme.yaml.j2'

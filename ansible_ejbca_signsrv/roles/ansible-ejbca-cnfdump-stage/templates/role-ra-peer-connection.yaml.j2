@@ -5,7 +5,7 @@ Name: RA-Peer-Connection
 Role Members:
 {% for line in ra_peer_cert_serial_numbers %}
 - Token Type: CertificateAuthenticationToken
-  Issuer: line.caname
+  Issuer: {{ line.caname }}
   Match With: WITH_SERIALNUMBER
   Match Value: {{ line.cert_serial_Number }}
   Description: {{ line.cert_serial_Number }}

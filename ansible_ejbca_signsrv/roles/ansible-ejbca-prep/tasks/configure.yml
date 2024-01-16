@@ -227,6 +227,28 @@
     register: removed_ejbca_properties
   when: ejbca_properties_files_to_remove
 
+- name: Check if log4j-cli.properties exists exists
+  stat:
+    path: "{{ ejbca_home }}/bin/log4j-cli.properties"
+  register: found_log4j_cli
+  changed_when: false
+  when: 
+    - ejbca_cli_log_fix is defined
+    - ejbca_cli_log_fix|bool
+    - ( ejbca_version is version('8.2.0', '>='))
+
+- name: Remove ejbca.sh logging of external configuration enabled for CLI that breaks automation
+  lineinfile:
+    path: "{{ ejbca_home }}/bin/log4j-cli.properties"
+    regexp: '^log4j\.logger\.org\.ejbca\.config\.EjbcaConfigurationHolder=.*'
+    line: "log4j.logger.org.ejbca.config.EjbcaConfigurationHolder=WARN"
+    state: present
+    backup: yes
+  register: log4j_cli_update_result
+  when:
+    - found_log4j_cli is defined
+    - found_log4j_cli.stat.exists
+
 - name: Check if application server exists
   stat:
     path: "{{ wildfly_home }}"

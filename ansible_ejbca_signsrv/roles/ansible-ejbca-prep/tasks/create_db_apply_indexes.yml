@@ -14,9 +14,9 @@
   failed_when: check_ejbca_database_exists.rc >= 5
   changed_when: false
 
-#- name: Debug check_ejbca_database_exists
-#  debug:
-#    var: check_ejbca_database_exists
+- name: Debug check_ejbca_database_exists
+  debug:
+    var: check_ejbca_database_exists
 
 - name: Create the EJBCA database tables and apply indexes
   block:
@@ -34,9 +34,9 @@
       register: create_ejbca_database
       ignore_errors: yes
 
-#    - name: Debug create_ejbca_database
-#      debug:
-#        var: create_ejbca_database
+    - name: Debug create_ejbca_database
+      debug:
+        var: create_ejbca_database
 
     - name: Add EJBCA database indexes
       command: >
