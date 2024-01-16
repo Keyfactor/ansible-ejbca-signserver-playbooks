@@ -1,0 +1,6 @@
+---
+
+# Maria DB JDBC driver download URL for EjBCA
+ejbca_jdbc_driver: https://github.com/microsoft/mssql-jdbc/releases/download/v12.4.2/mssql-jdbc-12.4.2.jre11.jar
+# Maria DB JDBC driver SHA256 hash
+ejbca_jdbc_driver_checksum: sha256:e14bc6afacadef91085f2aaf2a9c275fe54ee93f4f7a499fb4d5a2e288043f01

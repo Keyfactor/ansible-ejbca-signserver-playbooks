@@ -11,6 +11,9 @@ Worker Properties:
   Send to Admins: false
   Admin E-mail Subject: ''
   Admin E-mail Message: ''
+{% if ejbca_version is version('8.3.0', '>=') %}  
+  maxWorkerJobs: '20000'
+{% endif %}  
   Publishers to Check:
 {% if  ejbca_peerConnector is defined %}
 {% for item in ejbca_peerConnector %}

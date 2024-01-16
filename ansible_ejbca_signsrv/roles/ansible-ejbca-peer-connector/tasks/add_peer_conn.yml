@@ -10,12 +10,12 @@
   changed_when: list_peer_connectors.rc == 0
 
 - name: Create Peer Connectors
-  command: >
+  shell: >
     {{ ejbca_sh }} peer create 
     --name '{{ item.name }}' 
     --state {{ item.state| default('ENABLED') }} 
     --url {{ item.url }} 
-    --akb '{{ item.keybinding }}'
+    --akb '{{ item.keybinding }}' | grep "Peer connector with ID"
   no_log: false
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -43,6 +43,9 @@
       ]
   when: create_peer_connectors is defined
   ignore_errors: yes
+
+#- debug:
+#    var: peer_connection_info
 
 #- name: Create a fact for peer_connection_info
 #  set_fact:

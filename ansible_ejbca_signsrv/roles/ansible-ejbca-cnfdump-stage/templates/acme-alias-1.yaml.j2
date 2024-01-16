@@ -1,6 +1,6 @@
 Object Type: ACME Configuration
 Version: 1
-Name: {{ organizationDomainName }}
+Name: {{ organizationDomainName | replace('.','-') | lower}}
 End Entity Profile: tlsServerAcme
 Pre-Authorization Allowed: false
 Wildcard Certificate Issuance Allowed: false

@@ -23,21 +23,21 @@ configdump_import_files: "{{ configdump_files }}"
 add_publshers_to_cas: true
 
 # EJBCA version and deployment info
-ejbca_version: 7.11.0.1
+ejbca_version: 8.2.0
 # If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_11_0_1.zip
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_8_2_0.zip
 # EJBCA URL to download the zip release file
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_7_11_0_1.zip
-ejbca_src_dir_name: ejbca_ee_7_11_0_1
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_2_0.zip
+ejbca_src_dir_name: ejbca_ee_8_2_0
 ejbca_type: CA
 
 # EJBCA Upgrade version
-ejbca_upgrade_version: 7.11.0
+ejbca_upgrade_version: 8.3.0
 # EJBCA Upgrade version URL to download the zip release file
-ejbca_upgrade_software_url: http://172.16.170.133:8080/ejbca_ee_7_12_0.zip
+ejbca_upgrade_software_url: http://172.16.170.133:8080/ejbca_ee_8_13_0.zip
 # Directory name of EJBCA Upgrade version
-ejbca_upgrade_src_dir: ejbca_ee_7_12_0
+ejbca_upgrade_src_dir: ejbca_ee_8_3_0
 
 # Variables to confgure the Widfly datasource for connecting to the applicable DB
 appsrv_datasources:
@@ -49,17 +49,22 @@ appsrv_datasources:
     database_driver_class: org.mariadb.jdbc.Driver
     #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
     database_jar_filename: mariadb-java-client.jar
+    # For DB installed on the same instance as EJBCA
     host: 127.0.0.1
+    # Connecting to an external DB
     backup_host: ejbca01.solitude.skyrim
+    #MariaDB 3306 or MYSql, MSSQL 1433
     port: 3306
     database: ejbca
+    # SQL basic auth or Azure SPN: ea52246e-3604-482b-b141-dfc7403effe8
     user: ejbca-usr
     credential_ref: dbPassword
     password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
     #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
     #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
     #connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
-
+    #If using Azure MSSQL  with SPN authentication
+    connection_parameters: ";authentication=ActiveDirectoryServicePrincipal;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
 wildfly_enable_kerberos: false
 krb_conf_use_os_file: true
 wildfly_kerberos_enable_debug_log: false
@@ -143,7 +148,7 @@ ejbca_databaseprotection:
     tokenpass: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
     crypto_token:
       - key_label: dbProtect0001
-        key_size: 3072
+        key_size: 4096
         key_type: "RSA"
         type: dbprotect
       - key_label: "testKey"
@@ -167,20 +172,28 @@ certification_authorities_crl_files:
 # Enrollment protocols to disable on EJBCA
 disable_ejbca_protocols:
   - name: ACME
+  - name: CMP
   - name: EST
   - name: OCSP
   - name: SCEP
+  - name: MSAE
+  - name: 'ITS Certificate Management'
+  - name: 'REST Coap Management'
   #- name: 'RA Web'
+  #- name: 'Public Web' # No longer in EJBCA 8.0
 
 # Enrollment protocols to enable on EJBCA
 enable_ejbca_protocols:
   - name: Certstore
-  - name: CMP
   - name: CRLstore
-  - name: 'Public Web'
   - name: 'REST CA Management'
   - name: 'REST Certificate Management'
   - name: 'REST Crypto Token Management'
+  - name: 'REST SSH V1'
+  - name: 'REST Certificate Management V2'
+  - name: 'REST Configdump'
+  - name: 'REST End Entity Management V2'
+  - name: 'REST End Entity Management'
   - name: Webdist
   - name: 'Web Service'
 

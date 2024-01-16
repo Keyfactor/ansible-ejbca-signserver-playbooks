@@ -49,7 +49,7 @@
 #  debug:
 #    var: certificate_serial_number
 
-- name: Use CLI to add serial number {{ inner_item.certificate_serial_number }} to {{ ejbca_ra_admin_role_name }}
+- name: Use CLI to add serial number {% if inner_item.certificate_serial_number is defined %}{{ iinner_item.certificate_serial_number }}{% else %}N/A{% endif %} to {{ ejbca_ra_admin_role_name }}
   command: >
     {{ ejbca_sh }} roles addrolemember 
     --role '{{ ejbca_ra_admin_role_name }}' 

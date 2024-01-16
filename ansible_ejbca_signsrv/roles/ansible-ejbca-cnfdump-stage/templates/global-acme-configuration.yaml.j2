@@ -1,4 +1,4 @@
 Object Type: ACME Global Configuration
 Version: 2
-Default Acme Configuration: {{ organizationDomainName }}
+Default Acme Configuration: {{ organizationDomainName | replace('.','-') | lower}}
 Replay-Nonce Validity In Milliseconds: 600000

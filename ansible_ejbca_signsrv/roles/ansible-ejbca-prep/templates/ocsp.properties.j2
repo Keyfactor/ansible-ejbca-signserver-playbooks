@@ -17,3 +17,10 @@ ocsp.log-date = yyyy-MM-dd HH:mm:ss.SSSZ
 # change ocsp.audit-log to true of you want audit logging turned on
 # Default: false
 ocsp.audit-log = {{ ejbca_ocsp_audit_log| default('true') }}
+
+
+#EJBCA <= 8.2 require this setting when configuring OCSP pre-signing to publish to external VA
+# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
+# untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
+# Default: 0
+#ocsp.untilNextUpdate = 0

@@ -2,23 +2,15 @@
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-wildfly_version: 27.0.1.Final
-wildfly_checksum: sha256:08d1e420331d0b6ad6c36a4dd782a110152cabfa23439e6ecd9a7c4d50bffd01 # 26.0.1
-wildfly_checksum: sha256:c72892c996b05bfa78c6c632f1a5d4680523d3efb4c0321fa8485f052e15fba9
-wildfly_standalone_file: standalone-27.xml.datasource.j2
+wildfly_version: 26.1.3.Final
+wildfly_checksum: sha256:aadd317c62616f6b5735ae92151d06c1f03c46eba448958d982c61f02528ae59 # 26.1.3
+wildfly_standalone_file: standalone-26.xml.datasource.j2
 wildfly_use_galleon: true
-wildfly_galleon_version: 5.0.7
-# sha256:049e1a588882c0c0335a95725c2942bd4e2f56a8743f52eba9eff4a19fda25b1 #4.2.6
-wildfly_galleon_checksum: sha256:63ccfb1546fbe32a2222b61e9ae0a594be5f81a4d6e45cd22861eb158a5bfb06 # 4.2.8
-wildfly_galleon_checksum: sha256:aa11ee3b3334f72c5482bdeeddc8a1559a60b9725f9988b6eab9a90e4bec2eab
-#wildfly_jboss_client_checksum: sha256:fb9b638b04f0e54adc8343daed0fb07d38deadcc7ee8ba48a1c3ac44d9f87cff # WF 23
-#wildfly_jboss_client_checksum: sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
-#wildfly_jboss_client_checksum: sha256:cd5b72bbdbb99123a78d9837339f10a849f6c48d8503840cf9ab673cae4039b6 # WF 24
-#wildfly_jboss_client_checksum: sha256:b160673ab755d82b423cc41be07df7922c3481e74b7ad324e664460f2c24341c # WF 25.0.1
-#wildfly_jboss_client_checksum: sha256:859e69844bf047193f4ab461c7cc2b7c4b18ec76d1f32ebebcb9470097ef7dcd # WF 26.0.1
-wildfly_jboss_client_checksum: sha256:532bacfc80079520e368a5e69d5f029ae52a43f382fc49aeb3ec8641aa288dff # WF 27.0.1
+wildfly_galleon_version: 5.2.0
+wildfly_galleon_checksum: sha256:c42420f977ad8f02b173b64698d1151b55696178afe2a25bc36de60b481a147d # 5.2.0
+wildfly_jboss_client_checksum: sha256:354f95d0bd5111b5e086ee4a08e8f081d619da715d9c3776e94d73fda2e6dcda # WF 26.1.3
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
-wildfly_disable_infinispan: true
+wildfly_disable_infinispan: false
 
 # Manage the Wildfly service with Ansible
 wildfly_manage_service: true

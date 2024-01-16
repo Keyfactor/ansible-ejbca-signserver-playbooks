@@ -13,7 +13,7 @@ Role Members:
   Issuer: {{ item.ca }}
   Match With: WITH_SERIALNUMBER
   Match Value: {{ item.serial }}
-  Description: CA Peer Connection to VA with authkeybinding credential
+  Description: CA Peer Connection to VA with remote auth credential
 {% endif %}  
 {% endfor %}
 Namespace: ''

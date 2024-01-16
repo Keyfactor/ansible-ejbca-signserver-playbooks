@@ -1,5 +1,5 @@
 #{{ ansible_managed | comment }}
-{% if "org.cesecore.keys.token.PKCS11CryptoToken" == item.tokentype %}
+{% if "org.cesecore.keys.token.PKCS11CryptoToken" == item.tokentype or "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken" == item.tokentype %}
 sharedLibrary {{ hsm_shared_library }}
 slotLabelType={{ item.slot_identifier_type }}
 slotLabelValue={{ item.slot_identifier_value }}
