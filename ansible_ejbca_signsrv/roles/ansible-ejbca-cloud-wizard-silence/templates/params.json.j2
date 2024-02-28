@@ -1,0 +1,14 @@
+{
+  "Host_Name":"{{ ecloud_hostname | default('cloud-ejbca.cloud') }}",
+  "sanCheckbox":"{{ ecloud_sanCheckbox }}",
+  "SAN_Name":"{{ ecloud_hostname }}",
+  "managementcaradio":"{{ ecloud_create_ca_radio }}",
+  "Common_Name":"{{ ecloud_CA_CN }}",
+  "ManagementCA_OU":"{{ ecloud_CA_OU }}",
+  "ManagementCA_O":"{{ ecloud_CA_O }}",
+  "mcakeyspec-input":"{{ ecloud_CA_key_size }}",
+  "SuperAdmin_Common_Name":"{{ ecloud_init_admin_name }}",
+  "SuperAdmin_Password":"{{ ecloud_init_admin_passwd }}",
+  "Confirm_SuperAdmin_Password":"{{ ecloud_init_admin_passwd }}",
+  "Cert_Common_Name":""
+}

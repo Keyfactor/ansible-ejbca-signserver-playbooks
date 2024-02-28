@@ -1,0 +1,14 @@
+---
+
+all:
+  hosts:
+  children:
+    ecloudCaServers:
+      hosts:
+        ejbca-cloud-ca1:
+          # IP or FQDN to access the cloud instance by
+          ansible_host: 
+          #Username for accessing the cloud instance via SSH. AWS uses ec2-user, Azure the name is chosen
+          ansible_user: ec2-user
+          # Set the private location if not using something fancier...
+          ansible_ssh_private_key_file: /Users/myuser/.ssh/cloud-ssh.pem

@@ -1,0 +1,63 @@
+---
+
+# If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
+# create Peer connection, and create an auth key binding
+use_external_va: false
+
+# If enabled this will configure a Peer connection, and add the RA Peer role to EJBCA 
+use_external_ra: false
+
+# If enabled configures a Peer connectiona nd key binding for Sign Server
+use_external_ss: false
+
+# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+deploy_with_configdump: true
+configdump_directory_structure: "{{ configdump_dir_structure }}"
+configdump_import_files: "{{ configdump_files }}"
+
+# Add publishers to the CA's in EJBCA. CA's created before the publisher is added to EJBCA and want to leverage the publisher
+# should use this option to add the publisher to the CA.
+add_publshers_to_cas: false
+
+# EJBCA version and deployment info
+ejbca_version: 8.2.0
+
+# Enrollment protocols to disable on EJBCA
+disable_ejbca_protocols:
+  - name: MSAE
+  - name: 'ITS Certificate Management'
+  - name: 'REST Coap Management'
+  - name: Webdist
+  - name: 'Web Service'
+  #- name: 'RA Web'
+  #- name: 'Public Web' # No longer in EJBCA 8.0
+
+# Enrollment protocols to enable on EJBCA
+enable_ejbca_protocols:
+  - name: Certstore
+  - name: CRLstore
+  - name: 'REST CA Management'
+  - name: 'REST Certificate Management'
+  - name: 'REST Crypto Token Management'
+  - name: 'REST SSH V1'
+  - name: 'REST Certificate Management V2'
+  - name: 'REST Configdump'
+  - name: 'REST End Entity Management V2'
+  - name: 'REST End Entity Management'
+  - name: ACME
+  - name: CMP
+  - name: EST
+  - name: OCSP
+  - name: SCEP
+
+# CRL Update Service Worker Settings
+crl_service_time_int: 1
+crl_service_time_unit: HOURS
+
+# Configure the RA Peering requests
+ra_peer_max_parallel_reqs: 50
+ra_peer_min_parallel_reqs: 2
+
