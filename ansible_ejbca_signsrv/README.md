@@ -81,6 +81,17 @@ ansible-playbook -i inventory -l ra01,pkiTlsCerts deployRa.yml --ask-become-pass
 ansible-playbook -i inventory -l eeVaServers,va01,pkiTlsCerts,pkiCsrCerts deployVa.yml --ask-become-pass
 ```
 
+### Configure EJBCA Cloud instance 
+Use this play to automate the configuration of an EJBCA Cloud instance with zero touch.
+
+1. Edit _group_vars/ecloudCaServers.yml_, _host_vars/ejbca-cloud-ca1.yml_, and _ecloud_inventory_.
+2. Edit _ansible.cfg_ and set or add: `host_key_checking = False`, this is only needed if the host key is not trusted yet.
+3. Run:
+
+```bash
+ansible-playbook -i ecloud_inventory -l ejbca-cloud-ca1 ecloudDeployCa.yml --ask-become-pass
+```
+
 ### Upgrade EJBCA Community or Enterprise
 1. Edit _group_vars/ceServers.yml_ or _group_vars/eeCaServers.yml_, _group_vars/eeRaServers.yml_, _group_vars/eeVaServers.yml_ and _inventory_.
 2. Run to upgrade Community:

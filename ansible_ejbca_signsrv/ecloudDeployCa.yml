@@ -1,0 +1,10 @@
+---
+
+# ansible-playbook -i ecloud_inventory -l ejbca-cloud-ca1 ecloudDeployCa.yml
+
+- hosts: ecloudCaServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-ejbca-cloud-wizard-silence
+    - ansible-ejbca-deploy-cloud-ca-sample

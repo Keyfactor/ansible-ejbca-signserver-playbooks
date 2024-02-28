@@ -1,0 +1,49 @@
+---
+# tasks file for roles/ansible-ejbca-cloud-wizard-silence
+
+- name: Check if the wizard install service is running
+  ansible.builtin.systemd:
+    name: "install.service"
+  register: wizard_svc_status
+
+#- debug:
+#    var: wizard_svc_status
+
+- name: Block to do these tasks :-)
+  block:
+
+    - name: Check if external ManagementCA is used
+      ansible.builtin.stat:
+        path: "{{ ecloud_cacrt_file }}"
+      register: does_ca_file_exist
+      changed_when: false
+      when:
+        - ecloud_cacrt_file is not none | default('')
+
+    - name: Upload CA certificate file when using external ManagementCA
+      ansible.builtin.copy:
+        src: "{{ ecloud_cacrt_file }}"
+        dest: "/home/{{ cloud_ejbca_user }}/confwizard/managementca.ca-mgmt.pem"
+        owner: "{{ ecloud_ejbca_user }}"
+        group: "{{ ecloud_ejbca_group }}"
+      register: ca_crt_copy_up
+      when:
+        - does_ca_file_exist.stat.exists is defined
+        - not does_ca_file_exist.stat.exists
+
+    - name: Upload wizard answers file to the EJBCA instance
+      ansible.builtin.template:
+        src: params.json.j2
+        dest: "/home/{{ ecloud_ejbca_user }}/confwizard/params.json"
+        owner: "{{ ecloud_ejbca_user }}"
+        group: "{{ ecloud_ejbca_group }}"
+        mode: 0644
+
+    - name: Wait for EJBCA node to initialize
+      ansible.builtin.wait_for:
+        delay: 15
+        path: /var/log/install.log
+        search_regex: "^.*The system is now installed"
+
+  when:
+    - wizard_svc_status.status.ActiveState == "active"
