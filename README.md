@@ -1,5 +1,5 @@
 # Ansible Playbooks for EJBCA and SignServer 
-[![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
+[![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/discussions) 
 
 This is a collection of Ansible playbooks to use with EJBCA, SignServer, and integrations. Both Community and Enterprise versions of EJBCA are supported. By using these Ansible playbooks you can easily get EJBCA or SignServer up and running, including a complete technology stack with Java 11, Apache HTTPD, Maria DB, SoftHSM, and Wildfly.
 
@@ -24,7 +24,7 @@ We welcome contributions. These Ansible playbooks are open source and community 
 
 * To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. 
 * If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
-* Ask the community for ideas: **[EJBCA Discussions](https://github.com/Keyfactor/ejbca-ce/discussions)**  
+* Ask the community for ideas: **[EJBCA Ansible Playbook Discussions](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/discussions)**  
 * Read more in our documentation: **[Deploying PKI and signature services in DevOps environments](https://doc.primekey.com/ejbca/solution-areas/deploying-pki-and-signature-services-in-devops-environments)**
 
 ## License 
@@ -35,8 +35,10 @@ EJBCA is licensed under the LGPL license, please see **[LICENSE](LICENSE)**.
 
 * [Keyfactor/ejbca-ce](https://github.com/Keyfactor/ejbca-ce) 
 * [Keyfactor/ejbca-tools](https://github.com/Keyfactor/ejbca-tools) 
-* [Keyfactor/ejbca-vault-plugin](https://github.com/Keyfactor/ejbca-vault-plugin) 
-* [Keyfactor/ejbca-vault-monitor](https://github.com/Keyfactor/ejbca-vault-monitor) 
+* [Keyfactor/keyfactorycommunity](https://github.com/Keyfactor/keyfactorcommunity)
+* [Keyfactor/ejbca-vault-pki-engine](https://github.com/Keyfactor/ejbca-vault-pki-engine)
+* [Keyfactor/ejbca-cert-manager-issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
+* [Keyfactor/ejbca-k8s-csr-signer](https://github.com/Keyfactor/ejbca-k8s-csr-signer)
 * [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
 * [Keyfactor/ejbca-containers](https://github.com/Keyfactor/ejbca-containers) 
-* [Keyfactor/signserver-tools](https://github.com/Keyfactor/signserver-tools) 
+* [Keyfactor/signserver-tools](https://github.com/Keyfactor/signserver-tools)
