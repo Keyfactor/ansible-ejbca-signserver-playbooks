@@ -1,5 +1,5 @@
 # ansible_ejbca
-[![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
+[![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/discussions) 
 
 An Ansible playbook that installs EJBCA & SignServer Community or Enterprise. The community EJBCA playbook deploys an EJBCA node and configures the management CA and Super Admin to begin using EJBCA to build out your PKI. It is easy to use for deploying a simple PKI with the community edition. The Enterprise playbooks are available to deploy a CA, external RA, & external VA. The enterprise version can also be configured as a standalone CA without deploying external RA/VA.
 
