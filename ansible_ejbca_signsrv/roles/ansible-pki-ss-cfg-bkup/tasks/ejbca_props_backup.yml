@@ -1,0 +1,28 @@
+---
+
+- name: Create EJBCA backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir_path_timestamp }}/ejbca"
+    state: directory
+    mode: 0755
+  tags: backup    
+
+- name: Register properties files in ejbca-custom/conf
+  ansible.builtin.find:
+    paths: "{{ ejbca_home }}/../ejbca-custom/conf/"
+    patterns: "*.properties"
+  register: found_properties_files
+  tags: backup
+
+- name: Backup EJBCA property files
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ backup_dir_path_timestamp }}/ejbca/{{ item.path| basename }}"
+    remote_src: yes
+  loop: "{{ found_properties_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  register: ejbca_properties_backup_copy
+  tags: backup
+  when:
+    - found_properties_files is defined

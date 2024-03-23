@@ -15,6 +15,13 @@ rhel_mariadb_packages:
   - MariaDB-client
   - MySQL-python
 
+rhel8_mariadb_packages:
+  - rh-mariadb105-mariadb
+  - rh-mariadb105-mariadb-backup
+  - rh-mariadb105-mariadb-common
+  - MariaDB-client
+  - MySQL-python
+
 mariadb_packages_8:
   - MariaDB-client
   - MariaDB-common

@@ -1,3 +1,7 @@
 ---
 
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true
+
 hostname: ejbcart01.solitude.skyrim

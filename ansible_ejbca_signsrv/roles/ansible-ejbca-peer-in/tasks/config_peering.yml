@@ -5,6 +5,6 @@
     {{ ejbca_sh }} peer config 
     --enable-in TRUE 
     --enable-out FALSE
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"

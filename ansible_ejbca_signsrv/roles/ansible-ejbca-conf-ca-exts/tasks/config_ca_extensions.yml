@@ -10,7 +10,7 @@
   changed_when: item.crlPeriod|int != clrPeriod_check.stdout.split("'")[1]|int
   when: 
     - item.crlPeriod is defined
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Check the CRLOverlapTime for {{ item.caname }}
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLOverlapTime"
@@ -22,7 +22,7 @@
   changed_when: item.crl_overlap_time|int != crlOverlapTime_check.stdout.split("'")[1]|int
   when:
     - item.crl_overlap_time is defined
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Check the CRLIssueInterval for {{ item.caname }}
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLIssueInterval"
@@ -34,7 +34,7 @@
   changed_when: item.crlIssueInterval|int != crlIssueInterval_check.stdout.split("'")[1]|int
   when: 
     - item.crlIssueInterval is defined
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Check the defaultCRLDistPoint for {{ item.caname }} 
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultCRLDistPoint"
@@ -46,7 +46,7 @@
   changed_when: item.defaultCRLDP|string not in defaultCRLDistPoint_check.stdout
   when:
     - item.defaultCRLDP is defined
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Check the defaultOCSPServiceLocator for {{ item.caname }} 
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultOCSPServiceLocator"
@@ -58,7 +58,7 @@
   changed_when: item.defaultOCSPServiceLocator|string not in defaultOCSPServiceLocator_check.stdout
   when:
     - item.defaultOCSPServiceLocator is defined
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Check the authorityInformationAccess for {{ item.caname }}
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} authorityInformationAccess"
@@ -68,7 +68,7 @@
   become: yes
   register: authorityInformationAccess_check
   changed_when: item.authorityInformationAccess|string not in authorityInformationAccess_check.stdout
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: 
     - item.authorityInformationAccess is defined
 
@@ -80,7 +80,7 @@
   become: yes
   register: certificateAiaDefaultCaIssuerUri_check
   changed_when: item.certificateAiaDefaultCaIssuerUri|string not in certificateAiaDefaultCaIssuerUri_check.stdout
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: 
     - item.certificateAiaDefaultCaIssuerUri is defined
 
@@ -94,7 +94,7 @@
   changed_when: useLdapDnOrder_check.stdout.split("'")[1]|bool != item.useLdapDnOrder
   when:
     - item.useLdapDnOrder is defined
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Check the Enforce Unique Distinguished Name for {{ item.caname }}
   command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} doEnforceUniqueDistinguishedName"
@@ -104,7 +104,7 @@
   become: yes
   register: doEnforceUniqueDistinguishedName_check
   changed_when: doEnforceUniqueDistinguishedName_check.stdout.split("'")[1]|bool != item.enforce_unique_dn
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when:
     - item.enforce_unique_dn is defined
 
@@ -117,7 +117,7 @@
   when:
     - item.crlPeriod is defined
     - clrPeriod_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Configure the CRLOverlapTime for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLOverlapTime {{ item.crl_overlap_time }}"
@@ -128,7 +128,7 @@
   when: 
     - item.crl_overlap_time is defined
     - crlOverlapTime_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Configure the CRLIssueInterval for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLIssueInterval {{ item.crlIssueInterval }}"
@@ -139,7 +139,7 @@
   when: 
     - item.crlIssueInterval is defined
     - crlIssueInterval_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Configure the defaultCRLDistPoint for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultCRLDistPoint {{ item.defaultCRLDP }}"
@@ -150,7 +150,7 @@
   when:
     - item.defaultCRLDP is defined 
     - defaultCRLDistPoint_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Configure the defaultOCSPServiceLocator for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultOCSPServiceLocator {{ item.defaultOCSPServiceLocator }}"
@@ -161,7 +161,7 @@
   when:
     - item.defaultOCSPServiceLocator is defined 
     - defaultOCSPServiceLocator_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Configure the authorityInformationAccess for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} authorityInformationAccess {{ item.authorityInformationAccess }}"
@@ -172,7 +172,7 @@
   when: 
     - item.authorityInformationAccess is defined
     - authorityInformationAccess_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Configure the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} certificateAiaDefaultCaIssuerUri {{ item.certificateAiaDefaultCaIssuerUri }}"
@@ -183,7 +183,7 @@
   when: 
     - item.certificateAiaDefaultCaIssuerUri is defined
     - certificateAiaDefaultCaIssuerUri_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Configure the useLdapDnOrder for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} useLdapDnOrder {{ item.useLdapDnOrder| default('false') }}"
@@ -193,7 +193,7 @@
   become: yes
   when:
     - useLdapDnOrder_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"
   
 - name: Configure the Enforce Unique Distinguished Name for {{ item.caname }}
   command: "{{ ejbca_sh }} ca editca {{ item.caname }} doEnforceUniqueDistinguishedName {{ item.enforce_unique_dn| default('true') }}"
@@ -204,4 +204,4 @@
   when:
     - item.enforce_unique_dn is defined 
     - doEnforceUniqueDistinguishedName_check.changed
-  no_log: true
+  no_log: "{{ no_log_value }}"

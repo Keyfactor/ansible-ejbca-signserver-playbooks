@@ -1,5 +1,9 @@
 ---
 
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true
+
 hostname: caextsig01.solitude.skyrim
 
 # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by

@@ -1,0 +1,107 @@
+---
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir_path_timestamp }}"
+    state: directory
+    mode: 0755
+  register: create_local_backup_dir_result
+  tags: backup
+  when:
+    - backup_ejbca_conf is defined and backup_ejbca_conf| bool or
+      backup_httpd_conf is defined and backup_httpd_conf| bool or
+      backup_wildfly_conf is defined and backup_wildfly_conf| bool or
+      backup_mariadb is defined and backup_mariadb| bool
+
+- name: Backup EJBCA property files
+  ansible.builtin.include_tasks: ejbca_props_backup.yml
+  register: ejbca_conf_backup_result
+  tags: backup
+  when:
+    - inventory_hostname in groups['eeCaServers'] or
+      inventory_hostname in groups['eeRaServers'] or
+      inventory_hostname in groups['eeVaServers']
+    - backup_ejbca_conf is defined
+    - backup_ejbca_conf| bool
+
+- name: Backup Apache HTTPD files
+  ansible.builtin.include_role: 
+    name: ansible-pki-ss-httpd
+    tasks_from: backup
+  register: httpd_backup_result
+  tags: backup  
+  when: 
+    - inventory_hostname in groups['httpdServers']
+    - backup_httpd_conf is defined
+    - backup_httpd_conf| bool
+
+- name: Backup Wildfly configuration files
+  ansible.builtin.include_role: 
+    name: ansible-ejbca-wildfly
+    tasks_from: backup
+  register: wildfly_backup_result
+  tags: backup  
+  when: 
+    - inventory_hostname in groups['applicationServers']
+    - backup_wildfly_conf is defined
+    - backup_wildfly_conf| bool
+
+- name: Backup MariaDB database
+  ansible.builtin.include_role: 
+    name: ansible-role-mariadb
+    tasks_from: backup
+  register: mariadb_backup_result
+  tags: backup  
+  when: 
+    - inventory_hostname in groups['mariadbServers']
+    - backup_mariadb is defined
+    - backup_mariadb| bool
+
+- name: Compress backup directory
+  community.general.archive:
+    path: "{{ backup_dir_path_timestamp }}"
+    dest: "{{ backup_dir_path_timestamp }}.tgz"
+    remove: true
+  register: compress_backup_result  
+  tags: backup
+  when:
+    - ejbca_conf_backup_result is defined or
+      httpd_backup_result is defined or
+      wildfly_backup_result is defined or
+      mariadb_backup_result is defined
+
+- name: Check if local directory {{ backup_dir_output }} exists
+  ansible.builtin.stat:
+    path: "{{ backup_dir_output }}"
+  register: backup_dir_output_exists
+  changed_when: false
+  tags: backup 
+
+- name: Create local directory for {{ backup_dir_output }}
+  become: no
+  ansible.builtin.file:
+    path: "{{ backup_dir_output }}"
+    state: directory
+  delegate_to: localhost
+  tags: backup 
+  when: 
+    - not backup_dir_output_exists.stat.exists
+
+- name: Copy backup directory to controller
+  ansible.builtin.fetch:
+    src: "{{ backup_dir_path_timestamp }}.tgz"
+    dest: "{{ backup_dir_output }}/"
+    flat: yes
+  tags: backup  
+  when:
+    - compress_backup_result is defined
+    - compress_backup_result.changed
+
+- name: Remove backup local backup archive
+  ansible.builtin.file:
+    path: "{{ backup_dir_path_timestamp }}.tgz"
+    state: absent
+  tags: backup
+  when:
+    - create_local_backup_dir_result.changed
+

@@ -1,0 +1,32 @@
+---
+
+- name: Create Wildfly backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir_path_timestamp }}/wildfly"
+    state: directory
+    mode: 0755
+  tags: backup    
+
+- name: Backup Wildfly configuration and script files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ backup_dir_path_timestamp }}/wildfly/{{ item| basename }}"
+    remote_src: yes
+  loop: "{{ wildfly_files_backup }}"
+  loop_control: 
+    label: "{{ item }}"
+  register: wildfly_config_backup_copy
+  tags: backup
+
+- name: Backup Wildfly Kerberos files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ backup_dir_path_timestamp }}/wildfly/{{ item| basename }}"
+    remote_src: yes
+  loop: "{{ wildfly_kerb_files_backup }}"
+  loop_control: 
+    label: "{{ item }}"
+  register: wildfly_kerb_config_backup_copy
+  tags: backup
+  when: 
+    - wildfly_enable_kerberos|bool  

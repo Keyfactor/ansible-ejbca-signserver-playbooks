@@ -50,6 +50,14 @@ appsrv_datasources:
     database_driver_class: org.mariadb.jdbc.Driver
     #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
     database_jar_filename: mariadb-java-client.jar
+    loadbalancing: false
+    loadbalanced_hosts:
+      - host: dbhost01.solitude.skyrim
+        port: 3306
+      - host: dbhost02.solitude.skyrim
+        port: 3306
+      - host: dbhost03.solitude.skyrim
+        port: 3306
     host: 127.0.0.1
     backup_host: 
     port: 3306

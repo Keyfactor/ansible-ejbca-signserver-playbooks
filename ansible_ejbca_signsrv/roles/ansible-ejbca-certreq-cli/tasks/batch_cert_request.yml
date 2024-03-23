@@ -41,7 +41,7 @@
     become: yes
     register: ra_addIdent_result
     tags: certreq-cli-batch
-    no_log: true
+    no_log: "{{ no_log_value }}"
     failed_when: ra_addIdent_result.rc >= 2
     changed_when: ra_addIdent_result.rc == 0
 
@@ -56,7 +56,7 @@
     become: yes
     register: ra_setpwd_result
     tags: certreq-cli-batch
-    no_log: true
+    no_log: 
     failed_when: ra_setpwd_result.rc >= 2
     changed_when: ra_setpwd_result.rc == 0
 
@@ -77,7 +77,7 @@
     become: yes
     register: ra_batch_result
     tags: certreq-cli-batch
-    no_log: true
+    no_log: "{{ no_log_value }}"
     failed_when: ra_batch_result.rc >= 2
     changed_when: ra_batch_result.rc == 0
 
@@ -127,7 +127,7 @@
       vars:
         ejbca_ra_admin_role_name: "RA-Peer-Connection"
         certificate_serial_number: "{{ ra_peer_cert_serial_numbers }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Write RA cert serial numbers to file for use with EJBCA VA or RA playbooks 
       become: no
@@ -136,7 +136,7 @@
         content: "{{ ra_peer_cert_serial_numbers| to_nice_yaml }}"
       delegate_to: localhost
       register: write_the_output
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: certreq-cli-batch
       when: 
         - ra_peer_cert_serial_numbers is defined
@@ -168,7 +168,7 @@
         content: "{{ va_peer_cert_serial_numbers| to_nice_yaml }}"
       delegate_to: localhost
       register: write_the_output
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: certreq-cli-batch
       when:
         - va_peer_cert_serial_numbers is defined

@@ -10,7 +10,7 @@
     login_unix_socket: "{{ mariadb_srv_socket }}"
     state: absent
   tags: mariadb
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Create the users
   mysql_user:
@@ -25,4 +25,4 @@
     state: present
   loop: "{{ mariadb_users }}"
   tags: mariadb
-  no_log: true
+  no_log: "{{ no_log_value }}"

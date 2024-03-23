@@ -462,7 +462,7 @@
     content: "{{ createSignersList| to_nice_yaml }}"
   delegate_to: localhost
   register: write_the_output_ss_signers
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 #- name: Debug write_the_output_ss_signers
 #  debug:

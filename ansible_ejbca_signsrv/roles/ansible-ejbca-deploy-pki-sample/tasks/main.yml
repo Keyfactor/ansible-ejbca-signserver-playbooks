@@ -21,7 +21,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Management & Root CA's on crypto token
       include_role:
@@ -31,7 +31,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
 
     - name: Stage Management & Root CA to create with configdump
@@ -43,7 +43,7 @@
       loop: "{{ management_add_certification_authorities }}"
       loop_control:
         label: "{{ item.caname }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Intialize Management & Root CA's with configdump
       command: >
@@ -81,7 +81,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       #when:
       #  - ("soft" in item.tokentype)
 
@@ -93,7 +93,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
       #when:
       #  - ("soft" in key_item.0.tokentype)
@@ -103,7 +103,7 @@
         name: ansible-ejbca-init-ca
         tasks_from: init_ca
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: create_cas
 
     - name: Configure ManagmentCA and Root CA settings
@@ -111,7 +111,7 @@
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
   when: 
     - management_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
@@ -124,7 +124,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ sub_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Suborindated CA's on crypto token
       include_role:
@@ -134,7 +134,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
       #when:
       #  - ("soft" in key_item.0.tokentype)
@@ -146,7 +146,7 @@
       vars:
         dump_dest: "{{ ejbca_home }}/dump/dump2/certification-authorities/{{ item.caname }}.yaml"
       loop: "{{ sub_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Intialize Sub CA's with configdump
       command: >
@@ -185,7 +185,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ sub_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       #when:
       #  - ("soft" in item.tokentype)
 
@@ -197,7 +197,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
       #when:
       #  - ("soft" in key_item.0.tokentype)
@@ -209,7 +209,7 @@
       loop: "{{ sub_add_certification_authorities }}"
       loop_control:
         label: "{{ item.caname }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: create_cas
 
     - name: Configure Sub CA's settings
@@ -217,7 +217,7 @@
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ sub_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
   when: 
     - sub_add_certification_authorities[0] is defined
@@ -404,5 +404,5 @@
     dest: "{{ superadmin_local_dir|default('~/Desktop') }}/"
     flat: yes
   loop: "{{ management_add_end_entities }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   register: copy_down_profile

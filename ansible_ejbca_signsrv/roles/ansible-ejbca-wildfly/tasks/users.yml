@@ -11,7 +11,7 @@
   args:
     creates: "{{ wildfly_home }}/.mgmt-users.{{ item.name }}.provisioned"
   when: wildfly_management_users | length > 0
-  no_log: True
+  no_log: "{{ no_log_value }}"
 
 - name: Create application users
   shell: >
@@ -23,7 +23,7 @@
   args:
     creates: "{{ wildfly_home }}/.app-users.{{ item.name }}.provisioned"
   when: wildfly_app_users | length > 0
-  no_log: True
+  no_log: "{{ no_log_value }}"
 
 - name: Enforce secure permissions on password files
   file:

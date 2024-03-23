@@ -1,0 +1,8 @@
+---
+# tasks file for roles/ansible-pki-ss-cfg-bkup
+
+- name: Begin the backup process for EJBCA...
+  ansible.builtin.include_tasks: backup_files_data.yml
+  when: 
+    - backup_ejbca_server is defined
+    - backup_ejbca_server|bool

@@ -117,6 +117,38 @@ ansible-playbook -i inventory -l ca01,ca02 -e failover_wildfly_db=true configure
 ansible-playbook -i inventory -l ca01,ca02 -e failback_wildfly_db=true configureDB.yml 
 ```
 
+### Backup PKI configuration EJBCA node
+Use this play to backup the EJBCA configuration files, Apache HTTPD configuration and certificate/key files, Wildfly configuration files, and MariaDB. All files are compressed into an archive and copied down to the controller. The backup file can be copied to a remote host. This play is helpful for migrating an EJBCA instance when you need to upgrade the OS and re-use the same hostname and/or configuration and want to have a copy of all the config files to diff with the new deployment in case something isn't working as expected.
+
+Example - Backup an instance of EJBCA that does not have MariaDB installed locally and copy the backup to a remote host for storing, use this playbook command:
+```bash
+ansible-playbook -i inventory -l ca01,backupServer -e backup_ejbca_server=true \
+-e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true \
+-e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+```
+Example - Backup an instance of EJBCA that does have MariaDB installed locally and copy the backup to a remote host for storing, use this playbook command:
+
+```bash
+ansible-playbook -i inventory -l va01,backupServer -e backup_ejbca_server=true \
+-e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true \
+-e backup_mariadb=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+```
+
+Example - Backup an instance of EJBCA that does have MariaDB installed locally and leave the backup on the controller, use this playbook command:
+
+```bash
+ansible-playbook -i inventory -l ra01,backupServer -e backup_ejbca_server=true \
+-e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true \
+-e backup_mariadb=true backupRestorePkiServer.yml
+```
+
+Example - Copy the EJBCA node backups from the controller to  remote host for storing, use this playbook command:
+
+```bash
+ansible-playbook -i inventory -l backupServer -e copy_backup_to_remote=true \
+-e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+```
+
 ### Use Ansible Vault
 
 Create a password file protected with Ansible Vault:

@@ -56,7 +56,7 @@
     - name: Create fact
       set_fact:
         cred_pass: "{{ pass_33 }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Create file
       template:
@@ -78,7 +78,7 @@
         creates: "{{ wildfly_home }}/standalone/configuration/credentials"
       environment:
         JAVA_OPTS: -Djava.security.disableSystemPropertiesFile
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Add Database password to credential store
       command: >
@@ -92,7 +92,7 @@
       environment:
         JAVA_OPTS: -Djava.security.disableSystemPropertiesFile
       loop: "{{ appsrv_datasources }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
   when: 
     - not elytron_pass_file_exists.stat.exists

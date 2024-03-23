@@ -99,7 +99,7 @@
       loop: "{{ softhsm_gen_hsm_slots }}"
       changed_when: show_hsm_slots.rc != 0
       failed_when: false
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Create SoftHSM slots
       command: >
@@ -112,7 +112,7 @@
       become: yes  
       become_user: "{{ ejbca_user }}" 
       loop: "{{ show_hsm_slots.results }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       register: create_hsm_slots
       when: 
         - item.changed

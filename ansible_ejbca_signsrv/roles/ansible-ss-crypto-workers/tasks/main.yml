@@ -6,5 +6,5 @@
   loop: "{{ p11_crypto_tokens }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: p11_crypto_tokens[0] is defined
