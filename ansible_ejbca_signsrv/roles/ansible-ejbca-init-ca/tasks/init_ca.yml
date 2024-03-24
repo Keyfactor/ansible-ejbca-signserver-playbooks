@@ -10,7 +10,7 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
   #when: item.tokentype == "org.cesecore.keys.token.PKCS11CryptoToken"
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Init Root or Self Signed Issuing CA
   block:
@@ -31,7 +31,7 @@
        --policy "{{ item.policy }}"
        {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
        -certprofile "{{ item.certprofile }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_management_ca
@@ -53,7 +53,7 @@
       args:
         chdir: "{{ ejbca_home }}/../clientToolBox"
       register: root_ca_id
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become: yes
       become_user: "{{ ejbca_user }}"
 
@@ -78,7 +78,7 @@
        {% if item.subjectaltname is defined %}--subjectaltname "{{ item.subjectaltname }}" {% endif %}
        -certprofile "{{ item.certprofile }}"
        --signedby "{{ root_ca_id.stdout }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_sub_ca
@@ -100,7 +100,7 @@
         creates: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       when: not item.external_root_cachain_local_repository|bool
 
     - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
@@ -109,7 +109,7 @@
         dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       when: item.external_root_cachain_local_repository|bool
 
     - name: Create a CA CSR to be signed by an external CA for {{ item.caname }}
@@ -131,7 +131,7 @@
        -externalcachain "/var/tmp/{{ item.external_root_cachain_file | basename }}"
       args:
         chdir: "{{ ejbca_home }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become: yes
       become_user: "{{ ejbca_user }}"
       register: initializing_sub_ca_csr
@@ -150,7 +150,7 @@
         src: "{{ ejbca_home }}/{{ item.caname }}_csr.der"
         dest: "{{ ejbca_csr_dir_output }}/{{ item.caname }}_csr.der"
         flat: yes
-      no_log: true
+      no_log: "{{ no_log_value }}"
       register: copy_down_csr
 
   when: 

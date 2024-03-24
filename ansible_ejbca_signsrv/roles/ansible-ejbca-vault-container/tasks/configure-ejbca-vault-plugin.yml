@@ -34,14 +34,14 @@
 #  loop: "{{ tls_certifate_chain }}"
 #  loop_control:
 #    label: "{{ item.caname }}"
-  #no_log: true 
+  #no_log: "{{ no_log_value }}" 
 
 #- name: Login to vault
 #  command: "{{ vault_cli_dir }}/vault login {{ lookup('file', '{{ root_token_dir_output }}/rootkey') }} -format=json"
 #  environment:
 #    VAULT_ADDR: "{{ vault_local_addr }}"
 #  register: vault_login_status
-#  no_log: true
+#  no_log: "{{ no_log_value }}"
 
 - name: Create EJBCA instance in Vault
   become: no

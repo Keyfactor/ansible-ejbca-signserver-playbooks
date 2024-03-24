@@ -34,7 +34,7 @@
   loop: "{{ db_creation.results }}"
   when: item.changed and item.item.init_script is defined
   tags: mariadb
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Initialise databases
   mysql_db:
@@ -47,7 +47,7 @@
   loop: "{{ db_creation.results }}"
   when: item.changed and item.item.init_script is defined
   tags: mariadb
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Delete init scripts from the server
   file:
@@ -56,4 +56,4 @@
   loop: "{{ db_creation.results }}"
   when: item.changed and item.item.init_script is defined
   tags: mariadb
-  no_log: true
+  no_log: "{{ no_log_value }}"

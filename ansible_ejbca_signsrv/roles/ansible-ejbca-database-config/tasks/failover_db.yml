@@ -6,7 +6,7 @@
     {{ wildfly_home }}/bin/jboss-cli.sh --connect 'data-source remove --name={{ item.pool_name }}'
   become: yes
   become_user: "{{ ejbca_user }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   loop: "{{ appsrv_datasources }}"
   loop_control:
     label: "{{ item.pool_name }}"
@@ -52,7 +52,7 @@
     '
   become: yes
   become_user: "{{ ejbca_user }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   loop: "{{ appsrv_datasources }}"
   loop_control:
     label: "{{ item.pool_name }}"

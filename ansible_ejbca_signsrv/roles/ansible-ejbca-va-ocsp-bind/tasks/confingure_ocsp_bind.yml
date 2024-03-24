@@ -60,7 +60,7 @@
   loop_control:
     label: "{{ item }}.crt"
   register: file_copy
-  #no_log: true
+  #no_log: "{{ no_log_value }}"
 
 # TODO Add when to upload if cert is on the controller then check serial number of the cert
 - name: Determine OCSP Signer certificate serial number
@@ -98,7 +98,7 @@
   loop: "{{ ocsp_signer_cert_files }}"
   loop_control:
     label: "{{ item | splitext | first }}"
-  #no_log: true
+  #no_log: "{{ no_log_value }}"
 
 # TODO If imported then activate, or check if activated and activate if not activated
 
@@ -115,14 +115,14 @@
   loop: "{{ ocsp_signer_cert_files }}"
   loop_control:
     label: "{{ item | splitext | first }}"
-  #no_log: true
+  #no_log: "{{ no_log_value }}"
 
 
 
 #TODO - Figure out why this can't be set via CLI, but works by setting in the UI
 #- name: Set Next Key Pair Alias 
 #  command: "{{ ejbca_sh }} keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
-#  no_log: true
+#  no_log: "{{ no_log_value }}"
 #  become: yes
 #  become_user: "{{ ejbca_user }}"
 #  register: keybinding_modify

@@ -21,7 +21,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Generate keys for the ManagementCA on crypto token
       include_role:
@@ -31,7 +31,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
 
     - name: Stage ManagementCA to create with configdump
@@ -43,7 +43,7 @@
       loop: "{{ management_add_certification_authorities }}"
       loop_control:
         label: "{{ item.caname }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Intialize ManagementCA with configdump
       command: >
@@ -81,7 +81,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       #when:
       #  - ("soft" in item.tokentype)
 
@@ -93,7 +93,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
       #when:
       #  - ("soft" in key_item.0.tokentype)
@@ -103,7 +103,7 @@
         name: ansible-ejbca-init-ca
         tasks_from: init_ca
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: create_cas
 
     - name: Configure ManagmentCA settings
@@ -111,7 +111,7 @@
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
   when: 
     - management_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
@@ -202,7 +202,7 @@
     dest: "{{ superadmin_local_dir|default('~/Desktop') }}/"
     flat: yes
   loop: "{{ management_add_end_entities }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   register: copy_down_profile
 
 - name: Add Root Node TLS end entity

@@ -83,7 +83,7 @@
     - name: Create fact
       set_fact:
         cred_pass: "{{ pass_33 }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Create file
       template:
@@ -103,7 +103,7 @@
       become_user: "{{ ejbca_user }}"
       args:
         creates: "{{ wildfly_home }}/standalone/configuration/credentials"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Add Database password to credential store
       command: >
@@ -115,7 +115,7 @@
       become: yes  
       become_user: "{{ ejbca_user }}"
       loop: "{{ appsrv_datasources }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
   when: 
     - not elytron_pass_file_exists.stat.exists
@@ -178,7 +178,7 @@
   loop: "{{ ejbca_databaseprotection }}"
   loop_control:
     label: "{{ item.slot_identifier_value }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   register: configure_db_protection
   when:
     - ejbca_databaseprotection[0] is defined

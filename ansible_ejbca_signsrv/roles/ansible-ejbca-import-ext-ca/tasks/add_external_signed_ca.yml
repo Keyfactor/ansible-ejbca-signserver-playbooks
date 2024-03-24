@@ -8,7 +8,7 @@
     creates: "/var/tmp/{{ item.external_signed_ca_cert_file }}"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: not item.external_signed_ca_cert_file_local_repository|bool 
 
 - name: Upload external signed CA certificate file from Ansible controller for creating {{ item.caname }}
@@ -17,7 +17,7 @@
     dest: "/var/tmp/{{ item.external_signed_ca_cert_file }}"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: item.external_signed_ca_cert_file_local_repository|bool
 
 - name: Import External CA - {{ item.caname }}
@@ -25,7 +25,7 @@
     {{ ejbca_sh }} ca importcacert
     --caname {{ item.caname }}
     -f /var/tmp/{{ item.external_signed_ca_cert_file }}
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: import_external_ca

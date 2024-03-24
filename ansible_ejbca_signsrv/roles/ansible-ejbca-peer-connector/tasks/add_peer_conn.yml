@@ -2,7 +2,7 @@
 
 - name: Query Peer Connectors
   command: "{{ ejbca_sh }} peer list"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: list_peer_connectors
@@ -64,7 +64,7 @@
     content: "{{ peer_connection_info| to_nice_yaml }}"
   delegate_to: localhost
   register: write_peer_output
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Query Peer Connection with SQL hack EJBCA <= 7.3.1.4
   command: >
@@ -80,7 +80,7 @@
   when: 
     - ( "ra" in item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
   register: peer_sql_hack_check
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 #- name: debug the output for getting the ID
 #  debug:
@@ -103,7 +103,7 @@
     label: "{{ item.item.id }}"
   when: ( "ra" in item.item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
   register: peer_sql_hack
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 #- name: debug peer_connection_info
 #  debug:
@@ -121,7 +121,7 @@
   loop: "{{ peer_connection_info }}"
   when: ('ra' in item.type) and (ejbca_version is version('7.4.0', '>='))
   register: peer_con_ra_res
-  #no_log: true
+  #no_log: "{{ no_log_value }}"
   loop_control:
     label: "{{ item.id }}"
 

@@ -98,3 +98,6 @@ ejbca_ca_import:
 #  External configuration override is allowed, but no configuration sources were detected in '/opt/ejbca_ee_8_1_0/dump/ra/admin-roles/conf'.
 #  External configuration override is allowed, but no configuration sources were detected in '/etc/ejbca/conf'.
 ejbca_cli_log_fix: true
+
+# Directory on the controller where the backup is located
+backup_dir_output: "{{ playbook_dir }}/serverBackups"

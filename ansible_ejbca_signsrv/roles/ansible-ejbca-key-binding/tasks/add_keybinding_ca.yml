@@ -8,7 +8,7 @@
   loop: "{{ key_bindings }}"
   #vars:
   #  crypto_tokens: "{{ key_bindings }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: 
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
@@ -20,12 +20,12 @@
   loop_control:
     label: "{{ key_item.0.slot_identifier_value }}"
     loop_var: key_item
-  no_log: true
+  no_log: "{{ no_log_value }}"
   tags: key_generation
 
 - name: Query Authentication Key Binding
   command: "{{ ejbca_sh }} keybind list"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_list
@@ -42,7 +42,7 @@
 - name: Generate Random Password
   set_fact:
     entity_pass: "{{ pass_15 }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Create key binding for RA / SignServer / VA
   command: >
@@ -59,7 +59,7 @@
   loop: "{{ key_bindings |subelements('crypto_token') }}"
   loop_control:
     label: "{{ item.0.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   register: keybinding_create
   failed_when: keybinding_create.rc >= 2
   #changed_when: keybinding_create.rc == 0
@@ -77,7 +77,7 @@
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_create_csr
@@ -101,7 +101,7 @@
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become_method: sudo
   become_user: "{{ ejbca_user }}"
   register: adding_keybind_end_entity
@@ -130,7 +130,7 @@
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_sign_csr
@@ -148,7 +148,7 @@
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_import_cert
@@ -166,7 +166,7 @@
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_setstatus
@@ -179,7 +179,7 @@
 #TODO - Figure out why this can't be set via CLI, but works by setting in the UI
 #- name: Set Next Key Pair Alias 
 #  command: "{{ ejbca_sh }} keybind modify --name {{ item.0.name }} --nextkeypair {{ item.0.key_label }}"
-#  no_log: true
+#  no_log: "{{ no_log_value }}"
 #  become: yes
 #  become_user: "{{ ejbca_user }}"
 #  register: keybinding_modify
@@ -191,7 +191,7 @@
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   register: cert_serialNumber
   when: item.enabled|bool
 
@@ -233,7 +233,7 @@
     content: "{{ peer_cert_serial_numbers| to_nice_yaml }}"
   delegate_to: localhost
   register: write_the_output
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Write cert serial numbers to shared vars directory {{ sharedVarsLocation }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
   become: no
@@ -242,6 +242,6 @@
     content: "{{ peer_cert_serial_numbers| to_nice_yaml }}"
   delegate_to: localhost
   register: write_the_output2
-  #no_log: true
+  #no_log: "{{ no_log_value }}"
 
 #  when: ( item.name not in keybinding_list.stdout ) and ( item.enabled|bool )

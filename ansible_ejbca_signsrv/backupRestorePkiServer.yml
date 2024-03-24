@@ -1,0 +1,81 @@
+---
+# When DB is NOT on the local node:
+# ansible-playbook -i inventory -l ca01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+# When DB is ON the local node:
+# ansible-playbook -i inventory -l ca01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e backup_mariadb=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+# ansible-playbook -i inventory -l ra01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e backup_mariadb=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+# ansible-playbook -i inventory -l va01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e backup_mariadb=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  pre_tasks:
+    - name: Create timestamp fact
+      ansible.builtin.set_fact:
+        backup_time_stamp: "{{ lookup('pipe','date +%d-%m-%Y')}}"
+      delegate_to: localhost
+  vars:
+    - backup_dir_path: /var/tmp
+    - backup_dir_path_timestamp: "{{ backup_dir_path }}/{{ hostname }}-{{ backup_time_stamp }}"
+  roles:
+    - ansible-pki-ss-cfg-bkup
+  tags: backup
+
+- hosts: backupServer
+  gather_facts: false
+  tasks:
+    - name: Copy to remote backup server
+      block:
+
+        - name: Find what backup files are on the controller
+          ansible.builtin.find:
+            path: "{{ backup_dir_output }}"
+            file_type: file
+            recurse: yes
+            patterns: "*.tgz"
+          register: find_local_pki_backups
+          delegate_to: localhost
+          tags: copy_backup
+
+        - name: Check if remote directory {{ backup_server_dir_path }} exists
+          ansible.builtin.stat:
+            path: "{{ backup_server_dir_path }}"
+          register: backup_server_dir_path_exists
+          changed_when: false
+          tags: copy_backup 
+
+        - name: Create remote directory for {{ backup_server_dir_path }} if it doesn't exist
+          become: no
+          ansible.builtin.file:
+            path: "{{ backup_server_dir_path }}"
+            state: directory
+          tags: copy_backup 
+          when: 
+            - not backup_server_dir_path_exists.stat.exists
+
+        - name: Copy the backup archive to the remote backup server
+          ansible.builtin.copy:
+            src: "{{ item.path }}"
+            dest: "{{ backup_server_dir_path }}/{{ item.path| basename }}"
+          loop: "{{ find_local_pki_backups.files }}"
+          loop_control:
+            label: "{{ item.path }}"
+          tags: copy_backup
+          when:
+            - find_local_pki_backups is defined
+
+        - name: Remove backup files from the Ansible controller
+          ansible.builtin.file:
+            path: "{{ item.path }}"
+            state: absent
+          loop: "{{ find_local_pki_backups.files }}"
+          loop_control:
+            label: "{{ item.path }}"
+          delegate_to: localhost  
+          tags: copy_backup  
+
+      when:
+        - copy_backup_to_remote is defined
+        - copy_backup_to_remote| bool
+
+

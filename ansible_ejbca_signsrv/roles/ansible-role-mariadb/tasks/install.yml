@@ -33,7 +33,6 @@
         
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
       (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or 
       (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
@@ -56,6 +55,16 @@
   tags: mariadb
   when: 
     - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+
+- name: Install packages on RedHat 8
+  package:
+    name: "{{ item }}"
+    state: installed
+  loop: "{{ rhel8_mariadb_packages }}"
+  tags: mariadb
+  when: 
+    - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+
 
 - name: Install packages on Alma/CentOS/Oracle/RedHat/Rocky 8
   package:

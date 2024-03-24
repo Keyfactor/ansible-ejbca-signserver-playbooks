@@ -9,7 +9,7 @@
   loop_control:
     label: "{{ key_item.0.caname }}"
     loop_var: key_item
-  #no_log: true
+  #no_log: "{{ no_log_value }}"
   tags: key_generation
   when:
     - ejbca_va_keybinding[0] is defined
@@ -47,5 +47,5 @@
     content: "{{ identity_csr_info| to_nice_yaml }}"
   delegate_to: localhost
   register: write_the_output_va_signers
-  no_log: true
+  no_log: "{{ no_log_value }}"
   

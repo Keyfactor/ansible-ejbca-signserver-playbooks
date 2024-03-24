@@ -4,5 +4,5 @@
 - name: Configure CA settings
   include_tasks: config_ca_extensions.yml
   loop: "{{ add_certification_authorities }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   tags: configure_cas_extentions

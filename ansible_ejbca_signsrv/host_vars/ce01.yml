@@ -5,6 +5,10 @@ hostname: ce01.solitude.skyrim
 # Dirty hack to tell the type of instance till something better is used
 #ejbca_type: CA
 
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true
+
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
 identity_info:
   - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ce01.{{ organizationDomainName }}"

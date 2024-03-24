@@ -8,6 +8,10 @@ all:
     ejbcara01.solitude.skyrim
     webrepo.solitude.skyrim
   children:
+    backupServer:
+      hosts:
+        backuphost:
+          ansible_host: 172.16.170.133
     eeRootCaServers:
       hosts:
         rt01:

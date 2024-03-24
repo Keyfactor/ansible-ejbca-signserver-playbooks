@@ -25,7 +25,7 @@
     - name: Create fact
       set_fact:
         entity_pass: "{{ pass_15 }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Add end entity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}
       command: >
@@ -38,7 +38,7 @@
         --password {{ entity_pass }}
         --certprofile {{ item.certprofile }}
         --eeprofile {{ item.eeprofile }}
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become: true
       become_user: "{{ ejbca_user }}"
       register: adding_csr_end_entity
@@ -57,7 +57,7 @@
         --password {{ entity_pass }} 
         -c {{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}  
         -f /var/tmp/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become: yes
       become_user: "{{ ejbca_user }}"
       register: ejbca_sign_csr
