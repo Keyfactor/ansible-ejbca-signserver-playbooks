@@ -1,18 +1,18 @@
 <!--EJBCA Community logo -->
 <a href="https://ejbca.org">
-    <img src="community-ejbca.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="70" />
+    <img src="community-ejbca.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="50" />
 </a>
 <!--EJBCA Enterprise logo -->
 <a href="https://www.keyfactor.com/products/ejbca-enterprise/">
-    <img src="keyfactor-ejbca-enterprise.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="70" />
-</a>\
+    <img src="keyfactor-ejbca-enterprise.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="50" />
+</a>
 <!-- SignServer Community logo -->
 <a href="https://signserver.org">
-    <img src="community-signserver.png?raw=true)" alt="SignServer logo" title="SignServer" height="70" />
+    <img src="community-signserver.png?raw=true)" alt="SignServer logo" title="SignServer" height="50" />
 </a>
 <!-- SignServer Enterprise logo -->
 <a href="https://www.keyfactor.com/products/signserver-enterprise/">
-    <img src="keyfactor-signserver-enterprise.png?raw=true)" alt="SignServer logo" title="SignServer" height="70" />
+    <img src="keyfactor-signserver-enterprise.png?raw=true)" alt="SignServer logo" title="SignServer" height="50" />
 </a>
 
 # Ansible Playbooks for EJBCA and SignServer 
