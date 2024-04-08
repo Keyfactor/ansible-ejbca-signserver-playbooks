@@ -17,8 +17,10 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
+# MariaDB username & Password with permissions to dump the database to SQL file
 mariadb_backup_user: "{{ mariadb_users[1].name }}"
 mariadb_backup_user_password: "{{ mariadb_users[1].password }}"
+# Location of the mariadb-dump command
 mariadb_backup_cmd: /usr/bin/mariadb-dump
  
 mariadb_owner: mysql

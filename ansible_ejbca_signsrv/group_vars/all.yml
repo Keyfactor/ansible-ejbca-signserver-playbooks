@@ -99,5 +99,5 @@ ejbca_ca_import:
 #  External configuration override is allowed, but no configuration sources were detected in '/etc/ejbca/conf'.
 ejbca_cli_log_fix: true
 
-# Directory on the controller where the backup is located
+# Directory on the controller where the backup is stored. The backup file is removed from the controller when pushed to the remote backup server.
 backup_dir_output: "{{ playbook_dir }}/serverBackups"
