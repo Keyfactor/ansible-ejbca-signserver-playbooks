@@ -1,3 +1,20 @@
+<!--EJBCA Community logo -->
+<a href="https://ejbca.org">
+    <img src=".github/images/community-ejbca.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="50" />
+</a>
+<!--EJBCA Enterprise logo -->
+<a href="https://www.keyfactor.com/products/ejbca-enterprise/">
+    <img src=".github/images/keyfactor-ejbca-enterprise.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="50" />
+</a>
+<!-- SignServer Community logo -->
+<a href="https://signserver.org">
+    <img src=".github/images/community-signserver.png?raw=true)" alt="SignServer logo" title="SignServer" height="50" />
+</a>
+<!-- SignServer Enterprise logo -->
+<a href="https://www.keyfactor.com/products/signserver-enterprise/">
+    <img src=".github/images/keyfactor-signserver-enterprise.png?raw=true)" alt="SignServer logo" title="SignServer" height="50" />
+</a>
+
 # Ansible Playbooks for EJBCA and SignServer 
 [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/discussions) 
 
@@ -10,35 +27,32 @@ These playbooks are available:
 * **[ejbca_certificate_request_role](./ejbca_certificate_request_role)** – For use with EJBCA Enterprise version to issue certificates from an EJBCA server using the REST API 
 
 ## Get started 
+For details on how to set up and run the Ansible playbooks, see README in the respective playbook:
+* [Ansible EJBCA SignServer README](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/blob/main/ansible_ejbca_signsrv/README.md)
+* [EJBCA Certificate Request Role README](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/blob/main/ejbca_certificate_request_role/README.md)
 
-Example: 
-To run the EJBCA or SignServer ansible playbook with EJBCA or SignServer Community, do the following: 
-1. Make sure to follow the prerequisites. 
-2. Set any required variables. 
-3. Run the ansible playbook. 
-For details, see README in the respective playbook. 
+### System Requirements
+For more information, see 
+* [Ansible EJBCA SignServer Requirements](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/blob/main/ansible_ejbca_signsrv/README.md#requirements)
+* [EJBCA Certificate Request Role Requirements](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/blob/main/ejbca_certificate_request_role/README.md#requirements)
 
-## Support  
+## Community Support
+In the [Keyfactor Community](https://www.keyfactor.com/community/), we welcome contributions. 
 
-We welcome contributions. These Ansible playbooks are open source and community supported, meaning that no SLA is applicable. 
+The Community software is open-source and community-supported, meaning that **no SLA** is applicable.
 
-* To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. 
-* If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
-* Ask the community for ideas: **[EJBCA Ansible Playbook Discussions](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks/discussions)**  
-* Read more in our documentation: **[Deploying PKI and signature services in DevOps environments](https://doc.primekey.com/ejbca/solution-areas/deploying-pki-and-signature-services-in-devops-environments)**
+* Read more in our documentation: [Deploying PKI and signature services in DevOps environments](https://doc.primekey.com/ejbca/solution-areas/deploying-pki-and-signature-services-in-devops-environments)
+* Ask the community for ideas: [EJBCA Ansible Playbook Discussions](../../discussions)  
+* To report a problem or suggest a new feature, go to [Issues](../../issues).
+* If you want to contribute actual bug fixes or proposed enhancements, see the [Contributing Guidelines](CONTRIBUTING.md) and go to [Pull requests](../../pulls).
 
-## License 
+## Commercial Support
 
-EJBCA is licensed under the LGPL license, please see **[LICENSE](LICENSE)**. 
+Commercial support is available for [EJBCA Enterprise](https://www.keyfactor.com/products/ejbca-enterprise/) and [SignServer Enterprise](https://www.keyfactor.com/products/signserver-enterprise/).
 
-## Related projects 
+## License
+For license information, see [LICENSE](LICENSE). 
 
-* [Keyfactor/ejbca-ce](https://github.com/Keyfactor/ejbca-ce) 
-* [Keyfactor/ejbca-tools](https://github.com/Keyfactor/ejbca-tools) 
-* [Keyfactor/keyfactorycommunity](https://github.com/Keyfactor/keyfactorcommunity)
-* [Keyfactor/ejbca-vault-pki-engine](https://github.com/Keyfactor/ejbca-vault-pki-engine)
-* [Keyfactor/ejbca-cert-manager-issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
-* [Keyfactor/ejbca-k8s-csr-signer](https://github.com/Keyfactor/ejbca-k8s-csr-signer)
-* [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
-* [Keyfactor/ejbca-containers](https://github.com/Keyfactor/ejbca-containers) 
-* [Keyfactor/signserver-tools](https://github.com/Keyfactor/signserver-tools)
+## Related Projects
+See all [Keyfactor EJBCA GitHub projects](https://github.com/orgs/Keyfactor/repositories?q=ejbca) or [Keyfactor SignServer GitHub projects](https://github.com/orgs/Keyfactor/repositories?q=signserver). 
+
