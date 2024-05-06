@@ -1,8 +1,8 @@
 ---
 
 - name: Create PKCS11 cryptotoken for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}
-  ejbca_cryptotoken:
-    cmd: create
+  keyfactor.ejbca.cli_token:
+    action: create
     token: "{% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}"
     type: "{{ item.tokentype }}"
     pin: "{{ item.tokenpass }}"

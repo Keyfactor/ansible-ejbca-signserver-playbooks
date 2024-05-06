@@ -1,0 +1,57 @@
+---
+
+  - name: test my new module
+    #hosts: ca-host
+    hosts: aws-ca
+    gather_facts: no
+    pre_tasks:
+      - include_vars: module_vars.yml
+    
+    tasks:
+
+      # end-entity-testing
+      - name: Create or Reset Disabled Key Binding End Entities
+        tags: end-entity-testing
+        include_role:
+          name: ansible-ejbca-end-entity
+          apply:
+            tags: include-role
+        vars:
+          entity_password: "{{ item.tokenpass }}"
+        loop: "{{ end_entities }}"
+        loop_control:
+          label: "{{ item.name }}"
+
+      # playbook testing
+      - name: playbook testing
+        tags: role-play-include
+        block:
+
+        - name: Query key bindings
+          include_role:
+            name: ansible-ejbca-key-binding
+            tasks_from: query
+          register: keybind_query
+
+        - name: Create key bindings not listed in the query
+          when:
+            - not item.name in key_bindings_active|map(attribute='name') # skip if key binding is already active
+            #- key_bindings_active|selectattr('name','!=',item.name) 
+            - item.enabled
+          block:
+  
+          - name: Create or Reset Disabled Key Binding End Entities
+            include_role:
+              name: ansible-ejbca-end-entity
+            vars:
+              entity_password: "{{ item.tokenpass }}"
+            loop: "{{ ejbca_keybinding }}"
+            loop_control:
+              label: "{{ item.name }}"
+            register: keybind_end_entities
+
+          - name: Create Key Binding
+            include_role:
+                name: ansible-ejbca-key-binding
+            vars:
+              key_bindings: "{{ ejbca_keybinding }}"

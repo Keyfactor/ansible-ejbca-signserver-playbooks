@@ -1,0 +1,162 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    #hosts: aws-ca
+    # become: yes
+    # become_method: sudo
+    gather_facts: no
+    pre_tasks:
+      - include_vars: module_vars.yml
+        tags: always
+    
+    tasks:
+
+      # list-tokens
+      - name: List all Crypto Tokens
+        ejbca.shell.cryptotoken:
+          action: list-tokens
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-tokens
+
+      # delete-token
+      - name: Delete crypto token
+        ejbca.shell.cryptotoken:
+          action: delete-token
+          token: "{{ item.crypto_token_name }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.crypto_token_name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: delete-token
+
+      # create-soft
+      - name: Create crypto tokens
+        ejbca.shell.cryptotoken:
+          action: create-soft
+          token: "{{ item.crypto_token_name }}"
+          pin: foo123
+          auto: false
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.crypto_token_name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create-soft
+
+      # create-pkcs11
+      - name: Create PKCS11 token
+        ejbca.shell.cryptotoken:
+          action: create-pkcs11
+          token: "{{ item.crypto_token_name }}"
+          pin: "{{ item.tokenpass }}"
+          library: "{{ hsm_shared_library }}"
+          slot_ref: "{{ item.slot_identifier_value }}"
+          slot_ref_type: "{{ item.slot_identifier_type }}"
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.crypto_token_name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create-pkcs11
+
+      # deactivate
+      - name: Deactivate crypto token
+        ejbca.shell.cryptotoken:
+          action: deactivate
+          token: "{{ item.crypto_token_name }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.crypto_token_name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: deactivate
+
+      # activate
+      - name: Activate crypto token
+        ejbca.shell.cryptotoken:
+          action: activate
+          token: "{{ item.crypto_token_name }}"
+          pin: foo123
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.crypto_token_name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: activate
+
+      # gen-key
+      - name: Generate key
+        ejbca.shell.cryptotoken:
+          action: gen-key
+          token: "{{ key_item[0].crypto_token_name }}"
+          key_alias: "{{ key_item[1].key_label }}"
+          key_spec: "{{ key_item[1].key_size }}"
+        loop: "{{ ejbca_keybinding|subelements('crypto_token') }}"
+        loop_control:
+          label: "{{ key_item[1].key_label }}"
+          loop_var: key_item
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: gen-key
+
+      # list-keys
+      - name: List all keys
+        ejbca.shell.cryptotoken:
+          action: list-keys
+          token: "{{ item.crypto_token_name }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.crypto_token_name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-keys
+
+      # test-key
+      - name: Test key
+        ejbca.shell.cryptotoken:
+          action: test-key
+          token: "{{ key_item[0].crypto_token_name }}"
+          key_alias: "{{ key_item[1].key_label }}"
+        loop: "{{ ejbca_keybinding|subelements('crypto_token') }}"
+        loop_control:
+          label: "{{ key_item[1].key_label }}"
+          loop_var: key_item
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: test-key
+
+      # delete-key
+      - name: Delete key
+        ejbca.shell.cryptotoken:
+          action: delete-key
+          token: "{{ key_item[0].crypto_token_name }}"
+          key_alias: "{{ key_item[1].key_label }}"
+        loop: "{{ ejbca_keybinding|subelements('crypto_token') }}"
+        loop_control:
+          label: "{{ key_item[1].key_label }}"
+          loop_var: key_item
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: delete-key
+
+      - debug: msg={{ module_output }}
+        tags: always

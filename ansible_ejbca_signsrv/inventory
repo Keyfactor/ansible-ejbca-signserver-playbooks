@@ -92,45 +92,13 @@ all:
           ansible_host: 172.16.170.170   
     httpdServers:
       children:
-        eeCaServers:
         eeVaServers:
-        eeRaServers:
-        ceServers:
-        eeSignServers:
-        ceSignServers:
-        extSignMgmtCaServers:
-        peerconfigCas:
-        extEeRootCaServers:
-        eeSubCaServers: 
-        ejbcaCaAddNodes:
     mariadbServers:
       children:
-        eeRootCaServers:
-        eeCaServers:
-        eeVaServers:
-        eeRaServers:
-        ceServers:
-        eeSignServers:
-        ceSignServers:
-        extSignMgmtCaServers:
-        extEeRootCaServers:
-        eeSubCaServers:
-        ejbcaCaAddNodes:
+
     applicationServers:
       children:
-        eeRootCaServers:
-        eeCaServers:
-        eeVaServers:
-        eeRaServers:
-        ceServers:
-        eeSignServers:
-        ceSignServers:
-        extSignMgmtCaServers:
-        extSignPolicyCas:
-        policyCaSignIssuingCas:
-        extEeRootCaServers:
-        eeSubCaServers:
-        ejbcaCaAddNodes:
+
     upgradeEeServers:
       children:
         eeRootCaServers:

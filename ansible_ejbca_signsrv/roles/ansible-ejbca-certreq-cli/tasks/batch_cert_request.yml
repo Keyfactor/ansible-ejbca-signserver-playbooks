@@ -1,5 +1,11 @@
 ---
 
+- name: Create/Reset End Entities
+  include_role:
+    name: ansible-ejbca-end-entity
+  vars:
+    entity_password: "{{ item.password }}"
+
 - name: Check if {{ item.username }} end entity exists
   command: "{{ ejbca_sh }} ra findendentity {{ item.username }}"
   args:

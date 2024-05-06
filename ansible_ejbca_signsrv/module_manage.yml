@@ -1,0 +1,83 @@
+---
+
+  - name: test my new module
+    hosts: localhost
+    gather_facts: no
+
+    vars:
+      group_vars_dir_original: "{{ playbook_dir }}/group_vars"
+      group_vars_dir_new: "{{ playbook_dir }}/group_vars_2"
+      diff_outfile_path: "{{ playbook_dir }}/difference_outfile.yml"
+
+      ee_ejbca_parents:
+        #- httpdServers
+        - mariadbServers
+        - applicationServers
+
+      ee_ejbca_children:
+        - name: eeCaServers
+          hosts:
+            - name: ca01
+              host: 192.168.1.1
+          parents: "{{ ee_ejbca_parents }}"
+        # - name: eeVaServers
+        #   hosts:
+        #     - name: va01
+        #       host: 192.168.2.1
+        #   parents: "{{ ee_ejbca_parents }}"
+        # - name: eeRaServers
+        #   hosts:
+        #     name: ra01
+        #     ansible_host: 192.168.3.1
+        #   parents: "{{ ee_ejbca_parents }}"
+
+
+    tasks:
+
+      - name: Remove existing diff file
+        ansible.builtin.file:
+          path: "{{ diff_outfile_path }}"
+          state: absent
+        tags: check-group-vars
+
+      # check-group-vars
+      - name: Check group vars
+        ejbca.manage.vars:
+          current: "{{ group_vars_dir_original }}"
+          incoming: "{{ group_vars_dir_new }}"
+          mode: directory
+          diff_file: true
+          diff_dest: "{{ diff_outfile_path }}"
+        register: module_output
+        tags: check-group-vars
+
+      # build-inventory
+      - name: Build Enterprise CA Servers Children
+        ejbca.manage.inventory:
+          path: ./inventory
+          mode: build
+          child: "{{ item[0].name }}"
+          parents: "{{ item[0].parents }}"
+          # host:
+          #   name: "{{ item[1].name }}"
+          #   ansible_host: "{{ item[1].host }}"
+        loop: "{{ ee_ejbca_children|subelements('hosts') }}"
+        loop_control:
+          label: "{{ item[0].name }}"
+        register: module_output
+        tags: build-inventory
+
+      # build-inventory-hosts
+      # - name: Build inventory children
+      #   ejbca.manage.inventory:
+      #     path: ./inventory
+      #     mode: build
+      #     children:
+      #       - eeCaServers
+      #       - eeRaServers
+      #       - eeVaServers
+      #   register: module_output
+      #   tags: build-inventory
+
+      - debug: msg={{ module_output }}
+        tags: always

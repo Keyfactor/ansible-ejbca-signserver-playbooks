@@ -119,7 +119,7 @@ id_cert_files:
     dest: "{{ vault_crt_stage_dir }}/id/{{ identity_info[0].name }}.key"
   - src: "{{ ejbca_csr_dir_output }}/{{ identity_info[1].name }}.crt"
     dest: "{{ vault_cfg_dir }}/config/tmp/0.crt"
-  - src: "{{ ejbca_csr_dir_output }}/{{ identity_info[01].name }}.key"
+  - src: "{{ ejbca_csr_dir_output }}/{{ identity_info[1].name }}.key"
     dest: "{{ vault_cfg_dir }}/config/vault.key"
   - src: "{{ ejbca_csr_dir_output }}/{{ organizationNameShort }}-Sub-CA.crt"
     dest: "{{ vault_cfg_dir }}/config/tmp/{{ organizationNameShort }}-Sub-CA.crt"

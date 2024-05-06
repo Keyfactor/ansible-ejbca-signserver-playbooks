@@ -1,0 +1,32 @@
+---
+
+- name: Query Active Key Bindings
+  keyfactor.ejbca.cli_keybind:
+    action: list
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: keybindings_list
+
+#- debug: msg={{ keybindings_list }}
+
+# add binding to list if active
+- name: Update list of ACTIVE key bindings
+  when: item.active
+  set_fact: 
+    key_bindings_active: "{{ key_bindings_active + keybindings_list.bindings }}"
+  loop: "{{ keybindings_list.bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+#- debug: msg={{ key_bindings_active }}
+
+# add binding to list if disabled
+- name: Update list of DISABLED key bindings
+  when: item.active is false
+  set_fact: 
+    key_bindings_disabled: "{{ key_bindings_disabled + keybindings_list.bindings }}"
+  loop: "{{ keybindings_list.bindings }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+#- debug: msg={{ key_bindings_disabled }}

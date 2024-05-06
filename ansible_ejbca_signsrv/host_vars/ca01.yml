@@ -44,6 +44,7 @@ management_add_administrators:
 # Key bindings used for the certificate that peering uses to authenticate to external RA/VA & SignServer
 ejbca_keybinding:
   - name: peerClient-ocsp
+    type: AuthenticationKeyBinding
     crypto_token_name: peeringCryptoToken
     tokentype: Pkcs11NgCryptoToken
     #tokentype: PKCS11CryptoToken
@@ -70,6 +71,7 @@ ejbca_keybinding:
     useType: ocsp
     enabled: "{{ use_external_va }}"
   - name: peerClient-ra
+    type: AuthenticationKeyBinding
     crypto_token_name: peeringCryptoToken
     tokentype: Pkcs11NgCryptoToken
     #tokentype: PKCS11CryptoToken
@@ -92,6 +94,7 @@ ejbca_keybinding:
     useType: ra
     enabled: "{{ use_external_ra }}"
   - name: peerClient-sign
+    type: AuthenticationKeyBinding
     crypto_token_name: peeringCryptoToken
     tokentype: Pkcs11NgCryptoToken
     #tokentype: PKCS11CryptoToken

@@ -1,0 +1,140 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    #hosts: aws-ca
+    # become: yes
+    # become_method: sudo
+    gather_facts: no
+    pre_tasks:
+      - include_vars: module_vars.yml
+        tags: always
+
+    tasks:
+
+      # list
+      - name: List all key bindings
+        ejbca.shell.keybind:
+          action: list
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+          return_output: true
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list
+
+      # create-auth
+      - name: Create Remote Authentication Binding
+        when: 
+          - item.type == 'AuthenticationKeyBinding'
+          - item.enabled
+        ejbca.shell.keybind:
+          action: create-auth
+          bind: "{{ item.name }}"
+          token: "{{ item.crypto_token_name }}"
+          key: "{{ item.crypto_token|selectattr('type','==','keybind')|map(attribute='key_label')|join() }}"
+          properties:
+            protocol: TLSv1.2;TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+          bind_output: true
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create-auth
+
+      # create-ocsp
+      - name: Create OCSP Responder Binding
+        when: 
+          - item.type == 'OcspKeyBinding'
+          - item.enabled
+        ejbca.shell.keybind:
+          action: create-ocsp
+          bind: "{{ item.name }}"
+          token: "{{ item.crypto_token_name }}"
+          key: "{{ item.crypto_token|selectattr('type','==','keybind')|map(attribute='key_label')|join() }}"
+          properties:
+            non_good: true
+            non_revoked: false
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+          bind_output: true
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create-ocsp
+
+      # gen-csr
+      - name: Generate CSR for Authentication Key Binding
+        when: item.enabled
+        ejbca.shell.keybind:
+          action: gen-csr
+          bind: "{{ item.name }}"
+          file: "/var/tmp/{{ item.name }}.csr"
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: gen-csr
+
+      # import-cert
+      - name: Import cert for key binding
+
+        ejbca.shell.keybind:
+          action: import-cert
+          bind: "{{ item.name }}"
+          file: /var/tmp/{{ item.name }}.crt
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: import-cert
+        when: 
+          - item.enabled
+
+      # set-status
+      - name: Set keybinding status
+        ejbca.shell.keybind:
+          action: set-status
+          bind: "{{ item.name }}"
+          active: "{{ item.active|default(true) }}"
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: set-status
+        when: 
+          - item.enabled
+
+      # delete
+      - name: Delete key binding
+        ejbca.shell.keybind:
+          action: delete
+          bind: "{{ item.name }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: delete
+
+      - debug: msg={{ module_output }}
+        tags: always

@@ -1,0 +1,140 @@
+---
+
+# Issuing CA Nodes
+- pause: 
+    prompt: |+
+
+      Enter the hostname and ip address for each Issuing CA node, separated by space. If adding more than one, separate each Issuing CA with a semi-colon. 
+      Example - ca01 34.207.116.201; ca02 34.207.116.202
+  register: prompt_cas_subs
+
+- name: Create list of hosts
+  block:
+
+  - name: User provided list
+    block:
+
+    - name: Split hosts if multiple hosts were provided
+      set_fact: 
+        groups_cas_subs_split: "{{ prompt_cas_subs.user_input|split(';')|trim }}"
+
+    - name: Split each host on name and ansible_host
+      set_fact: 
+        groups_cas_subs: "{{ groups_cas_subs + [{'name': item.split()[0], 'ansible_host': item.split()[1] }] }}"
+      vars:
+        groups_cas_subs: []
+      loop: "{{ groups_cas_subs_split }}"
+
+    when: prompt_cas_subs.user_input|length > 0
+
+  - debug:
+      msg: No Sub CAs provided. Using default list values.
+    when: prompt_cas_subs.user_input|length == 0
+
+  - debug: msg={{ groups_cas_subs }}
+
+# Root CA Nodes
+- name: Root CA nodes
+  when: deployment_external_root_ca
+  block:
+
+  - pause:
+      prompt: |+
+      
+        Enter the hostname and ip address for each Root CA node, separated by space. If adding more than one, separate each Root CA with a semi-colon.
+        (Example - rt01 34.207.116.201; rt02 34.207.116.202)
+    register: prompt_cas_roots
+
+  - name: Create list of hosts
+    block:
+
+    - name: User provided list
+      when: prompt_cas_roots.user_input|length > 0
+      block:
+
+      - name: Split hosts if multiple hosts were provided
+        set_fact: 
+          groups_cas_roots_split: "{{ prompt_cas_roots.user_input|split(';')|trim }}"
+
+      - name: Split each host on name and ansible_host
+        set_fact: 
+          prompt_cas_roots: "{{ prompt_cas_roots + [{'name': item.split()[0], 'ansible_host': item.split()[1] }] }}"
+        vars:
+          prompt_cas_roots: []
+        loop: "{{ groups_cas_roots_split }}"
+
+    - debug:
+        msg: No Root CAs provided. Using default list values.
+      when: prompt_cas_roots.user_input|length == 0
+
+  - debug: msg={{ groups_cas_roots }}
+
+# VA Nodes
+- name: VA nodes
+  when: deployment_external_va
+  block:
+
+  - pause:
+      prompt: |+
+        Enter the hostname and ip address for each VA node, separated by space. If adding more than one, separate each VA with a semi-colon.
+        (Example - va01 34.207.116.201; va02 34.207.116.202)
+    register: prompt_vas
+
+  - name: Create list of hosts
+    block:
+
+    - name: User provided list
+      when: prompt_vas.user_input|length > 0
+      block:
+
+      - name: Split hosts if multiple hosts were provided
+        set_fact: 
+          groups_vas_split: "{{ prompt_vas.user_input|split(';')|trim }}"
+
+      - name: Split each host on name and ansible_host
+        set_fact: 
+          groups_vas: "{{ prompt_vas + [{'name': item.split()[0], 'ansible_host': item.split()[1] }] }}"
+        vars:
+          groups_vas: []
+        loop: "{{ groups_vas_split }}"
+
+    - debug:
+        msg: No VA hosts provided. Using default list values.
+      when: prompt_vas.user_input|length == 0
+
+  - debug: msg={{ groups_vas }}
+
+# RA Nodes
+- name: RA nodes
+  when: deployment_external_ra
+  block:
+
+  - pause:
+      prompt: |+
+        Enter the hostname and ip address for each RA node, separated by space. If adding more than one, separate each RA node with a semi-colon.
+        (Example - ra01 34.207.116.201; ra02 34.207.116.202)
+    register: prompt_ras
+
+  - name: Create list of hosts
+    block:
+
+    - name: User provided list
+      when: prompt_ras.user_input|length > 0
+      block:
+
+      - name: Split hosts if multiple hosts were provided
+        set_fact: 
+          groups_ras_split: "{{ prompt_ras.user_input|split(';')|trim }}"
+
+      - name: Split each host on name and ansible_host
+        set_fact: 
+          groups_ras: "{{ groups_ras + [{'name': item.split()[0], 'ansible_host': item.split()[1] }] }}"
+        vars:
+          groups_ras: []
+        loop: "{{ groups_ras_split }}"
+
+    - debug:
+        msg: No RA hosts provided. Using default list values.
+      when: prompt_ras.user_input|length == 0
+
+  - debug: msg={{ groups_ras }}

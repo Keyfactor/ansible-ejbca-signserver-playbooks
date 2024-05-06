@@ -1,0 +1,92 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    gather_facts: no
+    pre_tasks:
+      - include_vars: module_vars.yml
+        tags: always
+
+    tasks:
+
+    # list-all
+      - name: List all peer connections
+        ejbca.shell.peer:
+          action: list
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-all
+
+    # list-outgoing
+      - name: List only outgoing peer connections
+        ejbca.shell.peer:
+          action: list
+          type: outgoing
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-outgoing
+
+      # remove
+      - name: Remove Peer Connections
+        ejbca.shell.peer:
+          action: remove
+          id: 561097365
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: remove
+
+      # create
+      - name: Create Peer Connections
+        when: item.enabled
+        ejbca.shell.peer:
+          action: create
+          name: "{{ item.name }}"
+          state: "{{ item.state }}"
+          url: "{{ item.url }}"
+          akb: "{{ item.keybinding }}"
+        loop: "{{ ejbca_peerConnector }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create
+
+      # config
+      - name: Configure Global Peer Settings
+        ejbca.shell.peer:
+          action: edit-global
+          enable_in: false
+          enable_out: true
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: edit-global
+
+      # edit
+      - name: Edit Peer Connections
+        ejbca.shell.peer:
+          action: edit-peer
+          id: 1565310137
+          min: 2
+          max: 4
+          process_incoming: true
+          name: OCSP-01
+          #url: https://test-peer.primekey.com/ejbca/peer/v1
+          url: https://google.com
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: edit-peer
+
+      - debug: msg={{ module_output }}
+        tags: always

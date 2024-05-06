@@ -1,0 +1,180 @@
+---
+
+  - name: Get variables diffs
+    hosts: localhost
+    #gather_facts: false
+
+    vars:
+      group_vars_dir_original: "{{ playbook_dir }}/group_vars"
+      group_vars_dir_new: "{{ playbook_dir }}/group_vars_2"
+
+      diff_outfile: true
+      diff_outfile_path: "{{ playbook_dir }}/difference_outfile.yml"
+      diff_outfile_create_new: true
+
+      diff_include:
+        - group_vars: true
+
+    tasks:
+
+    # - name: Display all variables/facts known for a host
+    #   set_fact:
+    #     ee_ca_servers: "{{ groups['eeCaServers'] }}"
+
+    # - name: Display all variables/facts known for a host
+    #   set_fact:
+    #     ee_ca_servers_vars: "{{ hostvars[ee_ca_servers[0]] }}"
+
+
+    - set_fact: 
+        variables: "{{ lookup('ansible.builtin.file', group_vars_dir_original + '/all.yml') }}"
+
+    - debug: 
+        msg: "{{ all_vars|flatten }}"
+
+    # - ansible.builtin.set_fact:
+    #     all_vars: "{{ all_vars + [lookup('ansible.builtin.file', item)] }}"
+    #   vars:
+    #     all_vars: []
+    #   loop: "{{ new_group_vars['files']|map(attribute='path') }}"
+
+    # - debug: 
+    #     msg: "{{ all_vars|flatten }}"
+
+    # - debug: 
+    #     msg: "{{ query('ansible.builtin.vars', item) }}"
+    #   loop: "{{ new_group_vars['files']|map(attribute='path') }}"
+
+    # - name: Write variables to file
+    #   ansible.builtin.blockinfile:
+    #     dest: "{{ diff_outfile_path }}"
+    #     block: "{{ query('ansible.builtin.file', item) | to_nice_yaml }}"
+    #   loop: "{{ new_group_vars['files']|map(attribute='path') }}"
+
+
+    # - name: Import variables
+    #   delegate_to: inventory_hostname['ca01']
+    #   include_vars:
+    #     file: "{{ group_vars_dir_original }}/all.yml"
+    #     #dir: "{{ group_vars_dir_original }}"
+    #   register: group_vars
+
+    # - debug: 
+    #     msg: "{{ group_vars|map(attribute='ansible_included_var_files') }}"
+
+    # - name: Write variables to file
+    #   ansible.builtin.copy:
+    #     dest: "{{ diff_outfile_path }}"
+    #     content: "{{ ee_ca_servers_vars | to_nice_yaml }}"
+
+    # - name: Erase previous differences file
+    #   ansible.builtin.copy:
+    #     dest: "{{ diff_outfile_path }}"
+    #     content: ""
+    #   when: diff_outfile_create_new|default(true)
+
+    # - name: Write variables to file
+    #   ansible.builtin.lineinfile:
+    #     path: "{{ diff_outfile_path }}"
+    #     line: "{{ item | to_json }}"
+    #   loop: "{{ ee_ca_servers_vars|list }}"
+    #   loop_control:
+    #     label: "{{ item }}"
+    #   when: "'ansible_' not in item"
+
+  # - name: Get variables diffs
+  #   hosts: localhost
+
+  #   vars:
+  #     group_vars_dir_original: "{{ playbook_dir }}/group_vars"
+  #     group_vars_dir_new: "{{ playbook_dir }}/group_vars_2"
+
+  #     diff_outfile: true
+  #     diff_outfile_path: "{{ playbook_dir }}/difference_outfile.yml"
+  #     diff_outfile_create_new: true
+
+  #     diff_include:
+  #       - group_vars: true
+
+  #   tasks:
+
+  #   - name: Add group variables difference check
+  #     when: diff_include[0].group_vars|default(false)
+  #     vars:
+  #       group_vars_original: []
+  #       group_vars_new: []
+  #       group_vars_all: []
+  #       group_vars_diff: []
+  #     block:
+
+  #     - name: Load original group vars
+  #       ansible.builtin.include_vars:
+  #         dir: "{{ group_vars_dir_original }}"
+  #       register: group_vars_original
+
+  #     # - name: Load new group vars
+  #     #   ansible.builtin.include_vars:
+  #     #     dir: "{{ group_vars_dir_new }}"
+  #     #   register: group_vars_new
+
+  #     - debug: msg={{ item|default('') }}
+  #       loop: "{{ group_vars_original }}"
+
+  #     - name: Current group vars
+  #       ansible.builtin.find:
+  #         paths: "{{ group_vars_dir_original }}"
+  #         recurse: no
+  #         file_type: file
+  #         use_regex: true
+  #         patterns: (.*?)\.(yml|yaml)$
+  #       register: original_group_vars
+      
+  #     - name: New group vars
+  #       ansible.builtin.find:
+  #         paths: "{{ group_vars_dir_new }}"
+  #         recurse: no
+  #         file_type: file
+  #         use_regex: true
+  #         patterns: (.*?)\.(yml|yaml)$
+  #       register: new_group_vars
+
+  #     - name: Get group var basenames
+  #       ansible.builtin.set_fact:
+  #         group_vars_original: "{{ original_group_vars['files']|map(attribute='path')|map('basename')|map('splitext')|first|list }}"
+  #         group_vars_new: "{{ new_group_vars['files']|map(attribute='path')|map('basename')|list }}"
+
+  #     - name: Get group var differences
+  #       ansible.builtin.set_fact:
+  #         group_vars_removed: "{{ group_vars_diff + group_vars_original|difference(group_vars_new) }}"
+  #         group_vars_added: "{{ group_vars_diff + group_vars_new|difference(group_vars_original) }}"
+          
+  #     - name: Write to file
+  #       when: diff_outfile|default(true)
+  #       block:
+
+  #       - name: Erase previous differences file
+  #         ansible.builtin.copy:
+  #           dest: "{{ diff_outfile_path }}"
+  #           content: ""
+  #         when: diff_outfile_create_new|default(true)
+
+  #       - name: Write Group Variables comment paths to file
+  #         ansible.builtin.lineinfile:
+  #           path: "{{ diff_outfile_path }}"
+  #           line: "{{ item }}"
+  #         loop: 
+  #           - "##---- Difference Group Variables ----##"
+  #           - "# Removed group variables files"
+  #           - "# Added group variables files"
+
+  #       - name: Write remove group vars to file
+  #         ansible.builtin.lineinfile:
+  #           path: "{{ diff_outfile_path }}"
+  #           line: "{{ group_vars_removed | to_nice_yaml }}"
+  #           insertafter: "# Removed group variables files"
+
+  #       - name: Write added group vars to file
+  #         ansible.builtin.lineinfile:
+  #           path: "{{ diff_outfile_path }}"
+  #           line: "{{ group_vars_added | to_nice_yaml }}"
+  #           insertafter: "# Added group variables files"

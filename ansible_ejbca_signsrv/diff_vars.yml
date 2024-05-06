@@ -1,0 +1,142 @@
+##--- Variables Difference File --- ##
+
+## pkiTlsCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeSubCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeVaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## ssTlsCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeSignServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## applicationServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## upgradeEeServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## all.yml
+# The following variables have been added:
+new_var_one: one
+new_var_two: two
+
+# The following variables have been removed:
+ejbca_cacrt_dir_output: '{{ playbook_dir }}/ejbcaCaCerts'
+ejbca_crl_dir_output: '{{ playbook_dir }}/ejbcaCRLs'
+ejbca_csr_dir_output: '{{ playbook_dir }}/ejbcaCSR'
+
+## httpdServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## extEeRootCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## ssCsrCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeRaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeRootCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## pkiCsrCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## mariadbServers.yml
+# No variables have been added.
+# No variables have been removed.
+##--- Variables Difference File --- ##
+
+## pkiTlsCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeSubCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeVaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## ssTlsCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeSignServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## applicationServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## upgradeEeServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## all.yml
+# The following variables have been added:
+new_var_one: one
+new_var_two: two
+
+# The following variables have been removed:
+ejbca_cacrt_dir_output: '{{ playbook_dir }}/ejbcaCaCerts'
+ejbca_crl_dir_output: '{{ playbook_dir }}/ejbcaCRLs'
+ejbca_csr_dir_output: '{{ playbook_dir }}/ejbcaCSR'
+
+## httpdServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## extEeRootCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## ssCsrCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeRaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## eeRootCaServers.yml
+# No variables have been added.
+# No variables have been removed.
+
+## pkiCsrCerts.yml
+# No variables have been added.
+# No variables have been removed.
+
+## mariadbServers.yml
+# No variables have been added.
+# No variables have been removed.

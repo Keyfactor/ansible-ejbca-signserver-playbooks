@@ -1,135 +1,31 @@
 ---
 
-- name: List Peer Connections
-  ejbca_peer:
-    cmd: list
-    path: "{{ ejbca_home }}"
-  become: true
-  become_user: "{{ ejbca_user }}"
-  register: list_peer_connectors
-
-- name: Create Peer Connections
+- name: Create Peer {{ item.name }}
   ejbca_peer:
     cmd: create
     name: "{{ item.name }}"
-    state: "{{ item.state| default('ENABLED') }}"
+    state: "{{ item.state|default('ENABLED') }}"
     url: "{{ item.url }}"
     akb: "{{ item.keybinding }}"
     path: "{{ ejbca_home }}"
   become: true
   become_user: "{{ ejbca_user }}"
-  register: create_peer_connectors
-  loop: "{{ ejbca_peerConnector }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when: 
-    - not list_peer_connectors.peers|selectattr('name','==',item.name)
-    - item.enabled
-
-- name: Create a fact for peer_connection_info
-  set_fact: 
-    cacheable: yes
-    peer_connection_info: "{{ peer_connection_info + [{'id':item.id, 'name':item.name}] }}"
-  vars:
-    peer_connection_info: []
-  loop: "{{ create_peer_connectors.results|map(attribute='create') }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when: 
-    - create_peer_connectors.results|map(attribute='create')|selectattr('name','==',item.name)
-
-# - name: Create a fact for peer_connection_info
-#   set_fact:
-#     cacheable: yes
-#     peer_connection_info: |
-#       [
-#       {% for line in create_peer_connectors.results %}
-#       {% if line.stdout is defined %}
-#       {{ '{' }}  'id':'{{ line.stdout.split(' ')[4] }}', 'name':'{{ line.item.name }}', 'type': '{{ line.item.type }}' {{ '}' }},
-#       {% endif %}
-#       {% endfor %}
-#       ]
-#   when: create_peer_connectors is defined
-#   ignore_errors: true
-
-#- name: Create a fact for peer_connection_info
-#  set_fact:
-#    cacheable: yes
-#    peer_connection_info:
-#      - id: "{{ line.stdout.split(' ')[4] }}"
-#        name: "{{ line.item.name }}"
-#        type: "{{ line.item.type }}"
-#  when: create_peer_connectors is defined
-#  ignore_errors: yes
-
-- name: Write Peer Info to file for use with EJBCA playbooks
-  become: false
-  copy:
-    dest: "{{ ejbca_csr_dir_output }}/ca_peer_info.yml"
-    content: "{{ peer_connection_info| to_nice_yaml }}"
-  delegate_to: localhost
-  register: write_peer_output
-  no_log: false
-
-- name: Query Peer Connection with SQL hack EJBCA <= 7.3.1.4
-  command: >
-    /usr/bin/mysql 
-    -u root 
-    --password="{{ mariadb_root_password }}" 
-    "{{ management_database_indexes.database_name }}" 
-    -s 
-    -e 'SELECT data FROM PeerData WHERE id = "{{ item.id }}";'
-  loop: "{{ peer_connection_info }}"
-  loop_control:
-    label: "{{ item.id }}"
-  when: 
-    - ( "ra" in item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
-  register: peer_sql_hack_check
-  no_log: true
-
-#- name: debug the output for getting the ID
-#  debug:
-#    msg: "{{ item.stdout.split('<int>')[1].split('</int>')[0]  }}"
-#  loop: "{{ peer_sql_hack_check.results }}"
-#  loop_control:
-#    label: "{{ item.item.id }}"
-#  when: item.stdout is defined
-
-- name: Enable Process incoming requests in Peer Connection with SQL hack EJBCA <= 7.3.1.4
-  command: >
-    /usr/bin/mysql 
-    -u root 
-    --password="{{ mariadb_root_password }}" 
-    "{{ management_database_indexes.database_name }}" 
-    -s 
-    -e 'update PeerData set data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<java version=\"1.8.0_252\" class=\"java.beans.XMLDecoder\">\n <object class=\"org.cesecore.util.Base64PutHashMap\">\n  <void method=\"put\">\n   <string>authenticationKeyBindingId</string>\n   <int>{{ item.stdout.split('<int>')[1].split('</int>')[0]  }}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsEnabled</string>\n   <string>true</string>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMin</string>\n   <int>{{ ra_peer_min_parallel_reqs| int| default('2') }}</int>\n  </void>\n  <void method=\"put\">\n   <string>longHangingConnectionsMax</string>\n   <int>{{ ra_peer_max_parallel_reqs| int| default('50') }}</int>\n  </void>\n </object>\n</java>\n" where id = "{{ item.item.id }}";'
-  loop: "{{ peer_sql_hack_check.results }}"
-  loop_control:
-    label: "{{ item.item.id }}"
-  when: ( "ra" in item.item.type  ) and ( ejbca_version is version('7.3.1.4', '<=') )
-  register: peer_sql_hack
-  no_log: true
-
-#- name: debug peer_connection_info
-#  debug:
-#    var: peer_connection_info
+  register: create_peer_conn
 
 - name: Enable Process incoming requests in Peer Connection EJBCA >= 7.4.0
   ejbca_peer:
     cmd: edit
-    id: "{{ item.id }}"
+    id: "{{ peer_id }}"
     max: "{{ ra_peer_max_parallel_reqs|default('50') }}"
     min: "{{ ra_peer_max_parallel_reqs|default('2') }}"
     process_incoming: true
     path: "{{ ejbca_home }}"
+  vars:
+    peer_id: "{{ create_peer_conn.peers|map(attribute='id')|join('') }}"
   become: true
   become_user: "{{ ejbca_user }}"
-  loop: "{{ peer_connection_info }}"
-  loop_control:
-    label: "{{ item.id }}"
-  register: peer_con_ra_res
-  when: ('ra' in item.type) and (ejbca_version is version('7.4.0', '>='))
+  register: update_peer_conn
+  when:
+    - item.type == 'ra'
 
-#- name: debug peer_con_ra_res
-#  debug:
-#    var: peer_con_ra_res
+#- debug: msg={{ update_peer_conn }}

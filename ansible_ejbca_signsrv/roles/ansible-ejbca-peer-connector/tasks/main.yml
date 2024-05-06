@@ -1,5 +1,62 @@
 ---
 # tasks file for ansible-ejbca-peer-connector
 
+- name: Get current peer connections
+  ejbca_peer:
+    cmd: list
+  become: true
+  become_user: "{{ ejbca_user }}"
+  register: list_peer_conn
+
+- name: Create a fact for peer_connection_info
+  set_fact: 
+    peer_connection_info: "{{ peer_connection_info + [{'id':item.id,'name':item.name}] }}"
+  vars:
+    peer_connection_info: []
+  loop: "{{ list_peer_conn.peers }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# create any peers not in the query
 - name: Create Peer Connector
   include_tasks: add_peer_conn.yml
+  loop: "{{ ejbca_peerConnector }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: add_peer_conn
+  when: 
+    - not item.name in peer_connection_info|map(attribute='name')
+    - item.enabled 
+
+# only run if a peer connection was added
+- block:
+
+  - name: Update list of peer connections
+    ejbca_peer:
+      cmd: list
+    become: true
+    become_user: "{{ ejbca_user }}"
+    register: list_peer_conn
+    
+  - name: Update peer_connection_info
+    set_fact: 
+      peer_connection_info: "{{ peer_connection_info + [{'id':item.id, 'name':item.name]} }}"
+    loop: "{{ list_peer_conn.peers }}"
+    loop_control:
+      label: "{{ item.name }}"
+    when: 
+      - not item.id in peer_connection_info|map(attribute='id')
+
+  when:
+    - not add_peer_conn.skipped
+
+#- debug: msg={{ peer_connection_info }}
+
+- name: Write Peer Info to file for use with EJBCA playbooks
+  become: false
+  copy:
+    dest: "{{ ejbca_csr_dir_output }}/ca_peer_info.yml"
+    content: "{{ peer_connection_info| to_nice_yaml }}"
+  delegate_to: localhost
+  register: write_peer_output
+  no_log: "{{ no_log_enabled|default(true) }}"

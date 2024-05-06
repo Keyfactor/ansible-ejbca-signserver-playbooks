@@ -1,32 +1,57 @@
 ---
 # tasks file for roles/ansible-ejbca-key-binding
 
-- name: Query Active Key Bindings
-  ejbca_keybind:
-    cmd: list
-    path: "{{ ejbca_home }}"
-  become: true
-  become_user: "{{ ejbca_user }}"
-  register: keybindings_list
+- fail: msg='failed when creating'
 
-- name: Create List of Active Bindings
-  set_fact: 
-    active_bindings: "{{ active_bindings + [item.name] }}"
-  vars:
-    active_bindings: []
-  loop: "{{ keybindings_list.bindings }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when: item.status == 'ACTIVE'
+- name: Starting different keybind tasks based on CA / VA
+  block:
 
-- name: Create Authentication Key Binding 
-  include_tasks: add_keybinding_ca.yml
+  - name: Create Authentication Key Binding 
+    include_tasks: add_keybinding_ca.yml
+    loop: "{{ key_bindings }}"
+    loop_control:
+      label: "{{ item.name }}"
+    register: create_auth_binding
+    when: 
+      - auth_key_bind|default(false)
+      - not item.name in active_peer_bindings|map(attribute='name') # skip if key binding is already active
+      - item.type == 'AuthenticationKeyBinding'
+      - item.enabled
+
+  - name: Create OCSP Key Binding 
+    include_tasks: add_keybinding_va.yml
+    loop: "{{ key_bindings }}"
+    loop_control:
+      label: "{{ item.name }}"
+    register: create_ocsp_binding
+    when:
+      - ocsp_key_bind|default(false)
+      - not item.name in active_peer_bindings|map(attribute='name') # skip if key binding is already active
+      - item.type == 'OcspKeyBinding'
+      - item.enabled
+
+- block: # update list of active key bindings only if a ew one was created
+
+  - name: Update list of active key bindings
+    keyfactor.ejbca.cli_keybind:
+      cmd: list
+      path: "{{ ejbca_home }}"
+    become: true
+    become_user: "{{ ejbca_user }}"
+    register: keybindings_list
+    
+  - name: Update active key bindings and bound certificate serial numbers
+    set_fact:
+      active_peer_bindings: "{{ active_peer_bindings + [{'name':item.name,'cert':item.cert,'type':item.type}]  }}"
+    loop: "{{ keybindings_list.bindings }}"
+    loop_control:
+      label: "{{ item.name }}"
+    when: 
+      - item.status == 'ACTIVE'
+      - not item.name in active_peer_bindings|map(attribute='name')
+
+  - debug: msg={{ active_peer_bindings }}
+
   when: 
-    - auth_key_bind is defined
-    - auth_key_bind|bool
-
-- name: Create OCSP Key Binding 
-  include_tasks: add_keybinding_va.yml
-  when:
-    - ocsp_key_bind is defined 
-    - ocsp_key_bind|bool
+    - not create_auth_binding.skipped # do not include if all key bindings creations were skipped
+    - auth_key_bind|default(false)

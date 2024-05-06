@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Jamie Garner
+  description: This role manages inventory files
+  company: Keyfactor
+
+  license: license (GPL-2.0-or-later, MIT, etc)
+
+  min_ansible_version: '2.1'
+
+  platforms:
+    - name: GenericLinux
+      versions:
+      - 'all'
+
+  galaxy_tags: 
+    - keyfactor
+    - ejbca
+    - signserver
+
+dependencies: []

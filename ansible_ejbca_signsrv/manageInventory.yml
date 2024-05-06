@@ -1,0 +1,6 @@
+---
+
+- name: Build inventory file
+  hosts: localhost
+  roles:
+    - ansible-manage-inventory

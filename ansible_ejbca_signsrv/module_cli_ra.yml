@@ -1,0 +1,148 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    gather_facts: no
+    pre_tasks:
+      - include_vars: module_vars.yml
+        tags: always
+
+    tasks:
+
+      # find-entity
+      - name: Query End Entity
+        ejbca.shell.ra:
+          action: find-entity
+          username: dn-test
+        #loop: "{{ end_entities }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: find-entity
+
+      # delete-entity
+      - name: Delete End Entity
+        ejbca.shell.ra:
+          action: delete-entity
+          username: "{{ item.name }}"
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        loop: "{{ end_entities }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: delete-entity
+
+      # add-entity
+      - name: Create End Entity
+        ejbca.shell.ra:
+          action: add-entity
+          username: "{{ item.name }}"
+          issuing_ca: "{{ item.caname }}"
+          subject_dn: "{{ item.dn }}"
+          cert_profile: "{{ item.certprofile }}"
+          ee_profile: "{{ item.eeprofile }} "
+          password: "{{ item.password }}"
+          token: "{{ item.token }}"
+          batch: "{{ item.batch|default(false) }}"
+        loop: "{{ end_entities }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: add-entity
+
+      # reset-entity
+      - name: Change End Entity status to New, revoke active certs, and set password
+        when: item.force_reset|default(false)
+        ejbca.shell.ra:
+          action: reset-entity
+          username: "{{ item.name }}"
+          #password: "{{ item.password }}"
+          password: "{{ item.tokenpass }}"
+          revoke: "{{ item.revoke|default(true) }}"
+          clear_pass: "{{ item.clear_password|default(false) }}"
+        #loop: "{{ end_entities }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: reset-entity
+
+      # set-pass
+      - name: Change password if status is NEW
+        ejbca.shell.ra:
+          action: set-pass
+          username: "{{ item.name }}"
+          password: "{{ item.password }}"
+          clear_pass: "{{ item.clear_password|default(false) }}"
+        loop: "{{ end_entities }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: set-pass
+
+      # set-status
+      - name: Change End Entity status to New
+        ejbca.shell.ra:
+          action: set-status
+          username: "{{ item.name }}"
+        loop: "{{ end_entities }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: set-status
+
+      # enroll-keystore
+      - name: Enroll certificate for existing entity {{ item.name }}
+        ejbca.shell.ra:
+          action: enroll-keystore
+          username: "{{ item.name }}"
+          password: "{{ item.password }}"
+          cert: "{{ item.cert }}"
+          #clear_pass: "{{ item.clear_password|default(false) }}"
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        loop: "{{ end_entities }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: enroll-keystore
+
+      # enroll-pkcs10
+      - name: Sign CSR for key binding 
+        ejbca.shell.ra:
+          action: enroll-pkcs10
+          username: "{{ item.name }}"
+          #password: "{{ item.password }}"
+          password: "{{ item.tokenpass }}"
+          csr: /var/tmp/{{ item.name }}.csr 
+          cert: /var/tmp/{{ item.name }}.crt
+        #loop: "{{ end_entities }}"
+        loop: "{{ ejbca_keybinding }}"
+        loop_control:
+          label: "{{ item.name }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: enroll-pkcs10
+
+      - debug: msg={{ module_output }}
+        tags: always
+
+      
+

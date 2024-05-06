@@ -1,0 +1,25 @@
+---
+
+identity_info:
+  - dn: 'OU=Devices,OU=Solitude,O=Skyrim'
+    name: "sign01.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=sign01.{{ organizationDomainName }}"
+    username: ss_httpd_tls
+    password: "{{ encrypted_httpd_signsrv_identity_password | default('foo123') }}"
+    altname: "dNSName=sign01.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+    useType: signserver
+  - dn: 'OU=Devices,OU=Solitude,O=Skyrim'
+    name: "cesign01.{{ organizationDomainName }}"
+    full_dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=cesign01.{{ organizationDomainName }}"
+    username: cess01_httpd_tls
+    password: "{{ encrypted_httpd_signsrv_identity_password | default('foo123') }}"
+    altname: "dNSName=cesign01.{{ organizationDomainName }}"
+    certprofile: tlsServerClientAuth
+    eeprofile: "tlsServer{{ organizationNameShort }}"
+    caname: "{{ organizationNameShort }}-Sub-CA"
+    token: PEM
+    useType: signserver

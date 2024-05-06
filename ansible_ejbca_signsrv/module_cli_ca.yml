@@ -1,0 +1,110 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    gather_facts: no
+    pre_tasks:
+      - include_vars: module_vars.yml
+        tags: always
+
+    tasks:
+
+      # list-cas
+      - name: List certificate authorities
+        ejbca.shell.ca:
+          action: list-cas
+          return_output: false
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-cas
+
+      # gen-crl
+      - name: Generate new CRL
+        ejbca.shell.ca:
+          action: gen-crl
+          start_date: 20240211041250
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: gen-crl
+
+      # get-field
+      - name: Get certificate authority field value
+        ejbca.shell.ca:
+          action: get-field
+          ca: Development-Issuing-CA
+          field: OCSP service Default URI
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: get-field
+
+      # edit-field
+      - name: Edit certificate authority field
+        ejbca.shell.ca:
+          action: edit-field
+          ca: Development-Issuing-CA
+          field: CRLIssueInterval
+          value: 10000000
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: edit-field
+
+      # list-publishers
+      - name: List all publishers
+        ejbca.shell.ca:
+          action: list-pubs
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-publishers
+
+      # pub-refs
+      - name: Get publisher CA and Certificate Profile references
+        ejbca.shell.ca:
+          action: pub-refs
+          publisher: test-pub2
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: pub-refs
+
+      # pub-remove-refs
+      - name: Remove publisher references ONLY but don't delete publisher
+        ejbca.shell.ca:
+          action: pub-remove
+          publisher: test-pub2
+          refs_only: true
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: pub-remove-refs
+
+      # pub-remove-all
+      - name: Completely remove CA publisher and all references
+        ejbca.shell.ca:
+          action: pub-remove
+          publisher: test-pub2
+          debug: "{{ debug|default(false) }}"
+          debug_option: "{{ debug_option|default('command') }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: pub-remove-all
+
+      - debug: msg={{ module_output }}
+        tags: always

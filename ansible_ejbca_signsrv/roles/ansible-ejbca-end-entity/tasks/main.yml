@@ -1,57 +1,92 @@
 ---
 
-- name: Query {{ ee.name }}
-  ejbca_ra:
-    cmd: findendentity
-    username: "{{ ee.name }}"
-    path: "{{ ejbca_home }}"
+- name: Find {{ item.name }}
+  keyfactor.ejbca.cli_ra:
+    action: find-entity
+    username: "{{ item.name }}"
   become: true
   become_user: "{{ ejbca_user }}"
   register: query_end_entity
 
-- name: Create {{ ee.name }}
-  ejbca_ra:
-    cmd: addendentity
-    username: "{{ ee.name }}"
-    issuing_ca: "{{ ee.caname }}"
-    subject_dn: "{{ ee.dn }}"
-    cert_profile: "{{ ee.certprofile }}"
-    ee_profile: "{{ ee.eeprofile }} "
-    password: "{{ entity_pass }}"
-    token: "{{ ee.token }}"
-    type: 1
-    path: "{{ ejbca_home }}"
-  become: true
-  become_user: "{{ ejbca_user }}"
-  register: add_end_entity
-  when:
+- debug: msg={{ query_end_entity }}
+
+#- fail: msg='just cause'
+
+# only run if end entity doesn't exists
+- name: Create {{ item.name }} End Entity
+  when: 
     - query_end_entity.entity.exists is false
+  block:
 
-- block:
+    - name: Create {{ item.name }}
+      keyfactor.ejbca.cli_ra:
+        action: add-entity
+        username: "{{ item.name }}"
+        issuing_ca: "{{ item.caname }}"
+        subject_dn: "{{ item.dn }}"
+        cert_profile: "{{ item.certprofile }}"
+        ee_profile: "{{ item.eeprofile }} "
+        password: "{{ entity_password }}"
+        token: "{{ item.token }}"
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: add_end_entity
+    
+    #- debug: msg={{ add_end_entity }}
+      
+    # only run if set_clear_pass is set in task as True, that includes this role
+    - name: Set clear password for {{ item.name }}
+      when: 
+        - item.clear_password or
+          set_clear_pass|default('false') is true
+      keyfactor.ejbca.cli_ra:
+        action: set-pass
+        username: "{{ item.name }}"
+        password: "{{ item.password }}"
+        clear_pass: true
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: setpwd_end_entity
 
-  - name: Change end entity password
-    ejbca_ra:
-      cmd: setpwd
-      username: "{{ ee.name }}"
-      password: "{{ entity_pass }}"
-      path: "{{ ejbca_home }}"
-    become: true
-    become_user: "{{ ejbca_user }}"
-    register: setpwd_end_entity
-    when:
-      - query_end_entity.entity.status == '10' 
+    #- debug: msg={{ setpwd_end_entity }}
 
-  - name: Reset end entity
-    ejbca_ra:
-      cmd: resetendentity
-      username: "{{ ee.name }}"
-      password: "{{ entity_pass }}"
-      path: "{{ ejbca_home }}"
-    become: true
-    become_user: "{{ ejbca_user }}"
-    register: reset_end_entity
-    when:
-      - force_ee_reset|default(true)
-      - query_end_entity.entity.status != '10' 
+- debug: msg={{ query_end_entity.entity.exists }}
 
-  when: query_end_entity.entity.exists
+# only run if end entity exists
+- name: Modify existing {{ item.name }}
+  when: 
+    - query_end_entity.entity.exists is true
+  block:
+
+    - name: Set clear password if {{ item.name }}'s status is NEW, is set to use a clear password, and the existing password doesn't match.
+      when:  
+        - item.clear_password|default(false) is true # item is configured for batch enrollment
+        - query_end_entity.entity.password != item.password # dict password and database password don't match
+        - query_end_entity.entity.clear_password is false # end entity isnt set to use a clear password
+        - query_end_entity.entity.status == '10' # end entity status is NEW
+      keyfactor.ejbca.cli_ra:
+        action: set-pass
+        username: "{{ item.name }}"
+        password: "{{ item.password }}"
+        clear_pass: true
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: setpwd_end_entity
+
+    #- debug: msg={{ setpwd_end_entity }}
+
+    - name: Change {{ item.name }} status to New, revoke active certs, and set password
+      when:
+        - item.force_reset|default(false)
+        - query_end_entity.entity.status != '10'
+      keyfactor.ejbca.cli_ra:
+        action: reset-entity
+        username: "{{ item.name }}"
+        password: "{{ item.tokenpass }}"
+        revoke: "{{ item.revoke|default(true) }}"
+        clear_pass: "{{ item.clear_password|default(false) }}"
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: reset_end_entity
+
+    #- debug: msg={{ reset_end_entity }}

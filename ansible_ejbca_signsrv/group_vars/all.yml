@@ -3,6 +3,11 @@
 # Set the default Python interpreter
 #ansible_python_interpreter: /usr/bin/python3
 
+# deployment type
+deployment_edition_enterprise: true
+deployment_edition_community: false
+deployment_container: false
+
 # Configure the Orgnaization variables used for templating DN's and FQDN's
 organizationName: Solitude
 organizationNameShort: "{{ organizationName }}"

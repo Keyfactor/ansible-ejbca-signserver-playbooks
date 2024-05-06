@@ -1,0 +1,13 @@
+---
+# tasks file for manage-inventory
+
+- debug: msg={{ deployment_edition_enterprise }}
+
+- name: Build new inventory file
+  template:
+    src: inventory.j2
+    dest: "{{ role_path }}/tests/inventory"
+    lstrip_blocks: true
+    trim_blocks: true
+  tags:
+    - build

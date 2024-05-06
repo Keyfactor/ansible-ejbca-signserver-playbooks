@@ -21,9 +21,6 @@ Key Usage:
 Extended Key Usage Used: true
 Extended Key Usage:
 - Client Authentication
-- Kerberos Client Authentication
-- MS Smart Card Logon
-- SSH Client
 Issuer Alternative Name Used: false
 Subject Alternative Name Used: true
 Subject Alternative Name Searchable: true
@@ -37,17 +34,8 @@ CVC Access Rights (Inspection System): [
 LDAP DN Order: false
 Available CAs:
 - Any CA 
-{% if use_external_va is sameas true %}
 Publishers:
-{% if ejbca_peerConnector|length > 1 %}
-{% for item in ejbca_peerConnector if item.type == 'ocsp' %}
-- validationAuthorityPeerPub-{{ item.name }}
-{% endfor %}
-{% elif ejbca_peerConnector[0].type == 'ocsp'%}
-- validationAuthorityPeerPub-{{ item.name }}
-{% endif %}
-{% endif %}
-{% if ejbca_version is version('7.6.0', '>=') %}
+-
 Account Binding Namespace: [
   ]
-{% endif %}
+

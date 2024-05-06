@@ -1,14 +1,25 @@
 ---
 # tasks file for roles/ansible-ejbca-key-binding
 
+# query will return status of whether crypto token exists and the keys it contains if it does
+- name: Check if {{ item.crypto_token_name }} and necessary keys already exist
+  keyfactor.ejbca.cli_token:
+    action: listkeys
+    token: "{{ item.crypto_token_name }}"
+  become_user: "{{ ejbca_user }}"
+  register: query_crypto_token
+
 - name: Create cryptotoken for Authentication Key Binding
   include_role: 
     name: ansible-ejbca-crypto-token
     tasks_from: add_crypto_token
-  loop: "{{ key_bindings }}"
-  no_log: false
+  register: add_crypto_token
+  no_log: "{{ no_log_enabled|default(true) }}"
   when: 
-    - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
+    - not query_crypto_token.changed
+    - use_external_va or 
+      use_external_ra or 
+      use_external_ss
 
 - name: Generate keys for Authentication Key Binding on crypto token
   include_role:
@@ -16,155 +27,146 @@
     tasks_from: generate_keys
   loop: "{{ key_bindings|subelements('crypto_token') }}"
   loop_control:
-    label: "{{ key_item.0.slot_identifier_value }}"
+    label: "{{ key_item[0].slot_identifier_value }}"
     loop_var: key_item
-  no_log: false
-  when: not key_item[0].name in active_bindings
-
+  no_log: "{{ no_log_enabled|default(true) }}"
+  when:
+    - not key_item[1].key_label in query_crypto_token.token_keys|map(attribute='alias') or
+      add_crypto_token.changed
+      
 - name: Generate Random Password
   set_fact:
     entity_pass: "{{ pass_15 }}"
-  no_log: true
+  no_log: "{{ no_log_enabled|default(true) }}"
 
 - name: Create key binding for RA / SignServer / VA
-  ejbca_keybind:
-    cmd: create
-    bind: "{{ item.0.name }}"
-    token: "{{ item.0.crypto_token_name }}"
-    key: "{{ item.1.key_label }}"
+  keyfactor.ejbca.cli_keybind:
+    action: create
+    bind: "{{ item.name }}"
+    token: "{{ item.crypto_token_name }}"
+    key: "{{ key.key_label }}"
     type: AuthenticationKeyBinding
-    sigalg: "{{ item.0.signature_algorithm }}"
-    path: "{{ ejbca_home }}"
+    sigalg: "{{ item.signature_algorithm }}"
+  loop: "{{ item.crypto_token }}"
+  loop_control:
+    label: "{{ key.key_label }}"
+    loop_var: key
   become: true
   become_user: "{{ ejbca_user }}"
-  loop: "{{ key_bindings|subelements('crypto_token') }}"
-  loop_control:
-    label: "{{ item.0.name }}"
-  no_log: true
+  no_log: "{{ no_log_enabled|default(true) }}"
   register: create_binding
-  when: 
-    - not item[0].name in active_bindings
-    - item.0.enabled
+  when: key.type == 'keybind'
+
+#- debug: msg={{ create_binding }}
 
 - name: Create CSR for Authentication Key Binding
-  ejbca_keybind:
-    cmd: gencsr
+  keyfactor.ejbca.cli_keybind:
+    action: gencsr
     bind: "{{ item.name }}"
     file: "/var/tmp/{{ item.name }}.csr"
     path: "{{ ejbca_home }}"
-  loop: "{{ key_bindings }}"
-  loop_control:
-    label: "{{ item.name }}"
-  no_log: false
+  no_log: "{{ no_log_enabled|default(true) }}"
   become: true
   become_user: "{{ ejbca_user }}"
   register: keybinding_create_csr
-  when:
-    - not item.name in active_bindings
-    - item.enabled
 
 - name: Create/Reset End Entities
   include_role:
     name: ansible-ejbca-end-entity
-  loop: "{{ key_bindings }}"
-  loop_control:
-    loop_var: ee
-    label: "{{ ee.name }}"
-  when: 
-    - ee.enabled
-    - not ee.name in active_bindings
+  vars:
+    entity_password: "{{ entity_pass }}"
 
 - name: Sign CSR for key binding 
-  ejbca_createcert:
+  keyfactor.ejbca.cli_ra:
+    action: 
     username: "{{ item.name }}"
     password: "{{ entity_pass }}"
     csr: /var/tmp/{{ item.name }}.csr 
     cert: /var/tmp/{{ item.name }}.crt
-    path: "{{ ejbca_home }}"
-  loop: "{{ key_bindings }}"
-  loop_control:
-    label: "{{ item.name }}"
-  no_log: false
+  no_log: "{{ no_log_enabled|default(true) }}"
   become: true
   become_user: "{{ ejbca_user }}"
   register: keybinding_sign_csr
-  when: 
-    - not item.name in active_bindings
-    - item.enabled
 
 - name: Import cert for key binding
-  ejbca_keybind:
-    cmd: import
+  keyfactor.ejbca.cli_keybind:
+    action: import
     bind: "{{ item.name }} "
     file: /var/tmp/{{ item.name }}.crt
     path: "{{ ejbca_home }}"
-  loop: "{{ key_bindings }}"
-  loop_control:
-    label: "{{ item.name }}"
   become: true
   become_user: "{{ ejbca_user }}"
   register: keybinding_import_cert
-  when: 
-    - not item.name in active_bindings
-    - item.enabled
 
 - name: Activate keybinding
-  ejbca_keybind:
-    cmd: setstatus
+  keyfactor.ejbca.cli_keybind:
+    action: setstatus
     bind: "{{ item.name }}"
     active: true
     path: "{{ ejbca_home }}"
-  loop: "{{ key_bindings }}"
-  loop_control:
-    label: "{{ item.name }}"
   become: true
   become_user: "{{ ejbca_user }}"
   register: keybinding_setstatus
-  when:
-    - not item.name in active_bindings
-    - item.enabled
 
-- name: Query key bindings
-  ejbca_keybind:
-    cmd: list
-    path: "{{ ejbca_home }}"
-  become: true
-  become_user: "{{ ejbca_user }}"
-  register: keybindings_list
+# - name: Update list of active key bindings
+#   set_fact: 
+#     active_bindings: "{{ active_bindings + [item.name] }}"
+#   loop: "{{ keybindings_list.bindings }}"
+#   loop_control:
+#     label: "{{ item.name }}"
+#   when: 
+#     - item.status == 'ACTIVE'
 
-- name: Determine certificate serial numbers
+# - name: Query {{ item.name }} to get certificate serial number
+#   ejbca_keybind:
+#     cmd: list
+#     bind: "{{ item.name }}"
+#     path: "{{ ejbca_home }}"
+#   become: true
+#   become_user: "{{ ejbca_user }}"
+#   register: keybindings_list
+
+- name: Update active key bindings certificate serial numbers
   set_fact: 
-    peer_cert_serial_numbers: "{{ peer_cert_serial_numbers + [{'name':item.name, 'cert':item.cert}] }}"
-  vars:
-    peer_cert_serial_numbers: []
+    active_peer_bindings: "{{ active_peer_bindings + [{'name':item.name,'cert':item.cert,'type':item.type}] }}"
   loop: "{{ keybindings_list.bindings }}"
   loop_control:
-    label: "{{ item.name }}"
-  when: item.status == 'ACTIVE'
+    loop_var: bind
+    label: "{{ bind.name }}"
+  when: bind.name == item.name
 
-- name: Create local directory for {{ ejbca_csr_dir_output }}
-  become: true
-  file:
-    path: "{{ ejbca_csr_dir_output }}"
-    state: directory
-  delegate_to: localhost
+# - name: Determine certificate serial numbers
+#   set_fact: 
+#     peer_cert_serial_numbers: "{{ peer_cert_serial_numbers + [{'name':bind.name, 'cert':bind.cert, 'type':bind.type}] }}"
+#   vars:
+#     peer_cert_serial_numbers: []
+#   loop: "{{ keybindings_list.bindings }}"
+#   loop_control:
+#     loop_var: bind
+#     label: "{{ bind.name }}"
+#   when: bind.status == 'ACTIVE'
 
-- name: Write cert serial numbers to {{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
-  become: true
-  copy:
-    dest: "{{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml"
-    content: "{{ peer_cert_serial_numbers| to_nice_yaml }}"
-  delegate_to: localhost
-  register: write_the_output
-  no_log: true
+# - name: Create local directory for {{ ejbca_csr_dir_output }}
+#   become: true
+#   file:
+#     path: "{{ ejbca_csr_dir_output }}"
+#     state: directory
+#   delegate_to: localhost
+
+# - name: Write cert serial numbers to {{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
+#   become: true
+#   copy:
+#     dest: "{{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml"
+#     content: "{{ peer_cert_serial_numbers|to_nice_yaml }}"
+#   delegate_to: localhost
+#   register: write_the_output
+#   no_log: "{{ no_log_enabled|default(true) }}"
 
 - name: Write cert serial numbers to shared vars directory {{ sharedVarsLocation }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
-  become: true
+  become: false
   copy:
     dest: "{{ sharedVarsLocation }}/peer_cert_serial_numbers.yml"
-    content: "{{ peer_cert_serial_numbers| to_nice_yaml }}"
+    content: "{{ active_peer_bindings| to_nice_yaml }}"
   delegate_to: localhost
   register: write_the_output2
-  #no_log: true
-
-#  when: ( item.name not in keybinding_list.stdout ) and ( item.enabled|bool )
+  no_log: "{{ no_log_enabled|default(true) }}"

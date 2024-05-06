@@ -127,10 +127,6 @@ signsrv_templated_properties_files:
 
 core_disable_audit_log_to_db: false
 
-#Enable DB integrity protection
-databaseprotection_enablesign_AuditRecordData: true
-databaseprotection_enableverify_AuditRecordData: true
-
 #signserver_deploy.properties
 web_httpserver_external_privhttps: 443
 webdoc_enabled: true

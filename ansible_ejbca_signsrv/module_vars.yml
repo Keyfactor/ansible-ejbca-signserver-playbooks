@@ -1,0 +1,113 @@
+---
+
+key_bindings_active: []
+key_bindings_disabled: []
+ejbca_user: wildfly
+ejbca_home: /opt/ejbca
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+
+ejbca_keybinding:
+- name: peerClient-ocsp
+  type: OcspKeyBinding
+  crypto_token_name: peeringCryptoToken
+  tokentype: Pkcs11NgCryptoToken
+  tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+  cryptotoken_enable_auto_activate: true
+  status: ACTIVE
+  slot_identifier_type: "SLOT_LABEL"
+  slot_identifier_value: "KeyBinding_SLOT"
+  force_used_slots: true
+  crypto_token:
+    - key_label: "peerKeyBindingOcsp0001"
+      key_size: 3072
+      key_type: "RSA"
+      type: keybind
+    - key_label: "testKey"
+      key_size: 1024
+      key_type: "RSA"
+      type: test
+  signature_algorithm: SHA256WithRSA
+  dn: "C=US,OU=Peering,O=Organization,CN=peerClient-ocsp"
+  caname: "ManagementCA"
+  token: "USERGENERATED"
+  certprofile: tlsPeerConnector
+  eeprofile: tlsPeerConnMgmt
+  useType: ocsp
+  enabled: false
+- name: peerClient-ra
+  type: AuthenticationKeyBinding
+  crypto_token_name: peeringCryptoToken
+  tokentype: Pkcs11NgCryptoToken
+  tokenpass: "{{ encrypted_peerKeyBinding_token_pin | default('foo123') }}"
+  cryptotoken_enable_auto_activate: true
+  active: true
+  slot_identifier_type: "SLOT_LABEL"
+  slot_identifier_value: "KeyBinding_SLOT"
+  force_used_slots: true
+  crypto_token:
+    - key_label: "peerKeyBindingRa0001"
+      key_size: 3072
+      key_type: "RSA"
+      type: keybind
+  signature_algorithm: SHA256WithRSA
+  dn: "C=US,OU=Peering,O=Organization,CN=peerClient-ra"
+  caname: "ManagementCA"
+  token: "USERGENERATED"    
+  certprofile: tlsPeerConnector
+  eeprofile: tlsPeerConnMgmt
+  useType: ra
+  enabled: true
+  force_reset: true
+
+publishers:
+  - test-publisher
+
+ejbca_peerConnector:
+  - name: OCSP-01
+    url: "https://ocsp01.{{ organizationDomainName }}/ejbca/peer/v1"
+    #keybinding: peerClient-ocsp
+    keybinding: Peering-Auth
+    type: ocsp
+    state: ENABLED
+    remote_key_update: true
+    enabled: true
+  - name: RA-01
+    url: "https://ra01.{{ organizationDomainName }}/ejbca/peer/v1"
+    #keybinding: peerClient-ra
+    keybinding: Peering-Auth
+    type: ra
+    state: ENABLED
+    enabled: false
+  - name: Sign-01
+    url: "https://sign01.{{ organizationDomainName }}/signserver/peer/v1"
+    #keybinding: peerClient-sign
+    keybinding: Peering-Auth
+    type: sign
+    state: ENABLED
+    enabled: false
+
+end_entities:
+  - name: test-user-1
+    password: foo123
+    certprofile: ClientAuth-CP
+    eeprofile: Entity-EEP
+    caname: Development-Issuing-CA
+    dn: CN=test-user-1,O=Validation Customer,C=US
+    token: PEM
+    cert: /var/tmp/test_user.crt
+    revoke: true
+    clear_password: true
+    force_reset: true
+    batch: false
+  # - name: test-user-2
+  #   password: foo123
+  #   certprofile: ClientAuth-CP
+  #   eeprofile: Entity-EEP
+  #   caname: Development-Issuing-CA
+  #   dn: CN=test-user-2,O=Validation Customer,C=US
+  #   token: PEM
+  #   cert: /var/tmp/test_user.crt
+  #   revoke: true
+  #   server_side: true
+  #   clear_password: false
+  #   force_reset: false

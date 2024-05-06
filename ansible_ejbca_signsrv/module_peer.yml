@@ -1,0 +1,87 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    become: yes
+    become_method: sudo
+    gather_facts: no
+
+    vars:
+      ejbca_user: wildfly
+      ejbca_home: /opt/ejbca
+
+    tasks:
+
+      # list
+      - name: List Peer Connections
+        ejbca_peer:
+          cmd: list
+          #type: outgoing
+          #type: incoming
+          path: "{{ ejbca_home }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list
+
+      # remove
+      - name: Remove Peer Connections
+        ejbca_peer:
+          cmd: remove
+          id: 1844121244
+          path: "{{ ejbca_home }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: remove
+
+      # create
+      - name: Create Peer Connections
+        ejbca_peer:
+          cmd: create
+          name: test-peer
+          state: ENABLED
+          url: https://test-peer.primekey.com/ejbca/peer/v1
+          akb: Peering-Auth
+          path: "{{ ejbca_home }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: create
+
+      # config
+      - name: Configure Global Peer Settings
+        ejbca_peer:
+          cmd: config
+          name: test peer
+          enable_in: false
+          enable_out: true
+          path: "{{ ejbca_home }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: config
+
+      # edit
+      - name: Edit Peer Connections
+        ejbca_peer:
+          cmd: edit
+          id: 1512912530
+          name: test-peer
+          #url: https://test-peer.primekey.com/ejbca/peer/v1
+          url: https://google.com
+          path: "{{ ejbca_home }}"
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: edit
+
+      - name: dump module output
+        debug:
+          msg: "{{ module_output }}"
+        tags: always
+
+      - name: dump module output
+        debug:
+          msg: "{{ module_output.peers|map(attribute='id') }}"
+        tags: always

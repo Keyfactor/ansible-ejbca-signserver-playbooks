@@ -1,0 +1,65 @@
+---
+
+  - name: test my new module
+    hosts: ca-host
+    gather_facts: no
+    pre_tasks:
+      - include_vars: module_vars.yml
+        tags: always
+
+    tasks:
+
+      # get-field
+      - name: Get publisher field values
+        ejbca.shell.publisher:
+          action: get-field
+          name: va-publisher
+          type: MultiGroupPublisher
+          field: publisherId
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: get-field
+
+      # list-pubs
+      - name: List all publishers
+        ejbca.shell.publisher:
+          action: list-pubs
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-pubs
+
+      # list-refs
+      - name: Get single publisher CA and Certificate Profile references
+        ejbca.shell.publisher:
+          action: list-refs
+          name: va-publisher
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: list-refs
+
+      # remove-refs
+      - name: Remove publisher references ONLY but don't delete publisher
+        ejbca.shell.publisher:
+          action: remove
+          name: va-publisher
+          refs_only: true
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: remove-refs
+
+      # remove-pub
+      - name: Completely remove CA publisher and all references
+        ejbca.shell.publisher:
+          action: remove
+          name: va-publisher
+        become: true
+        become_user: "{{ ejbca_user }}"
+        register: module_output
+        tags: remove-pub
+
+      - debug: msg={{ module_output }}
+        tags: always

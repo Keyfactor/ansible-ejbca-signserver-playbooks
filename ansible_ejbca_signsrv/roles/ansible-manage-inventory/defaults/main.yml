@@ -1,0 +1,51 @@
+---
+# defaults file for manage-inventory
+
+# deployment types
+deployment_edition_enterprise: false
+deployment_edition_community: false
+
+# products
+deployment_ejbca: true
+deployment_signserver: false
+
+# platforms
+deployment_vm: true
+deployment_container: false
+
+# ejbca
+deployment_external_root_ca: true
+deployment_external_va: true
+deployment_external_ra: true
+
+# databases
+deployment_mariadb: true
+
+# groups
+groups:
+  - httpdServers
+  - mariadbServers
+  - applicationServers
+
+groups_cas_roots:
+  - name: rt01
+    ansible_host: 172.16.170.13
+
+groups_cas_subs:
+  - name: ca01
+    ansible_host: 172.16.170.201
+
+groups_vas:
+  - name: va01
+    ansible_host: 172.16.170.173
+
+groups_ras:
+  - name: ra01
+    ansible_host: 172.16.170.172
+
+groups_ee:
+  - name: eeCaServers
+    hosts:
+      - name: ca01
+        ansible_host: 192.168.1.1
+    parents: "{{ ee_ejbca_parents }}"

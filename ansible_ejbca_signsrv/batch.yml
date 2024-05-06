@@ -1,0 +1,162 @@
+---
+
+- name: test my new module
+  hosts: ca-host
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  vars:
+    ejbca_user: wildfly
+    #ejbca_shell: /opt/ejbca/bin/ejbca.sh
+    ejbca_shell: /opt/ejbca
+    ca: Development-Issuing-CA
+    name: Third Bind
+    token: Peering
+    alias: signKeyTest
+    type: auth
+    spec: 2048
+    field: EnforceKeyRenewal
+    value: True
+  
+  tasks:
+        
+    - name: Query key bindings
+      ejbca_keybind:
+        cmd: list
+        path: "{{ ejbca_home }}"
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: keybindings_list
+
+    - name: Determine certificate serial numbers
+      set_fact: 
+        peer_cert_serial_numbers: "{{ peer_cert_serial_numbers + [{'name':item.name, 'cert':item.cert}] }}"
+      vars:
+        peer_cert_serial_numbers: []
+      loop: "{{ keybindings_list.bindings }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.status == 'ACTIVE'
+
+    - name: Write cert serial numbers to {{ ejbca_csr_dir_output }}/peer_cert_serial_numbers.yml for use with EJBCA VA or RA playbooks 
+      copy:
+        dest: "/var/tmp/peer_cert_serial_numbers.yml"
+        content: "{{ peer_cert_serial_numbers|to_nice_yaml }}"
+      #delegate_to: localhost
+      register: write_the_output
+      no_log: false
+
+    - debug: msg={{ peer_cert_serial_numbers }}
+
+    - name: Query key bindings
+      ejbca_keybind:
+        cmd: list
+        path: "{{ ejbca_home }}"
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: keybindings_list
+
+    #- debug: msg={{ keybindings_list }}
+
+    - name: Create RemoteAuthentication key binding
+      ejbca_keybind:
+        cmd: create
+        name: Peering-Auth
+        token: Peering
+        key: signKey2
+        type: AuthenticationKeyBinding
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: module_output
+      when: not keybindings_list.bindings|map(attribute='name')
+
+    - name: Generate a CSR for a key binding
+      ejbca_keybind:
+        cmd: gencsr
+        name: Peering-Auth
+        file: /var/tmp/Peering-Auth.csr
+      become_user: "{{ ejbca_user }}"
+      register: gen_csr
+      tags: gencsr
+
+    - debug: msg={{ gen_csr }}
+
+    - name: Query Peering-Auth
+      ejbca_ra:
+        cmd: findendentity
+        username: Peering-Auth
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: query_end_entity
+
+    - debug: msg={{ query_end_entity }}
+
+    # addendentity
+    - name: Add End Entity
+      ejbca_ra:
+        cmd: addendentity
+        username: Peering-Auth
+        issuing_ca: Development-Issuing-CA
+        subject_dn: CN=Peering-Auth,O=Validation Customer,C=US
+        cert_profile: ClientAuth-CP
+        ee_profile: Entity-EEP
+        password: foo123
+        type: 1
+        token: PEM
+        path: "{{ ejbca_home }}"
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: add_end_entity
+      when: query_end_entity.entity.exists is false
+
+    # resetendentity
+    - name: Reset End Entity
+      ejbca_ra:
+        cmd: resetendentity
+        username: Peering-Auth
+        password: foo123
+      become: true
+      become_user: "{{ ejbca_user }}"
+      register: reset_end_entity
+      when: 
+        - force_ee_reset|default(true)
+        - query_end_entity.entity.status != '10' 
+
+    - debug: msg={{ reset_end_entity }}
+
+    # createcert
+    - name: Sign certificate request
+      ejbca_createcert:
+        username: Peering-Auth
+        password: foo123
+        csr: /var/tmp/Peering-Auth.csr
+        cert: /var/tmp/Peering-Auth.crt
+        path: "{{ ejbca_home }}"
+      become_user: "{{ ejbca_user }}"
+      register: sign_csr
+      tags: createcert
+
+    - debug: msg={{ sign_csr }}
+
+    - name: Import a signed pem file for a key binding
+      ejbca_keybind:
+        cmd: import
+        name: Peering-Auth
+        file: /var/tmp/Peering-Auth.crt
+      become_user: "{{ ejbca_user }}"
+      register: import_cert
+      tags: import
+
+    - debug: msg={{ import_cert }}
+
+    - name: Activate key binding
+      ejbca_keybind:
+        cmd: setstatus
+        name: Peering-Auth
+        status: ACTIVE
+      become_user: "{{ ejbca_user }}"
+      register: activate_key_binding
+      tags: setstatus
+
+    - debug: msg={{ activate_key_binding }}

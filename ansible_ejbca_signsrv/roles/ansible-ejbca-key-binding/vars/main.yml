@@ -3,3 +3,8 @@
 
 pass_33: "{{ lookup('password', '/dev/null length=33 chars=ascii_letters') }}"
 pass_15: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+
+# initialize empty lists for updating in tasks
+# set in vars instead of default for use in other roles
+key_bindings_active: []
+key_bindings_disabled: []

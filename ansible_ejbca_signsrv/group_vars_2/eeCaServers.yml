@@ -1,0 +1,196 @@
+---
+
+# If enabled this will configure a publisher for OCSP, OCSP signer key update service, OSCP publishing queue, OCSP publisher to the certificate profiles,
+# create Peer connection, and create an auth key binding
+use_external_va: true
+
+# If enabled this will configure a Peer connection, and add the RA Peer role to EJBCA 
+use_external_ra: true
+
+# If enabled configures a Peer connectiona nd key binding for Sign Server
+use_external_ss: false
+
+# Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
+# an external CA. When using this option a crypto token is created in EJBCA, and then the CA is imported
+# using configdump and initialized. This can be used for the Management CA, Roots, and Sub CA's on the same
+# EJBCA node. As stated this cannot be used for externally signed CA's at this time.
+deploy_with_configdump: true
+configdump_directory_structure: "{{ configdump_dir_structure }}"
+configdump_import_files: "{{ configdump_files }}"
+
+# Add publishers to the CA's in EJBCA. CA's created before the publisher is added to EJBCA and want to leverage the publisher
+# should use this option to add the publisher to the CA.
+add_publshers_to_cas: true
+
+# EJBCA version and deployment info
+ejbca_version: 8.0.0
+# If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
+use_local_repository: false
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_8_0.zip
+# EJBCA URL to download the zip release file
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_0.zip
+ejbca_src_dir_name: ejbca_ee_8_0
+ejbca_type: CA
+
+# EJBCA Upgrade version
+ejbca_upgrade_version: 7.11.0
+# EJBCA Upgrade version URL to download the zip release file
+ejbca_upgrade_software_url: http://172.16.170.133:8080/ejbca_ee_7_12_0.zip
+# Directory name of EJBCA Upgrade version
+ejbca_upgrade_src_dir: ejbca_ee_7_12_0
+
+# Variables to confgure the Widfly datasource for connecting to the applicable DB
+appsrv_datasources:
+  - jndi_name: "java:/EjbcaDS"
+    pool_name: ejbcads
+    #Connection type is mariadb or sqlserver
+    database_connection_type: mariadb
+    #driver class is org.mariadb.jdbc.Driver or com.microsoft.sqlserver.jdbc.SQLServerDriver
+    database_driver_class: org.mariadb.jdbc.Driver
+    #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
+    database_jar_filename: mariadb-java-client.jar
+    host: 127.0.0.1
+    backup_host: ejbca01.solitude.skyrim
+    port: 3306
+    database: ejbca
+    user: ejbca-usr
+    credential_ref: dbPassword
+    password: "{{ encrypted_database_ejbcauser_password | default('ejbca') }}"
+    #if using a MSSQL or AzureSQL server configured for TLS 1.2, add a connection string. Below is a connection string for AzureSQL. Add ";" in front of connection string
+    #if using AzureSQL set trustServerCertificate=true to trust the self signed certificate used and add ;integratedSecurity=true;authenticationScheme=JavaKerberos;
+    #connection_parameters: ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;sendStringParametersAsUnicode=false"
+
+wildfly_enable_kerberos: false
+krb_conf_use_os_file: true
+wildfly_kerberos_enable_debug_log: false
+wildfly_kerberos_file_path: /etc/wildfly.krb5.conf
+krb_conf_default_realm: INTERNAL.PRIMEKEY.COM
+krb_conf_realms:
+  - realm: INTERNAL.PRIMEKEY.COM
+    kdc: INTERNAL.PRIMEKEY.COM
+    default_domain:
+    admin_server:
+# URL to download the keytab file used for kerberos.
+wildfly_kerberos_keytab_file_url: 
+# SHA256 checksum of the keytab file
+wildfly_kerberos_keytab_file_url_checksum: 
+wildfly_kerberos_keytab_principal: SERVICENAME@INTERNAL.PRIMEKEY.COM
+
+# Uncomment to configure Wildfly to send logs to a Syslog server 
+#appsrv_syslogsources:
+#  - name: SYSLOGTCP
+#    enabled: true
+#    log_level: INFO
+#    ejbca_host: my.host
+#    syslog_app_name: WildFly
+#    syslog_server_address: my.graylog.server
+#    syslog_server_port: 514
+#    syslog_facility: local-use-1
+
+# HSM Configuration
+# Use softhsm for PKCS11
+use_softhsm: true
+use_ncipher: false
+use_safenet_lunasa: false
+# If true, allows running application server service via preload
+ncipher_preload: false
+# Path to the preload executable
+preload_path: /opt/nfast/bin/preload
+# HSM PKCS#11 shared library location
+hsm_shared_library: /usr/lib64/libsofthsm2.so
+
+ejbca_templated_properties_files:
+  - src: cesecore.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/cesecore.properties"
+  - src: database.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/database.properties"
+  - src: ejbca.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/ejbca.properties"
+  - src: web.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/web.properties"
+  - src: mail.properties.j2
+    dest: "{{ ejbca_home }}/../ejbca-custom/conf/mail.properties"
+  - src: custom.properties.j2
+    dest:  "{{ ejbca_home }}/../ejbca-custom/conf/custom.properties"
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1.
+# "ANY" can be specified to allow any remote IP.
+ejbca_conf_healtcheck_authorizedips: 127.0.0.1
+
+# Set this to true to use P11NG with EJBCA 
+web_use_p11ng: true
+
+#Enable/Disable DB integrity protection
+databaseprotection_enablesign_AuditRecordData: true
+databaseprotection_enableverify_AuditRecordData: true
+
+# EJBCA audit log database protection configurations
+# slot_index: Index of HSM slot used for database integrity protection
+# slot_identifier_type: Type of identifier; SLOT_LABEL
+# slot_identifier_value: Name or index of the slot
+# signature_algorithm: Algorithm used to sign database rows
+# tokenpass: PIN used to access HSM slot. Should be encrypted with Ansible vault
+# crypto_token: Specify the keys in a list/dict to generate
+#   - key_label: Label of key used for database integrity protection
+#     key_size: Size of the key
+#     key_type: Type of key; RSA, ECDSA
+ejbca_databaseprotection:
+  - slot_identifier_type: "SLOT_LABEL"
+    slot_identifier_value: DB_Protect_SLOT
+    signature_algorithm: SHA256WithRSA
+    tokenpass: "{{ encrypted_databaseprotection_token_pin | default('foo123') }}"
+    crypto_token:
+      - key_label: dbProtect0001
+        key_size: 3072
+        key_type: "RSA"
+        type: dbprotect
+      - key_label: "testKey"
+        key_size: 1024
+        key_type: "RSA"
+        type: test
+
+# web.properties file
+# Set the hostname for configuring OAuth Reply URL
+web_httpserver_hostname: "{{ httpd_identity_info.id_name }}"
+    
+# CA DN in Web format and filename used to configure cronjob for downloading CRL's and hosting them on webserver
+certification_authorities_crl_files:
+  - crlfilename: "{{ organizationNameShort | lower }}-mgmtca.crl"
+    cadn: "CN%3dManagementCA%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+  - crlfilename: "{{ organizationNameShort | lower }}-rootca-g1.crl"
+    cadn: "CN%3d{{ organizationNameCRL }}+Root+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+  - crlfilename: "{{ organizationNameShort | lower }}-subca-g1.crl"
+    cadn: "CN%3d{{ organizationNameCRL }}+Issuing+CA+G1%2cOU%3dCertification+Authorities%2cO%3d{{ organizationNameCRL }}%2cC%3d{{ countryName }}"
+
+# Enrollment protocols to disable on EJBCA
+disable_ejbca_protocols:
+  - name: ACME
+  - name: EST
+  - name: OCSP
+  - name: SCEP
+  #- name: 'RA Web'
+
+# Enrollment protocols to enable on EJBCA
+enable_ejbca_protocols:
+  - name: Certstore
+  - name: CMP
+  - name: CRLstore
+  - name: 'Public Web'
+  - name: 'REST CA Management'
+  - name: 'REST Certificate Management'
+  - name: 'REST Crypto Token Management'
+  - name: Webdist
+  - name: 'Web Service'
+
+# CRL Update Service Worker Settings
+crl_service_time_int: 1
+crl_service_time_unit: HOURS
+
+# Configure the RA Peering requests
+ra_peer_max_parallel_reqs: 50
+ra_peer_min_parallel_reqs: 2
+
+# Map the identity_info to create the TLS certs for the EJBCA CA instances
+identity_info: "{{ tls_identity_info }}"
