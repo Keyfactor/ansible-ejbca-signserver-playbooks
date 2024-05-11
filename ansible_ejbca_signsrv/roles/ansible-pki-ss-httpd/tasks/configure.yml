@@ -1,67 +1,10 @@
 ---
 
-- name: Stage HTTPD certificate files
+- name: Configure EJBCA Apache HTTPD conf files
   block:
 
-    - name: Copy cert files from Controller
-      copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        owner: root
-        group: root
-      loop: "{{ httpd_cert_files }}"
-      loop_control: 
-        label: "{{ item.src }}"
-      register: file_copy
-
-    - name: Copy CA chain files from Controller
-      copy:
-        src: "{{ ejbca_cacrt_dir_output }}/{{ item.caname }}-fullchain.crt"
-        dest: "/etc/pki/tls/certs/{{ item.caname }}-fullchain.crt"
-        owner: root
-        group: root
-      loop: "{{ httpd_trusted_cas }}"
-      loop_control:
-        label: "{{ item.caname }}"
-      register: file_copy_ca_chain
-      
-    - name: Add {{ item.caname }} chain file to trusted-ca.crt file
-      shell: >
-        cat /etc/pki/tls/certs/{{ item.caname }}-fullchain.crt >> /etc/pki/tls/certs/trusted-ca.crt
-      loop: "{{ httpd_trusted_cas }}"
-      loop_control:
-        label: "{{ item.caname }}"
-
-  when: 
-    - inventory_hostname in groups['eeRaServers'] or
-      inventory_hostname in groups['eeVaServers'] or
-      inventory_hostname in groups['eeSignServers'] or
-      inventory_hostname in groups['ceSignServers']
-
-- name: Configure Firewalld
-  block:
-    - name: Open http port
-      firewalld:
-        service: 'http'
-        permanent: yes
-        immediate: yes
-        state: enabled
-
-    - name: Open https port
-      firewalld:
-        service: 'https'
-        permanent: yes
-        immediate: yes
-        state: enabled
-
-  tags: reverse-proxy
-  when: enable_firewalld_for_httpd|bool
-
-- name: Configure PKI HTTPD conf files
-  block:
-
-    - name: PKI Configure the httpd conf file for Alma/CentOS/Oracle/RedHat/Rocky 8
-      template:
+    - name: Configure EJBCA Apache HTTPD configuration files for Alma/CentOS/Oracle/RedHat/Rocky 8/9
+      ansible.builtin.template:
         backup: yes
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
@@ -82,8 +25,8 @@
           (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
           (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
-    - name: PKI Configure the httpd conf file for CentOS/RedHat 7
-      template:
+    - name: Configure EJBCA Apache HTTPD configuration files for CentOS/RedHat 7
+      ansible.builtin.template:
         backup: yes
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
@@ -105,11 +48,11 @@
       inventory_hostname in groups['eeVaServers'] or
       inventory_hostname in groups['ceServers']
 
-- name: Configure SignServer HTTPD conf files
+- name: Configure SignServer Apache HTTPD configuration files
   block:
 
-    - name: SignServer Configure the httpd conf file for Alma/CentOS/Oracle/RedHat/Rocky 8
-      template:
+    - name: Configure SignServer Apache HTTPD configuration files for Alma/CentOS/Oracle/RedHat/Rocky 8/9
+      ansible.builtin.template:
         backup: yes
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
@@ -122,15 +65,16 @@
       notify:
         - restart httpd
       tags: reverse-proxy
-      when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-            (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
-            (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
-            (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
-            (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
-            (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
+      when: 
+        - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+          (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+          (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
+          (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
+          (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
+          (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
-    - name: SignServer Configure the httpd conf file for CentOS/RedHat 7
-      template:
+    - name: Configure SignServer Apache HTTPD configuration files for CentOS/RedHat 7
+      ansible.builtin.template:
         backup: yes
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
@@ -143,8 +87,9 @@
       notify:
         - restart httpd
       tags: reverse-proxy
-      when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
-            (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+      when: 
+        - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+          (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
   when: 
     - inventory_hostname in groups['eeSignServers'] or
       inventory_hostname in groups['ceSignServers']
@@ -153,7 +98,7 @@
   block:
 
     - name: Create directory for mapping file
-      file:
+      ansible.builtin.file:
         path: /etc/httpd/rewriteMaps/
         state: directory
         mode: 0775
@@ -162,7 +107,7 @@
       tags: reverse-proxy
 
     - name: Create CRL mapping file
-      template:
+      ansible.builtin.template:
         src: crlmapping.txt.j2
         dest: /etc/httpd/rewriteMaps/crlmapping.txt
         owner: root
@@ -173,7 +118,7 @@
         - use_httpd_crl_map|bool
 
     - name: Create AIA mapping file
-      template:
+      ansible.builtin.template:
         src: aiamapping.txt.j2
         dest: /etc/httpd/rewriteMaps/aiamapping.txt
         owner: root
@@ -186,9 +131,8 @@
   when:
     - ( use_httpd_crl_map is defined and use_httpd_crl_map|bool ) or ( use_httpd_aia_map is defined and use_httpd_aia_map|bool)
 
-
 - name: Create CRL & AIA directory links
-  file:
+  ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     state: link
@@ -196,32 +140,55 @@
   loop_control:
     label:  "{{ item.dest }}"
   tags: reverse-proxy
-  when: httpd_create_aia_crl_dir|bool
+  when: 
+    - httpd_create_aia_crl_dir|bool
 
 - name: Check if index.html exists
-  stat:
+  ansible.builtin.stat:
     path: /var/www/html/index.html
   register: index_html_exists
+  changed_when: false
 
-- name: Create index.html
-  file:
+- name: Create the index.html file
+  ansible.builtin.file:
     path: /var/www/html/index.html
     state: touch
     mode: 0644
     owner: apache
     group: apache  
   tags: reverse-proxy
-  when: not index_html_exists.stat.exists
+  when: 
+    - not index_html_exists.stat.exists
 
 - name: Set SELinux HTTPD Network Connect
-  seboolean:
+  ansible.posix.seboolean:
     name: httpd_can_network_connect
     state: yes
     persistent: yes
   tags: reverse-proxy
 
-- name: Ensure service is restarted
-  systemd:
+- name: Configure Firewalld
+  block:
+    - name: Open http port on firewalld
+      ansible.posix.firewalld:
+        service: 'http'
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Open https port on firewalld
+      ansible.posix.firewalld:
+        service: 'https'
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+  tags: reverse-proxy
+  when: 
+    - enable_firewalld_for_httpd|bool
+
+- name: Ensure Apache HTTPD service is restarted
+  ansible.builtin.systemd_service:
     name: httpd
     state: restarted
     enabled: true

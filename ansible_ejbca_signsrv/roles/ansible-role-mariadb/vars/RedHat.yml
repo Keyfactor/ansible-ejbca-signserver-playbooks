@@ -8,6 +8,9 @@ mariadb_packages:
   - MySQL-python
   - MariaDB-backup
 
+mariadb_client_packages:
+  - MySQL-python
+
 rhel_mariadb_packages:
   - rh-mariadb103-mariadb
   - rh-mariadb103-mariadb-backup
@@ -22,11 +25,17 @@ rhel8_mariadb_packages:
   - MariaDB-client
   - MySQL-python
 
+rhel8_mariadb_client_packages:
+  - MySQL-python  
+
 mariadb_packages_8:
   - MariaDB-client
   - MariaDB-common
   - MariaDB-server
   - MariaDB-backup
+  - python3-PyMySQL
+
+mariadb_client_packages_8:
   - python3-PyMySQL
 
 mariadb_srv_socket: "{{ mariadb_socket | default('/var/lib/mysql/mysql.sock')}}" 

@@ -11,7 +11,8 @@
     - backup_ejbca_conf is defined and backup_ejbca_conf| bool or
       backup_httpd_conf is defined and backup_httpd_conf| bool or
       backup_wildfly_conf is defined and backup_wildfly_conf| bool or
-      backup_mariadb is defined and backup_mariadb| bool
+      backup_mariadb is defined and backup_mariadb| bool or
+      backup_pkcs11_client is defined and backup_pkcs11_client| bool
 
 - name: Backup EJBCA property files
   ansible.builtin.include_tasks: ejbca_props_backup.yml
@@ -50,12 +51,26 @@
   ansible.builtin.include_role: 
     name: ansible-role-mariadb
     tasks_from: backup
+  vars:
+    - mariadb_srv_config_network: /etc/my.cnf.d/network.cnf
+    - mariadb_srv_config_server: /etc/my.cnf.d/server.cnf
+    - mariadb_srv_config_custom: /etc/my.cnf.d/custom.cnf
   register: mariadb_backup_result
   tags: backup  
   when: 
     - inventory_hostname in groups['mariadbServers']
     - backup_mariadb is defined
     - backup_mariadb| bool
+
+- name: Backup PKCS11 client
+  ansible.builtin.include_role: 
+    name: ansible-ejbca-pkc11-client
+    tasks_from: backup
+  register: pkcs11_client_backup_result
+  tags: backup  
+  when: 
+    - backup_pkcs11_client is defined
+    - backup_pkcs11_client| bool
 
 - name: Compress backup directory
   community.general.archive:
@@ -87,21 +102,18 @@
   when: 
     - not backup_dir_output_exists.stat.exists
 
-- name: Copy backup directory to controller
+- name: Copy backup archive to controller
   ansible.builtin.fetch:
     src: "{{ backup_dir_path_timestamp }}.tgz"
     dest: "{{ backup_dir_output }}/"
     flat: yes
-  tags: backup  
+  become: false  
+  tags: backup
   when:
     - compress_backup_result is defined
-    - compress_backup_result.changed
 
 - name: Remove backup local backup archive
   ansible.builtin.file:
     path: "{{ backup_dir_path_timestamp }}.tgz"
     state: absent
   tags: backup
-  when:
-    - create_local_backup_dir_result.changed
-

@@ -5,9 +5,9 @@
     path: "{{ backup_dir_path_timestamp }}/wildfly"
     state: directory
     mode: 0755
-  tags: backup    
+  tags: backup
 
-- name: Backup Wildfly configuration and script files
+- name: Backup Wildfly files
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ backup_dir_path_timestamp }}/wildfly/{{ item| basename }}"
@@ -29,4 +29,42 @@
   register: wildfly_kerb_config_backup_copy
   tags: backup
   when: 
-    - wildfly_enable_kerberos|bool  
+    - wildfly_enable_kerberos|bool
+
+- name: Backup the Wildfly systemd service file
+  ansible.builtin.copy:
+    src: "{{ wildfly_systemd_dir }}/wildfly.service"
+    dest: "{{ backup_dir_path_timestamp }}/wildfly/wildfly.service"
+    remote_src: yes
+  tags: backup
+  when: 
+    - ansible_service_mgr == 'systemd'
+    - wildfly_manage_service| bool
+
+- name: Backup {{ ejbca_user }} user .bash_profile
+  ansible.builtin.copy:
+    src: "{{ ejbca_user_profile }}/.bash_profile"
+    dest: "{{ backup_dir_path_timestamp }}/wildfly/bash_profile"
+    remote_src: yes
+  tags: backup
+  when: 
+    - wildfly_manage_user|bool
+
+- name: Stop the Wildfly service
+  ansible.builtin.systemd_service:
+    name: wildfly
+    state: stopped
+  tags: backup
+
+- name: Create a compressed archive of the {{ wildfly_dir }} directory
+  community.general.archive:
+    path: "{{ wildfly_dir }}"
+    dest: "{{ backup_dir_path_timestamp }}/wildfly/wildfly_archive.tgz"
+  register: compress_wildfly_backup_result  
+  tags: backup
+
+- name: Start the Wildfly service
+  ansible.builtin.systemd_service:
+    name: wildfly
+    state: started
+  tags: backup

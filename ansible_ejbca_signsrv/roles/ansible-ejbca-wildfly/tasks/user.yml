@@ -1,0 +1,14 @@
+---
+
+- name: Create EJBCA group - {{ ejbca_group }}
+  ansible.builtin.group:
+    name: '{{ ejbca_group }}'
+    state: present
+
+- name: Create EJBCA user - {{ ejbca_user }} 
+  ansible.builtin.user:
+    name: '{{ ejbca_user }}'
+    group: '{{ ejbca_group }}'
+    createhome: yes
+    #shell: "{{ wildfly_user_shell |default(omit) }}"
+    state: present

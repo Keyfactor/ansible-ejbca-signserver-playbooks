@@ -101,3 +101,5 @@ ejbca_cli_log_fix: true
 
 # Directory on the controller where the backup is stored. The backup file is removed from the controller when pushed to the remote backup server.
 backup_dir_output: "{{ playbook_dir }}/serverBackups"
+# Directory on the remote host where the backup archive of EJBCA is created and downloaded from to the controller
+backup_dir_path: /var/tmp

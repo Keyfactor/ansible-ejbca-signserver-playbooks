@@ -6,9 +6,6 @@ no_log_value: true
 
 hostname: ejbca01.solitude.skyrim
 
-# Dirty hack to tell the type of instance till something better is used
-#ejbca_type: CA
-
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
 tls_identity_info:
   - dn: "C={{ countryName }},O={{ organizationName }},OU=Devices,CN=ca01.{{ organizationDomainName }}"

@@ -66,7 +66,7 @@
       (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Install SoftHSM on CentOS/RHEL 7
-  yum:
+  package:
     name: "{{ softhsm_7 }}"
     state: present
   when: 
@@ -74,7 +74,7 @@
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
 - name: Install SoftHSM Amazon Linux 2
-  yum:
+  package:
     name: softhsm
     state: present
   when: 

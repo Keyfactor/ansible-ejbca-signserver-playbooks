@@ -1,7 +1,7 @@
 ---
 
-- name: Export Managment CA cert to file
-  command: >
+- name: Export the Managment CA certificate to file
+  ansible.builtin.command: >
     {{ ejbca_sh }} ca getcacert 
     --caname ManagementCA 
     -f /var/tmp/managementca.crt
@@ -11,5 +11,5 @@
   become_user: "{{ ejbca_user }}"
   become: yes
 
-- name: Add Managment CA cert to file to trusted-ca file
-  shell: cat /var/tmp/managementca.crt >> /etc/pki/tls/certs/trusted-ca.crt
+- name: Append the Managment CA cert file to the trusted-ca.crt file
+  ansible.builtin.shell: cat /var/tmp/managementca.crt >> /etc/pki/tls/certs/trusted-ca.crt

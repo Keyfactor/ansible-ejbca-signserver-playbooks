@@ -139,3 +139,10 @@ enable_ejbca_protocols:
 # CRL Update Service Worker Settings
 crl_service_time_int: 1
 crl_service_time_unit: HOURS
+
+# Install MariaDB server and client for a standalone instance typically used on the RA/VA or a single instance of the CA.  
+mariadb_install_server: true
+
+# Install only the Python MariaDB client for Ansible to connect to the DB. Use this option when the DB is not installed on the EJBCA node.
+# This is used when there is a cluster of EJBCA nodes pointing to an external DB instance.
+mariadb_install_client: false

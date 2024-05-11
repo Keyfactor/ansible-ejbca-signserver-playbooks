@@ -1,0 +1,15 @@
+# roles/mariadb/tasks/restore.yml
+---
+
+- name: Unzip the database backup file
+  ansible.builtin.unarchive:
+    src: "{{ restore_dir_path }}/mariadb/ejbca.sql.tar.gz"
+    dest: "{{ restore_dir_path }}/mariadb/"
+    remote_src: true
+  tags: restore_backup
+
+- name: Restore backup from sql file
+  ansible.builtin.shell: |
+    {{ mariadb_cmd }} -u {{ mariadb_backup_user}} -p"{{ mariadb_backup_user_password }}" < "{{ restore_dir_path }}/mariadb/ejbca.sql"
+  no_log: "{{ no_log_value }}"
+  tags: restore_backup 

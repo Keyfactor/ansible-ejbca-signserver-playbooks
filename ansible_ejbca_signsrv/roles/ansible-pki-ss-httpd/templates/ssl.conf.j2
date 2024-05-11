@@ -43,8 +43,8 @@
   LogLevel warn
   LogFormat "%a A %h %H %l %m %s %t %u %U \"{Referer}I\" " combined
   LogFormat "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b" default_access
-  LogFormat "time=%{%FT%T}t.%{usec_frac}t%{%z}t client=%h SSL_PROTOCOL=\"%{SSL_PROTOCOL}x\" SSL_CIPHER=\"%{SSL_CIPHER}x\" http_method=\"%m\" uri_path=\"%U\" first_line_of_request=\"%r\", bytes=%b" splunksslrequest_kv
-  CustomLog "{{ httpd_tls_log_location| default('logs/443_request_log') }}" {{ httpd_tls_log_format| default('default_access') }}
+  {% raw %}LogFormat "time=%{%FT%T}t.%{usec_frac}t%{%z}t client=%h SSL_PROTOCOL=\"%{SSL_PROTOCOL}x\" SSL_CIPHER=\"%{SSL_CIPHER}x\" http_method=\"%m\" uri_path=\"%U\" first_line_of_request=\"%r\", bytes=%b" splunksslrequest_kv
+  {% endraw %}CustomLog "{{ httpd_tls_log_location| default('logs/443_request_log') }}" {{ httpd_tls_log_format| default('default_access') }}
 
   KeepAlive on
   TraceEnable off

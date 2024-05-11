@@ -2,7 +2,7 @@
 ---
 
 - name: Remove the test database
-  mysql_db:
+  community.mysql.mysql_db:
     name: test
     login_user: root
     login_password: "{{ mariadb_root_password }}"
@@ -11,7 +11,7 @@
   tags: mariadb
 
 - name: Create user defined databases
-  mysql_db:
+  community.mysql.mysql_db:
     name: "{{ item.name }}"
     login_user: root
     login_password: "{{ mariadb_root_password }}"
@@ -27,7 +27,7 @@
 # in the previous step. This ensures idempotence.
 
 - name: Copy database init scripts
-  template:
+  ansible.builtin.template:
     src: "{{ item.item.init_script }}"
     dest: "/tmp/{{ item.item.init_script|basename }}"
     mode: '0600'
@@ -37,7 +37,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Initialise databases
-  mysql_db:
+  community.mysql.mysql_db:
     name: "{{ item.item.name }}"
     state: import
     target: "/tmp/{{ item.item.init_script|basename }}"
@@ -50,7 +50,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Delete init scripts from the server
-  file:
+  ansible.builtin.file:
     name: "/tmp/{{ item.item.init_script|basename }}"
     state: absent
   loop: "{{ db_creation.results }}"

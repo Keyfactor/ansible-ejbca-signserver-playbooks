@@ -95,4 +95,3 @@ policy_add_certification_authorities:
         key_size: 1024
         key_type: "RSA"
         type: test
-

@@ -153,4 +153,10 @@ signsrv_xalan_xml_files:
     dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
   - src: "{{ signsrv_home }}/lib/ext/serializer-2.7.2.jar"
     dest: "{{ wildfly_home }}/modules/system/layers/base/org/apache/xalan/main"
-    
+
+# Install MariaDB server and client for a standalone instance typically used on the RA/VA or a single instance of the CA.  
+mariadb_install_server: true
+
+# Install only the Python MariaDB client for Ansible to connect to the DB. Use this option when the DB is not installed on the EJBCA node.
+# This is used when there is a cluster of EJBCA nodes pointing to an external DB instance.
+mariadb_install_client: false    

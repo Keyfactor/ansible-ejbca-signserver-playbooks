@@ -7,7 +7,7 @@
     mode: 0755
   tags: backup    
 
-- name: Backup TLS certificate, chain.crt & key files
+- name: Backup TLS certificate, key, & chain.crt files
   ansible.builtin.copy:
     src: "{{ item.dest }}"
     dest: "{{ backup_dir_path_timestamp }}/apache/{{ item.dest| basename }}"

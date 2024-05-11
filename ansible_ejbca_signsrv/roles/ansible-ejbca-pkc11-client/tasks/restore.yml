@@ -1,0 +1,8 @@
+---
+
+- name: Restore SoftHSM tokens
+  ansible.builtin.include_tasks: restore_softhsm.yml
+  tags: restore_backup
+  when: 
+    - use_softhsm is defined
+    - use_softhsm|bool

@@ -1,22 +1,22 @@
 ---
 # tasks file for primekeyprep
 
-- name: Install software required for EJBCA
-  include_tasks: install.yml
+- name: Task - Install software required for EJBCA
+  ansible.builtin.include_tasks: install.yml
 
-- name: Setup the server to deploy EJBCA
-  include_tasks: configure.yml
+- name: Task - Setup the server to deploy EJBCA
+  ansible.builtin.include_tasks: configure.yml
 
-- name: Build clientToolBox
-  include_tasks: buildclienttoolbox.yml
+- name: Task - Build clientToolBox
+  ansible.builtin.include_tasks: buildclienttoolbox.yml
 
-- name: Create Database tables and indexes
-  include_tasks: create_db_apply_indexes.yml
+- name: Task - Create Database tables and indexes
+  ansible.builtin.include_tasks: create_db_apply_indexes.yml
   when: 
     - management_database_indexes.apply_indexes|bool
 
-- name: Configure Database protection
-  include_tasks: conf_db_protection.yml
+- name: Task - Configure Database protection
+  ansible.builtin.include_tasks: conf_db_protection.yml
   when:
     - ejbca_databaseprotection[0] is defined
     - databaseprotection_enablesign_AuditRecordData is defined

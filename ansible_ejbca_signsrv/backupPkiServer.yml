@@ -1,10 +1,12 @@
 ---
 # When DB is NOT on the local node:
-# ansible-playbook -i inventory -l ca01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+# ansible-playbook -i inventory -l ca01,backupServer -e "backup_ejbca_server=true backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true copy_backup_to_remote=true backup_server_dir_path=~/backup" backupPkiServer.yml
 # When DB is ON the local node:
-# ansible-playbook -i inventory -l ca01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e backup_mariadb=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
-# ansible-playbook -i inventory -l ra01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e backup_mariadb=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
-# ansible-playbook -i inventory -l va01,backupServer -e backup_ejbca_server=true -e backup_ejbca_conf=true -e backup_httpd_conf=true -e backup_wildfly_conf=true -e backup_mariadb=true -e copy_backup_to_remote=true -e backup_server_dir_path=~/backup backupRestorePkiServer.yml
+# ansible-playbook -i inventory -l ca01,backupServer -e "backup_ejbca_server=true backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true backup_mariadb=true copy_backup_to_remote=true backup_server_dir_path=~/backup" backupPkiServer.yml
+# ansible-playbook -i inventory -l ra01,backupServer -e "backup_ejbca_server=true backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true backup_mariadb=true copy_backup_to_remote=true backup_server_dir_path=~/backup" backupPkiServer.yml
+# ansible-playbook -i inventory -l va01,backupServer -e "backup_ejbca_server=true backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true backup_mariadb=true copy_backup_to_remote=true backup_server_dir_path=~/backup" backupPkiServer.yml
+# When DB and SoftHSM are ON the local node:
+# ansible-playbook -i inventory -l ca01,backupServer -e "backup_ejbca_server=true backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true backup_mariadb=true backup_pkcs11_client=true copy_backup_to_remote=true backup_server_dir_path=~/backup" backupPkiServer.yml
 
 - hosts: pkiServers
   become: yes
@@ -15,7 +17,6 @@
         backup_time_stamp: "{{ lookup('pipe','date +%d-%m-%Y')}}"
       delegate_to: localhost
   vars:
-    - backup_dir_path: /var/tmp
     - backup_dir_path_timestamp: "{{ backup_dir_path }}/{{ hostname }}-{{ backup_time_stamp }}"
   roles:
     - ansible-pki-ss-cfg-bkup

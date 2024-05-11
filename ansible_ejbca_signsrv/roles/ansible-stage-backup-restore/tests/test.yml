@@ -2,4 +2,4 @@
 - hosts: localhost
   remote_user: root
   roles:
-    - roles/ansible-pki-ss-cfg-bkup
+    - roles/ansible-stage-backup-restore

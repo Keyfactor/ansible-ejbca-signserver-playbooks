@@ -1,0 +1,132 @@
+---
+
+- name: Task - Create Wildfly user and group
+  ansible.builtin.include_tasks: user.yml
+  when: 
+    - wildfly_manage_user|bool
+
+- name: Restore {{ ejbca_user }} user .bash_profile
+  ansible.builtin.copy:
+    src: "{{ restore_dir_path }}/wildfly/bash_profile"
+    dest: "{{ ejbca_user_profile }}/.bash_profile"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"    
+    remote_src: yes
+  tags: backup_restore
+  when: 
+    - wildfly_manage_user|bool
+
+- name: Task - Install OS packages required for Wildfly
+  ansible.builtin.include_tasks: install_os_packages.yml
+
+- name: Restore Wildfly directory
+  ansible.builtin.unarchive:
+    src: "{{ restore_dir_path }}/wildfly/wildfly_archive.tgz"
+    dest: "{{ wildfly_install_dir }}/"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    remote_src: true 
+  tags: restore_backup
+
+- name: Create symlink to installed version
+  ansible.builtin.file:
+    state: link
+    src: "{{ wildfly_dir }}"
+    dest: "{{wildfly_home }}"
+  tags: restore_backup
+
+- name: Restore the wildfly.conf in /etc directory
+  block:
+
+    - name: Create Wildfly etc directory
+      ansible.builtin.file:
+        path: "{{ wildfly_conf_dir }}"
+        state: directory
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0750
+      tags: backup_restore  
+
+    - name: Restore wildfly.conf file
+      ansible.builtin.copy:
+        src: "{{ restore_dir_path }}/wildfly/wildfly.conf"
+        dest: "{{ wildfly_conf_dir }}/wildfly.conf"
+        owner: root
+        group: "{{ ejbca_group }}"
+        mode: 0640
+        remote_src: true
+      notify:
+        - change standalone data mode
+      tags: backup_restore  
+
+    - name: Create a symlink for /etc/default/wildfly.conf
+      ansible.builtin.file:
+        state: link
+        src: "{{ wildfly_conf_dir }}/wildfly.conf"
+        dest: /etc/default/wildfly.conf
+      tags: backup_restore  
+
+- name: Restore Wildfly Kerberos files
+  block:
+    - name: Restore the krb5.conf file
+      ansible.builtin.copy:
+        src: "{{ restore_dir_path }}/wildfly/krb5.conf"
+        dest: "{{ wildfly_kerberos_file_path }}"
+        owner: root
+        group: root
+        mode: 0644    
+        remote_src: yes
+
+    - name: Restore the kerberbos keytab file for Wildfly
+      ansible.builtin.copy:
+        src: "{{ restore_dir_path }}/wildfly/{{ wildfly_kerberos_keytab_file| basename }}"
+        dest: "{{ wildfly_kerberos_keytab_file }}"
+        owner: "{{ ejbca_user }}"
+        group: "{{ ejbca_group }}"
+        mode: 0640
+        remote_src: yes
+
+  tags: backup_restore
+  when: 
+    - wildfly_enable_kerberos|bool
+
+- name: Create the Elytron directory for unlocking credential store script
+  ansible.builtin.file:
+    path: "{{ wildfly_elytron_pass_dir }}"
+    state: directory
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    mode: 0700
+  tags: backup_restore
+
+- name: Restore the Elytron unlock credential store script
+  ansible.builtin.copy:
+    src: "{{ restore_dir_path }}/wildfly/{{ wildfly_elytron_pass_file| basename }}"
+    dest: "{{ wildfly_elytron_pass_file }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"    
+    remote_src: yes
+  tags: backup_restore    
+
+- name: Restore Wildfly systemd service
+  block:
+
+    - name: Restore the Wildfly systemd unit file
+      ansible.builtin.copy: 
+        src: "{{ restore_dir_path }}/wildfly/wildfly.service"
+        dest: "{{ wildfly_systemd_dir }}/wildfly.service" 
+        owner: root
+        group: root 
+        mode: 0644
+        remote_src: true
+
+    - name: Enable the Wildfly service
+      ansible.builtin.systemd_service:
+        name: wildfly
+        state: started
+        enabled: yes
+  
+  tags: backup_restore
+  when: 
+    - ansible_service_mgr == 'systemd'
+    - wildfly_manage_service| bool

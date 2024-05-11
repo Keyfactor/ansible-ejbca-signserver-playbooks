@@ -21,11 +21,7 @@ wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
 
 # Wildfly configuration files to backup
 wildfly_files_backup:
-  - "{{ wildfly_home }}/bin/standalone.conf"
-  - "{{ wildfly_home }}/bin/launch.sh"
   - "{{ wildfly_conf_dir }}/wildfly.conf"
-  - "{{ wildfly_home }}/standalone/configuration/credentials"
-  - "{{ wildfly_home }}/standalone/configuration/standalone.xml"
   - "{{ wildfly_elytron_pass_file }}"
 
 # Wildfly Kerberos configuration files to backup

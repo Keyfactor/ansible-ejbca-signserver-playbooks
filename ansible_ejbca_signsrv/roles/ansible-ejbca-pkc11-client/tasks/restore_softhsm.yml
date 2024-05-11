@@ -1,0 +1,16 @@
+---
+
+- name: TASK - Install SoftHSM
+  ansible.builtin.include_tasks: install_softhsm.yml
+  tags: restore_backup
+
+- name: Restore SoftHSM tokens
+  ansible.builtin.unarchive:
+    src: "{{ restore_dir_path }}/pkcs11-client/softhsmBackup.tgz"
+    dest: /var/lib/softhsm
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+    remote_src: true  
+  tags: restore_backup  
+  notify:
+    - restart systemd wildfly service

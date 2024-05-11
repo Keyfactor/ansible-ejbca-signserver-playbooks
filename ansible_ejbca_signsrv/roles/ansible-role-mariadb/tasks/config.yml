@@ -1,63 +1,101 @@
 # roles/mariadb/tasks/config.yml
 ---
 
-- name: Install server config file
-  template:
-    src: etc_my.cnf.d_server.cnf.j2
-    dest: "{{ mariadb_srv_config_server }}"
-  tags: mariadb
+- name: Fresh install of MariaDB
+  block:
 
-- name: Install network config file
-  template:
-    src: etc_my.cnf.d_network.cnf.j2
-    dest: "{{ mariadb_srv_config_network }}"
-  tags: mariadb
+    - name: Configure MariaDB server config file
+      ansible.builtin.template:
+        src: etc_my.cnf.d_server.cnf.j2
+        dest: "{{ mariadb_srv_config_server }}"
+      tags: mariadb
 
-- name: Install custom config file
-  template:
-    src: etc_my.cnf.d_custom.cnf.j2
-    dest: "{{ mariadb_srv_config_custom }}"
-  when: mariadb_custom_cnf|length != 0
-  tags: mariadb
+    - name: Configure MariaDB network config file
+      ansible.builtin.template:
+        src: etc_my.cnf.d_network.cnf.j2
+        dest: "{{ mariadb_srv_config_network }}"
+      tags: mariadb
 
-- name: Configure swappiness
-  sysctl:
+    - name: Configure MariaDB custom config file
+      ansible.builtin.template:
+        src: etc_my.cnf.d_custom.cnf.j2
+        dest: "{{ mariadb_srv_config_custom }}"
+      tags: mariadb
+      when: mariadb_custom_cnf|length != 0
+  
+  tags: maridb
+  when:
+    - mariadb_restore_cnf_files is not defined
+
+- name: Block - Restore MariaDB configuration files
+  block:
+
+    - name: Restore MariaDB server config file
+      ansible.builtin.copy:
+        src: "{{ restore_dir_path }}/mariadb/{{ item| basename }}"
+        dest: "{{ item }}" 
+        remote_src: yes
+      loop:
+        - "{{ mariadb_srv_config_server }}"
+        - "{{ mariadb_srv_config_network }}"
+      register: mariadb_config_restore_copy
+      tags: restore_backup
+      when:
+        - item is defined
+
+    - name: Backup MariaDB Custom Configuration files
+      ansible.builtin.copy:
+        src: "{{ restore_dir_path }}/mariadb/{{ mariadb_srv_config_custom| basename }}"
+        dest: "{{ mariadb_srv_config_custom }}"
+        remote_src: yes
+      register: mariadb_config_restore_copy
+      tags: restore_backup
+      when:
+        - mariadb_custom_cnf|length != 0
+
+  tags: restore_backup
+  when:
+    - mariadb_restore_cnf_files is defined
+    - mariadb_restore_cnf_files| bool
+
+- name: Configure the OS swappiness
+  ansible.posix.sysctl:
     name: vm.swappiness
     value: "{{ mariadb_swappiness }}"
     state: present
   when: mariadb_configure_swappiness|bool
   tags: mariadb
 
-- name: Create mariadb log directory
-  file:
+- name: Create MariaDB log directory
+  ansible.builtin.file:
     path: /var/log/mariadb
     state: directory
     mode: 0775
     owner: root
     group: mysql
 
-- name: Move database directory when specified for RHEL/CentOS 8 & CentOS 7
+- name: Move database directory when specified for {{ ansible_distribution }} {{ ansible_distribution_major_version }}
   block:
 
     - name: Check if the new db directory location exists
-      stat:
+      ansible.builtin.stat:
         path: "{{ mariadb_datadir }}"
       register: mariadb_dir_check
       changed_when: false
 
     - name: Check if the new db directory location exists
-      stat:
+      ansible.builtin.stat:
         path: "/var/lib/mysql"
       register: mariadb_dir_default_check
       changed_when: false
 
     - name: Check SELinux status
-      command: getenforce
+      ansible.builtin.command: getenforce
       register: selinux_status
       changed_when: false
 
     - name: Stop the MariaDB service to move the db directory
-      systemd:
+      ansible.builtin.systemd:
         name: "{{ mariadb_service }}"
         state: stopped
         enabled: true
@@ -71,7 +109,7 @@
             (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
     - name: Stop the MariaDB service to move the db director for RHEL 7 MariaDB
-      systemd:
+      ansible.builtin.systemd:
         name: "{{ rhel_mariadb_service }}"
         state: stopped
         enabled: true
@@ -79,7 +117,7 @@
       when: (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7")
 
     - name: Create new db directory location
-      file:
+      ansible.builtin.file:
         path: "{{ mariadb_datadir }}"
         state: directory
         owner: "{{ mariadb_owner }}"
@@ -87,7 +125,7 @@
       when: not mariadb_dir_check.stat.exists
 
     - name: Copy the contents of db datadir to {{ mariadb_datadir }}
-      copy:
+      ansible.builtin.copy:
         src: /var/lib/mysql/
         dest: "{{ mariadb_datadir }}/"
         owner: "{{ mariadb_owner }}"
@@ -98,7 +136,7 @@
         - mariadb_dir_default_check.stat.exists
 
     - name: Create initial MariaDB database for service to start
-      command: >
+      ansible.builtin.command: >
         mysql_install_db --user={{ mariadb_owner }} --datadir={{ mariadb_datadir }}
       when: 
         - not mariadb_dir_check.stat.exists
@@ -115,7 +153,7 @@
     #  when: ('Enforcing' in selinux_status.stdout)
 
     - name: Configure SELinux for {{ mariadb_datadir }}
-      command: >
+      ansible.builtin.command: >
         semanage fcontext -a -t mysqld_db_t "{{ mariadb_datadir }}(/.*)?"
       register: apply_selinux_mariadb
       when: 
@@ -140,7 +178,7 @@
     #  when: not mariadb_dir_check.stat.exists
 
     - name: Restore SELinux permissions
-      command: "restorecon -irv {{ mariadb_datadir }}"
+      ansible.builtin.command: "restorecon -irv {{ mariadb_datadir }}"
       register: restore_selinux_perms
       when: 
         - ('Enforcing' in selinux_status.stdout)
@@ -155,8 +193,8 @@
 
   when: mariadb_datadir is defined
 
-- name: Ensure service is started
-  systemd:
+- name: Start and enable the MariaDB service
+  ansible.builtin.systemd:
     name: "{{ mariadb_service }}"
     state: started
     enabled: true
@@ -170,7 +208,7 @@
         (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Ensure service is started for RHEL 7 MariaDB
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ rhel_mariadb_service }}"
     state: started
     enabled: true

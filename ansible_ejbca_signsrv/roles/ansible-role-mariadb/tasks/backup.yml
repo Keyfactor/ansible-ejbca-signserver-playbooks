@@ -17,32 +17,39 @@
         mode: 0755
       tags: backup 
 
-    - name: Backup Database to server
+    - name: Backup MariaDB all databases to a sql file
+      #ansible.builtin.shell: |
+      #  {{ mariadb_backup_cmd }} -u {{ mariadb_backup_user}} -p"{{ mariadb_backup_user_password }}" {{ item.name }} --quick --lock-tables=false --system=users --insert-ignore > "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql" --no-tablespaces
       ansible.builtin.shell: |
-        mysqldump -u {{ mariadb_backup_user}} -p"{{ mariadb_backup_user_password }}" {{ item.name }} --quick --lock-tables=false > "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql" --no-tablespaces
+        {{ mariadb_backup_cmd }} -u {{ mariadb_backup_user}} -p"{{ mariadb_backup_user_password }}" --all-databases --quick --lock-tables=false --system=users --insert-ignore > "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
       no_log: "{{ no_log_value }}"
-      loop: "{{ mariadb_databases }}"
-      loop_control:
-        label: "{{ item.name }}"
+      #loop: "{{ mariadb_databases }}"
+      #loop_control:
+        #label: "{{ item.name }}"
       tags: backup 
 
     - name: Wait until the database backup is completed
       ansible.builtin.wait_for:
-        path: "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql"
+        #path: "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql"
+        path: "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
         state: present
-        msg: "Timeout to find file {{ item.name }}"
-      loop: "{{ mariadb_databases }}"
-      loop_control:
-        label: "{{ item.name }}"
+        msg: "Timeout to find file {{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
+      #loop: "{{ mariadb_databases }}"
+      #loop_control:
+        #label: "{{ item.name }}"
       tags: backup
 
     - name: Compress database sql file and remove the uncompressed file
       community.general.archive:
-        path: "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql"
+        #path: "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql"
+        path: "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
+        dest: "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql.tar.gz"
+        format: gz
+        force_archive: true
         remove: true
-      loop: "{{ mariadb_databases }}"
-      loop_control:
-        label: "{{ item.name }}"
+      #loop: "{{ mariadb_databases }}"
+      #loop_control:
+        #label: "{{ item.name }}"
       tags: backup
 
   when:
@@ -58,8 +65,8 @@
     - "{{ mariadb_srv_config_network }}"
   register: mariadb_config_backup_copy
   tags: backup
-  when:
-    - item is defined
+  #when:
+    #- item is defined
 
 - name: Backup MariaDB Custom Configuration files
   ansible.builtin.copy:

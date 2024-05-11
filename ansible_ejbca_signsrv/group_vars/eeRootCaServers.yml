@@ -283,3 +283,10 @@ root_configdump_files:
     dest: '{{ ejbca_home }}/dump/dump1/services/DailyCRLUpdate.yaml'
   - src: 'service-HSM_Keepalive.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/services/HSM_Keepalive.yaml'
+
+# Install MariaDB server and client for a standalone instance typically used on the RA/VA or a single instance of the CA.  
+mariadb_install_server: true
+
+# Install only the Python MariaDB client for Ansible to connect to the DB. Use this option when the DB is not installed on the EJBCA node.
+# This is used when there is a cluster of EJBCA nodes pointing to an external DB instance.
+mariadb_install_client: false    

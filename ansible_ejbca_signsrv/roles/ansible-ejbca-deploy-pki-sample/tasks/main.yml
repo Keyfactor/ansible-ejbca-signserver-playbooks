@@ -293,12 +293,12 @@
       when: 
         - ( ejbca_version is version('7.8.0', '<='))
 
-    - name: Import Approval Profiles for EJBCA >= 7.7.0
+    - name: Import Approval Profiles for EJBCA >= 7.8.1
       include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_app_profile
       when: 
-        - ( ejbca_version is version('7.7.0', '>='))
+        - ( ejbca_version is version('7.8.1', '>='))
 
   when:
     - use_approval_profiles is defined

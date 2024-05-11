@@ -1,15 +1,23 @@
 ---
 # tasks file for ansible-ejbca-httpd
 
-- name: Install HTTPD
-  include_tasks: install.yml
+- name: Task - Install Apache HTTPD web server
+  ansible.builtin.include_tasks: install.yml
 
-- name: Request TLS cert for HTTPD
-  include_tasks: ca_req_cert.yml
+- name: Task - Stage certificate file and key for Apache HTTPD
+  ansible.builtin.include_tasks: stage_cert_files.yml
+  when:
+    - inventory_hostname in groups['eeRaServers'] or
+      inventory_hostname in groups['eeVaServers'] or
+      inventory_hostname in groups['eeSignServers'] or
+      inventory_hostname in groups['ceSignServers'] 
+
+- name: Task - Request TLS cert for HTTPD
+  ansible.builtin.include_tasks: ca_req_cert.yml
   when: 
     - inventory_hostname in groups['eeCaServers']
     #- ejbca_type is defined
     #- ejbca_type == "CA"
 
-- name: Configure HTTPD web server
-  include_tasks: configure.yml
+- name: Task - Configure Apache HTTPD web server 
+  ansible.builtin.include_tasks: configure.yml

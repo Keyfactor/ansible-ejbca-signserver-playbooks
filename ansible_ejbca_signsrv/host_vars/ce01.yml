@@ -2,9 +2,6 @@
 
 hostname: ce01.solitude.skyrim
 
-# Dirty hack to tell the type of instance till something better is used
-#ejbca_type: CA
-
 # Modules that have no_log option defined can be set with this variable to false when logging is required.
 # This value should not be changed to false unless you are debugging or troubleshooting!
 no_log_value: true
@@ -286,7 +283,3 @@ import_cp_files:
     dest: '{{ ejbca_home }}/imports/import1/certprofile_SubCA-G1-101839718.xml'
   - src: 'certprofile_tlsServerClientAuth-1938133563.xml.j2'
     dest: '{{ ejbca_home }}/imports/import1/certprofile_tlsServerClientAuth-1938133563.xml'
-
-
-
-

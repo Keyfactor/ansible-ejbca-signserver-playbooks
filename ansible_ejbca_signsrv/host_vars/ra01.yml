@@ -6,9 +6,6 @@ no_log_value: true
 
 hostname: ejbcara01.solitude.skyrim
 
-# Dirty hack to tell the type of instance till something better is used
-#ejbca_type: RA
-
 # Dirty mapping of httpd cert file name till something better is used 
 httpd_identity_info:
   id_name: "ra01.{{ organizationDomainName }}"
