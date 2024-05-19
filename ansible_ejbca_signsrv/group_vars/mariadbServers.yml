@@ -17,11 +17,19 @@ mariadb_users:
     priv: "ejbca.*:ALL"
     host: "localhost"
 
+# MariaDB username & Password with permissions to dump the database to SQL file
+mariadb_backup_user: root
+mariadb_backup_user_password: "{{ mariadb_root_password }}"
+# Location of the mariadb-dump command
+mariadb_backup_cmd: /usr/bin/mariadb-dump
+# Location of the mariadb command
+mariadb_cmd: /usr/bin/mariadb
+ 
 mariadb_owner: mysql
 mariadb_group: mysql
 
 mariadb_mirror: yum.mariadb.org
-mariadb_version: '10.11'
+mariadb_version: '11.3'
 
 mariadb_configure_swappiness: true
 mariadb_swappiness: '10'

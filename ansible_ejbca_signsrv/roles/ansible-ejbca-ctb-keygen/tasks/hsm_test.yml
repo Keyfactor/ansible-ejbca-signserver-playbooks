@@ -11,7 +11,7 @@
     stdin: x
   become: yes
   become_user: "{{ ejbca_user }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   register: tested_hsm_slots_results
   changed_when: tested_hsm_slots_results.rc != 0
   failed_when: false

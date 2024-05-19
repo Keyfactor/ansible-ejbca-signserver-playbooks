@@ -24,7 +24,7 @@
     --username {{ appsrv_datasources[0].user }} 
     --password {{ appsrv_datasources[0].password }}
     --file {{ ejbca_home }}/dump/sql/tlsCertApproval.sql
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become_user: "{{ ejbca_user }}"
   become_method: sudo
   register: import_approvals

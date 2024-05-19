@@ -4,7 +4,7 @@
 - name: Query keys on {% if key_item.0.crypto_token_name is defined %}"{{ key_item.0.crypto_token_name }}"{% else %}"{{ key_item.0.caname }}"{% endif %}
   command: >
     {{ ejbca_sh }} cryptotoken listkeys --token {% if key_item.0.crypto_token_name is defined %}"{{ key_item.0.crypto_token_name }}"{% else %}"{{ key_item.0.caname }}"{% endif %}
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: check_cryptoToken_keys

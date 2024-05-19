@@ -11,7 +11,7 @@
     state: present
   register: database_created
   loop: "{{ rds_databases }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Create database user with defined permission set
   mysql_user:
@@ -28,4 +28,4 @@
       "{{ item.priv }}"
     state: present
   loop: "{{ rds_users }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"

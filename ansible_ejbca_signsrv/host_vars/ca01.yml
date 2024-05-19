@@ -1,9 +1,10 @@
 ---
 
-hostname: ejbca01.solitude.skyrim
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true
 
-# Dirty hack to tell the type of instance till something better is used
-#ejbca_type: CA
+hostname: ejbca01.solitude.skyrim
 
 # Info to create HTTPD end entity in EJBCA for the TLS certificate
 tls_identity_info:

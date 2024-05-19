@@ -1,0 +1,50 @@
+---
+
+# When DB is NOT on the local node:
+# ansible-playbook -i inventory -l ca01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz" restorePkiServer.yml
+# When DB is ON the local node:
+# ansible-playbook -i inventory -l ca01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true restore_mariadb=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz" restorePkiServer.yml
+# ansible-playbook -i inventory -l ra01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true restore_mariadb=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbra01.solitude.skyrim-10-05-2024.tgz" restorePkiServer.yml
+# ansible-playbook -i inventory -l va01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true restore_mariadb=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbva01.solitude.skyrim-10-05-2024.tgz" restorePkiServer.yml
+# When DB and SoftHSM are ON the local node:
+# ansible-playbook -i inventory -l ca01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true restore_mariadb=true restore_pkcs11_client=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz" restorePkiServer.yml
+
+- hosts: backupServer
+  gather_facts: false
+  tasks:
+    - name: Download backup from remote server
+      block:
+        - name: Check if local directory {{ backup_dir_output }} exists
+          ansible.builtin.stat:
+            path: "{{ backup_dir_output }}"
+          register: backup_dir_output_exists
+          changed_when: false
+          tags: restore_backup 
+
+        - name: Create local directory for {{ backup_dir_output }}
+          become: no
+          ansible.builtin.file:
+            path: "{{ backup_dir_output }}"
+            state: directory
+          delegate_to: localhost
+          tags: restore_backup 
+          when: 
+            - not backup_dir_output_exists.stat.exists
+
+        - name: Download backup archive to controller
+          ansible.builtin.fetch:
+            src: "{{ restore_server_file_path }}"
+            dest: "{{ backup_dir_output }}/"
+            flat: yes
+          tags: restore_backup  
+
+      when:
+        - copy_restore_from_remote is defined
+        - copy_restore_from_remote| bool
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  roles:
+    - ansible-hostname
+    - ansible-stage-backup-restore

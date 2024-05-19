@@ -12,7 +12,7 @@
   register: check_p11_exists
   failed_when: false
   changed_when: false
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Debug getstatus
   debug:
@@ -42,7 +42,7 @@
         owner: "{{ signsrv_user }}"
         group: "{{ signsrv_group }}"
         mode: 0640
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Add PKCS11 Slot - {{ item.name }} to SignServer
       command: "{{ signsrv_home }}/bin/signserver setproperties {{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
@@ -53,14 +53,14 @@
       become: yes
       become_user: "{{ signsrv_user }}"
       register: create_p11_slot
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Remove the PIN from PKCS11 Slot - {{ item.name }} conf file
       lineinfile:
         path: "{{ signsrv_home }}/conf/p11-{{ item.id }}.properties"
         state: absent
         regexp: 'WORKERGENID[0-9]*\.PIN*?'
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Reload SignServer for PKCS11 Slot - {{ item.name }}
       command: "{{ signsrv_home }}/bin/signserver reload {{ item.id }}"
@@ -70,7 +70,7 @@
         APPSRV_HOME: "{{ wildfly_home }}"
       become: yes
       become_user: "{{ signsrv_user }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Activate the PKCS11 Slot - {{ item.name }}
       command: "{{ signsrv_home }}/bin/signserver activatecryptotoken {{ item.id }} {{ item.slot_pin }}"
@@ -80,7 +80,7 @@
         APPSRV_HOME: "{{ wildfly_home }}"
       become: yes
       become_user: "{{ signsrv_user }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       failed_when: false
 
     - name: Create a test key on the crypto tokens
@@ -91,7 +91,7 @@
         APPSRV_HOME: "{{ wildfly_home }}"
       become: yes
       become_user: "{{ signsrv_user }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
   
   when: check_p11_exists.rc != 0
 
@@ -105,7 +105,7 @@
         APPSRV_HOME: "{{ wildfly_home }}"
       become: yes
       become_user: "{{ signsrv_user }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       register: activate_crypto_token
       failed_when: false
 
@@ -123,7 +123,7 @@
         APPSRV_HOME: "{{ wildfly_home }}"
       become: yes
       become_user: "{{ signsrv_user }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
   when: 
     - ('Offline' in check_p11_exists.stdout)
@@ -139,7 +139,7 @@
         APPSRV_HOME: "{{ wildfly_home }}"
       become: yes
       become_user: "{{ signsrv_user }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       register: activate_crypto_token
       failed_when: false
 

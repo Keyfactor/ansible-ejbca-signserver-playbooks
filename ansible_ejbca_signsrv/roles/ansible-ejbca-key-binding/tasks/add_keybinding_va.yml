@@ -3,7 +3,7 @@
 
 - name: check if OCSP Key Binding exists
   command: "{{ ejbca_sh }} keybind list"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_exists
@@ -31,7 +31,7 @@
     --sigalg {{ item.0.signature_algorithm }} 
     --cert null 
     -untilNextUpdate {{ item.0.until_next_update| default('60') }}
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_create
@@ -46,7 +46,7 @@
     {{ ejbca_sh }} keybind gencsr 
     --name {{ item.name }} 
     -f /var/tmp/{{ item.name }}.csr
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: keybinding_create_csr
@@ -65,7 +65,7 @@
   loop: "{{ key_bindings }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: item.name not in keybinding_exists.stdout
 
 - name: Cleanup the cert files in /var/tmp
@@ -73,5 +73,5 @@
     path: "/var/tmp/{{ item.name }}.csr"
     state: absent
   loop: "{{ key_bindings }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: item.name not in keybinding_exists.stdout

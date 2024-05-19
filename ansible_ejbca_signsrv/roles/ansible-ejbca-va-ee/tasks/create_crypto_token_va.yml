@@ -12,6 +12,6 @@
     name: ansible-ejbca-crypto-token
     tasks_from: add_crypto_token
   loop: "{{ ejbca_va_crypto_tokens }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when:
     - ejbca_va_crypto_tokens[0] is defined

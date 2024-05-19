@@ -69,3 +69,17 @@ httpd_aia_mapping_names:
     hash: K8WY8UadARfiek83i40zzB02Udw
   - aia_name: "{{ organizationNameShort | lower }}-subca-g1"
     hash: 1vnFSu3sYhgsdaB655sZr/2j21s
+
+# Log file location for Apache HTTPD TLS virtualhost. Use a file path or rotatelogs with filepath command to rotate the log.
+# Default setting is logs/443_request_log 
+httpd_tls_log_location: "|/usr/sbin/rotatelogs -n 5 /etc/httpd/logs/443_request_log 10M"
+
+# LogFormat to use with the TLS virtual host. Options are:
+# combined
+# default_access
+# splunksslrequest_kv
+httpd_tls_log_format: default_access
+
+# Error log file for the Apache HTTPD TLS virtualhost. Use a file path or rotatelogs with filepath command to rotate the log.
+# Default setting is logs/443_error_log
+httpd_tls_error_log_location: "|/usr/sbin/rotatelogs -n 5 /etc/httpd/logs/443_error_log 1M"

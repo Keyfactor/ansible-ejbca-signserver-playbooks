@@ -1,5 +1,9 @@
 ---
 
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true
+
 # Use this option to generate keys for the Authkey Bindings, configure the AuthKey Binding, configure Peering.
 # Import certificate profiles, end entity profiles, publishers, and roles for the RA peer and other roles wantes
 #deploy_post_ca_config: true

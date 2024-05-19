@@ -1,17 +1,18 @@
 ---
 # handlers file for wildfly
 
-- name: restart wildfly
-  systemd:
+- name: restart systemd wildfly service
+  ansible.builtin.systemd_service:
     name: wildfly
     state: restarted
 
 - name: change standalone data mode
-  file:
+  ansible.builtin.file:
     path: '{{ wildfly_dir }}/standalone/data'
     owner: '{{ ejbca_user }}'
     group: '{{ ejbca_group }}'
     mode: '0750'
     recurse: yes
     state: directory
-  when: wildfly_manage_standalone_data
+  when: 
+    - wildfly_manage_standalone_data

@@ -3,7 +3,7 @@
 - name: Check if {{ item.external_caname }} is already in EJBCA
   command: >
     {{ ejbca_sh }} ca listcas 
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: check_list_of_cas
@@ -21,7 +21,7 @@
         creates: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       when: not item.external_root_cachain_local_repository|bool
 
     - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
@@ -30,7 +30,7 @@
         dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       when: item.external_root_cachain_local_repository|bool
  
     - name: Import External CA - {{ item.external_caname }}
@@ -38,7 +38,7 @@
         {{ ejbca_sh }} ca importcacert
         --caname {{ item.external_caname }}
         -f /var/tmp/{{ item.external_root_cachain_file | basename }}
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become: yes
       become_user: "{{ ejbca_user }}"
       register: import_external_ca
