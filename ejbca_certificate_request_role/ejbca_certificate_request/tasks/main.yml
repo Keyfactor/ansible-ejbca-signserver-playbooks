@@ -36,4 +36,5 @@
     ejbca_api_url: '{{ ejbca_api_url }}'
     ejbca_api_client_cert_path: '{{ ejbca_api_client_cert_path }}'
     ejbca_api_client_cert_key_path: '{{ ejbca_api_client_cert_key_path }}'
-
+    end_entity_username: '{{ cert_common_name }}'
+    end_entity_password: '{{ cert_common_name }}-pw'

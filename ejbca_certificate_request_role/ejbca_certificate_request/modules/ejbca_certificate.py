@@ -118,7 +118,9 @@ class EjbcaCertificate(object):
         self.certificate_profile = module.params['certificate_profile_name']
         self.end_entity_profile = module.params['end_entity_profile_name']
         self.certificate_authority = module.params['certificate_authority_name']
-        
+        self.username = module.params['end_entity_username']
+        self.password = module.params['end_entity_password']
+
         # All return values
         self.changed = False
         self.filename = None
@@ -194,11 +196,10 @@ class EjbcaCertificate(object):
             #body['certificate_authority_name'] = 'ManagementCA';
             body['certificate_authority_name'] = self.certificate_authority;
             body['include_chain'] = 'true';
-            # TODO: random username and password
-            body['username'] = 'ansible123';
-            body['password'] = 'User';
-            
-            
+
+            body['username'] = self.username;
+            body['password'] = self.password;
+
             if not module.check_mode:
                 try:
                     if self.request_type == 'validate_only':
@@ -307,9 +308,11 @@ def ejbca_certificate_argument_spec():
         custom_fields=dict(type='dict', default=None, options=custom_fields_spec()),
         cert_expiry=dict(type='str'),
         cert_lifetime=dict(type='str', choices=['P1Y', 'P2Y', 'P3Y']),
+        end_entity_username=dict(type='str', required=True),
+        end_entity_password=dict(type='str', required=True),
     )
 
-# 
+#
 # From api.py BEGIN
 #
 
