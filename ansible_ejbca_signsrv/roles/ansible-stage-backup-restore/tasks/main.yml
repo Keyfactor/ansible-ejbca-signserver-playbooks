@@ -22,6 +22,7 @@
       ansible.builtin.unarchive:
         src: "{{ backup_dir_path }}/{{ restore_archive_file }}"
         dest: "{{ backup_dir_path }}"
+        remote_src: true
       register: local_backup_archive_unpack
       tags: restore_backup
 
