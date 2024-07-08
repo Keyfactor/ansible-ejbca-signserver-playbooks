@@ -18,6 +18,12 @@
 - name: Unpack archive when it is already on the host and not copied from the controller
   block:
 
+    - name: Create directory to unpack local backup archive
+      ansible.builtin.file:
+        path: "{{ backup_dir_path }}/{{ restore_archive_file | splitext | first }}"
+        state: directory
+      tags: restore_backup
+      
     - name: Unpack local backup archive 
       ansible.builtin.unarchive:
         src: "{{ backup_dir_path }}/{{ restore_archive_file }}"
