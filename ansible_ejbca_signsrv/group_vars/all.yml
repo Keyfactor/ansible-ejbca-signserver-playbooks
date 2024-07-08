@@ -1,5 +1,5 @@
 ---
-
+ansible_common_remote_group: ec2-user
 # Set the default Python interpreter
 #ansible_python_interpreter: /usr/bin/python3
 

@@ -7,6 +7,9 @@
     dest: "{{ backup_dir_path }}"
   register: upload_backup_target_host
   tags: restore_backup
+  when:
+    - copy_restore_from_controller is defined
+    - copy_restore_from_controller | bool
 
 - name: Locate the backup archive name
   ansible.builtin.find:
@@ -114,4 +117,8 @@
     state: absent
   become: false
   delegate_to: localhost  
-  tags: restore_backup    
+  tags: restore_backup
+  when:
+    - copy_restore_from_controller is defined
+    - copy_restore_from_controller | bool
+

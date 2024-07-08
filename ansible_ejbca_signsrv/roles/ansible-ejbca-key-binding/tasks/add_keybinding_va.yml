@@ -66,7 +66,7 @@
   loop_control:
     label: "{{ item.name }}"
   no_log: "{{ no_log_value }}"
-  when: item.name not in keybinding_exists.stdout
+  #when: item.name not in keybinding_exists.stdout
 
 - name: Cleanup the cert files in /var/tmp
   file:
@@ -74,4 +74,4 @@
     state: absent
   loop: "{{ key_bindings }}"
   no_log: "{{ no_log_value }}"
-  when: item.name not in keybinding_exists.stdout
+  #when: item.name not in keybinding_exists.stdout

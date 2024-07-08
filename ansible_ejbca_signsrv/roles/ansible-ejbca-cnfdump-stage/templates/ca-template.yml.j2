@@ -8,6 +8,8 @@ Pre-produce OCSP Responses: {{ item.pre_produce_ocsp_responses | default('false'
 Store responses on-demand: {{ item.store_responses_on_demand | default('false') }}
 {% if ejbca_version is version('8.2.0', '>=') and item.ocsp_gen_iss_rev is defined %}
 Pre-produce OCSP Responses Upon certificate issuance/revocation: {{ item.ocsp_gen_iss_rev | default('false') }}
+{% else %}
+Pre-produce OCSP Responses Upon certificate issuance/revocation: false
 {% endif %}
 Certificate Profile: {{ item.certprofile }}
 Default Certificate Profile: Not used
@@ -53,7 +55,9 @@ Delta CRL Period: {{ item.delta_crl_period }}
 Generate CRL Upon Revocation: {{ item.generate_crl_upon_revocation | default('false') }}
 {% endif %}
 {% if ejbca_version is version('7.11.0', '>=') and item.revocationchanging is defined %}
-Allow Changing Revocation Reason: {{ item.revocationchanging }}
+Allow Changing Revocation Reason: {{ item.revocationchanging | default('false') }}
+{% else %}
+Allow Changing Revocation Reason: false
 {% endif %}
 Default CRL Distribution Point: {{ item.defaultCRLDP }}
 OCSP Service Default URI: {{ item.defaultOCSPServiceLocator }}

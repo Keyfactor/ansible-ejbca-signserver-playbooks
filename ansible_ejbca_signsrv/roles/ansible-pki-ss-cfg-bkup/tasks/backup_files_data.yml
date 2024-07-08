@@ -85,35 +85,42 @@
       wildfly_backup_result is defined or
       mariadb_backup_result is defined
 
-- name: Check if local directory {{ backup_dir_output }} exists
-  ansible.builtin.stat:
-    path: "{{ backup_dir_output }}"
-  register: backup_dir_output_exists
-  changed_when: false
-  tags: backup 
+- name: Copy backup down to the Ansible controller
+  block:
 
-- name: Create local directory for {{ backup_dir_output }}
-  become: no
-  ansible.builtin.file:
-    path: "{{ backup_dir_output }}"
-    state: directory
-  delegate_to: localhost
-  tags: backup 
-  when: 
-    - not backup_dir_output_exists.stat.exists
+    - name: Check if local directory {{ backup_dir_output }} exists
+      ansible.builtin.stat:
+        path: "{{ backup_dir_output }}"
+      register: backup_dir_output_exists
+      changed_when: false
+      tags: backup 
 
-- name: Copy backup archive to controller
-  ansible.builtin.fetch:
-    src: "{{ backup_dir_path_timestamp }}.tgz"
-    dest: "{{ backup_dir_output }}/"
-    flat: yes
-  become: false  
-  tags: backup
+    - name: Create local directory for {{ backup_dir_output }}
+      become: no
+      ansible.builtin.file:
+        path: "{{ backup_dir_output }}"
+        state: directory
+      delegate_to: localhost
+      tags: backup 
+      when: 
+        - not backup_dir_output_exists.stat.exists
+
+    - name: Copy backup archive to controller
+      ansible.builtin.fetch:
+        src: "{{ backup_dir_path_timestamp }}.tgz"
+        dest: "{{ backup_dir_output }}/"
+        flat: yes
+      become: false  
+      tags: backup
+      when:
+        - compress_backup_result is defined
+
+    - name: Remove backup local backup archive
+      ansible.builtin.file:
+        path: "{{ backup_dir_path_timestamp }}.tgz"
+        state: absent
+      tags: backup
+
   when:
-    - compress_backup_result is defined
-
-- name: Remove backup local backup archive
-  ansible.builtin.file:
-    path: "{{ backup_dir_path_timestamp }}.tgz"
-    state: absent
-  tags: backup
+    - copy_backup_to_controller is defined
+    - copy_backup_to_controller | bool

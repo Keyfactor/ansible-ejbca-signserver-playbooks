@@ -180,14 +180,14 @@ The host where the backup file is uploaded from the controller for storage.
 ```bash
 ansible-playbook -i inventory -l ca01,backupServer -e "backup_ejbca_server=true 
 backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true 
-copy_backup_to_remote=true backup_server_dir_path=~/backup" backupPkiServer.yml
+copy_backup_to_remote=true backup_server_dir_path=~/backup copy_backup_to_remote=true" backupPkiServer.yml
 ```
 #### Example - Backup an instance of EJBCA that does have MariaDB installed locally and copy the backup to a remote host for storing, use this playbook command:
 
 ```bash
 ansible-playbook -i inventory -l va01,backupServer -e "backup_ejbca_server=true 
 backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true 
-backup_mariadb=true copy_backup_to_remote=true backup_server_dir_path=~/backup" backupPkiServer.yml
+backup_mariadb=true copy_backup_to_remote=true backup_server_dir_path=~/backup copy_backup_to_remote=true" backupPkiServer.yml
 ```
 
 #### Example - Backup an instance of EJBCA that does have MariaDB installed locally and leave the backup on the controller, use this playbook command:
@@ -195,7 +195,7 @@ backup_mariadb=true copy_backup_to_remote=true backup_server_dir_path=~/backup" 
 ```bash
 ansible-playbook -i inventory -l ra01,backupServer -e "backup_ejbca_server=true 
  backup_ejbca_conf=true backup_httpd_conf=true backup_wildfly_conf=true 
- backup_mariadb=true" backupPkiServer.yml
+ backup_mariadb=true copy_backup_to_remote=true" backupPkiServer.yml
 ```
 
 #### Example - Copy the EJBCA node backups from the controller to  remote host for storing, use this playbook command:
@@ -219,7 +219,7 @@ mariadb_install_client: true
 ```
 
 ```bash
-ansible-playbook -i inventory -l ca01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz" restorePkiServer.yml
+ansible-playbook -i inventory -l ca01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz copy_restore_from_controller=true" restorePkiServer.yml
 ```
 
 #### Example - Download EJBCA backup from remote storeate and restore an instance of EJBCA that will have MariaDB installed locally, use this playbook command:
@@ -254,6 +254,27 @@ mariadb_install_client: false
 
 ```bash
 ansible-playbook -i inventory -l ca01,backupServer -e "restore_ejbca_server=true restore_ejbca_conf=true restore_httpd_conf=true restore_wildfly_conf=true restore_mariadb=true restore_pkcs11_client=true copy_restore_from_remote=true restore_server_file_path=~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz" restorePkiServer.yml
+```
+
+The following variables could be added to the host or group vars of the CA, RA, & VA to shorten the amount of variables passed in from the command line. An exmple would be to add the following to the `eeCaServers.yml` file:
+
+```yaml
+backup_ejbca_server: true
+backup_ejbca_conf: true
+backup_httpd_conf: true
+backup_wildfly_conf: true
+backup_mariadb: true
+copy_backup_to_remote: true
+backup_server_dir_path: ~/backup
+copy_backup_to_remote: true
+restore_ejbca_server: true
+restore_ejbca_conf: true
+restore_httpd_conf: true
+restore_wildfly_conf: true
+restore_mariadb: true
+restore_pkcs11_client: true
+copy_restore_from_remote: true
+restore_server_file_path: ~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz
 ```
 
 ### Use Ansible Vault
