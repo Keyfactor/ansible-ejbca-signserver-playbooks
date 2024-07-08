@@ -277,6 +277,14 @@ copy_restore_from_remote: true
 restore_server_file_path: ~/backup/ejbca01.solitude.skyrim-10-05-2024.tgz
 ```
 
+If the backup is to be manually put on the EJBCA host for restoring, use the variable `restore_archive_file` in the host_vars to specify the archive file name. An example of using this variable in the host_vars for `ca01.yml`:
+
+```yaml
+restore_archive_file: ejbca01.solitude.skyrim-10-05-2024.tgz
+```
+
+The archive backup file must exist in the path set by the `backup_dir_path` variable found in the group_vars `all.yml` file.
+
 ### Use Ansible Vault
 
 Create a password file protected with Ansible Vault:

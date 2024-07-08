@@ -1,27 +1,44 @@
 ---
 # tasks file for roles/ansible-stage-backup-restore
 
-- name: Upload and unpack backup archive from Ansible controller
-  ansible.builtin.unarchive:
-    src: "{{ backup_dir_output }}/{{ restore_server_file_path| basename }}"
-    dest: "{{ backup_dir_path }}"
-  register: upload_backup_target_host
-  tags: restore_backup
+- name: Upload backup and pack from controller
+  block:
+
+    - name: Upload and unpack backup archive from Ansible controller
+      ansible.builtin.unarchive:
+        src: "{{ backup_dir_output }}/{{ restore_server_file_path| basename }}"
+        dest: "{{ backup_dir_path }}"
+      register: upload_backup_target_host
+      tags: restore_backup
+
   when:
     - copy_restore_from_controller is defined
     - copy_restore_from_controller | bool
 
-- name: Locate the backup archive name
-  ansible.builtin.find:
-    path: "{{ backup_dir_path }}"
-    file_type: file
-    recurse: no
-    use_regex: yes
-    patterns: ".*-\\d{2}-\\d{2}-\\d{4}.tgz"
-  register: find_local_pki_backups
-  tags: restore_backup
-  #when:
-    #- upload_backup_target_host.changed
+- name: Unpack archive when it is already on the host and not copied from the controller
+  block:
+
+    - name: Unpack local backup archive 
+      ansible.builtin.unarchive:
+        src: "{{ backup_dir_path }}/{{ restore_archive_file }}"
+        dest: "{{ backup_dir_path }}"
+      register: local_backup_archive_unpack
+      tags: restore_backup
+
+  when:
+    - restore_archive_file is defined
+
+    - name: Locate the backup archive name
+      ansible.builtin.find:
+        path: "{{ backup_dir_path }}"
+        file_type: directory
+        recurse: no
+        use_regex: yes
+        patterns: ".*-\\d{2}-\\d{2}-\\d{4}"
+      register: find_local_pki_backups
+      tags: restore_backup
+      when:
+        - upload_backup_target_host.changed or local_backup_archive_unpack.changed
 
 - name: debug find_local_pki_backups
   ansible.builtin.debug:
