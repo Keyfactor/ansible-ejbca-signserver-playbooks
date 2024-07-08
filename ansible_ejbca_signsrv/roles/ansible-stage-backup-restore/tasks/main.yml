@@ -14,10 +14,10 @@
 - name: Locate the backup archive name
   ansible.builtin.find:
     path: "{{ backup_dir_path }}"
-    file_type: directory
+    file_type: file
     recurse: no
     use_regex: yes
-    patterns: ".*-\\d{2}-\\d{2}-\\d{4}"
+    patterns: ".*-\\d{2}-\\d{2}-\\d{4}.tgz"
   register: find_local_pki_backups
   tags: restore_backup
   #when:
