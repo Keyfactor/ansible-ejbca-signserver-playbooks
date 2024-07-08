@@ -20,8 +20,8 @@
     patterns: ".*-\\d{2}-\\d{2}-\\d{4}"
   register: find_local_pki_backups
   tags: restore_backup
-  when:
-    - upload_backup_target_host.changed
+  #when:
+    #- upload_backup_target_host.changed
 
 - name: debug find_local_pki_backups
   ansible.builtin.debug:
