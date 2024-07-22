@@ -44,3 +44,17 @@
     group: "{{ ejbca_group }}"    
     remote_src: yes
   tags: restore_backup
+
+- name: Build EJBCA Ear
+  command: ant -q clean deployear
+  become_user: "{{ ejbca_user }}"
+  environment:
+    EJBCA_HOME: "{{ ejbca_home }}"
+    APPSRV_HOME: "{{ wildfly_home }}"
+  changed_when: false
+  args:
+    chdir: "{{ ejbca_home }}"
+  register: compile_ejbca_ear
+  when:
+    - restore_recompile_ejbca_ear is defined
+    - restore_recompile_ejbca_ear | bool

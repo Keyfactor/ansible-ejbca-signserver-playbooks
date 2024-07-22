@@ -23,13 +23,16 @@ wildfly_install_dir: /opt
 wildfly_home: "{{ wildfly_install_dir }}/wildfly"
 ejbca_group: wildfly
 ejbca_user: wildfly
+# Add additional groups the ejbca user should be a member of comma separated
+#ejbca_supplement_groups: hsmusers
+# Specifiy a differnt path for the home directory of the ejbca user
+ejbca_user_home_path: "/home/{{ ejbca_user }}"
 signsrv_group: wildfly
 signsrv_user: wildfly
 identity_batch_output_dir: /var/tmp
 
 # Manage the OS user that will run wildfly
-ejbca_manage_user: true
-ejbca_user_profile: "/home/{{ ejbca_user }}"
+ejbca_manage_user: true 
 signsrv_manage_user: true
 signsrv_user_profile: "/home/{{ signsrv_user }}"
 
@@ -103,3 +106,5 @@ ejbca_cli_log_fix: true
 backup_dir_output: "{{ playbook_dir }}/serverBackups"
 # Directory on the remote host where the backup archive of EJBCA is created and downloaded from to the controller
 backup_dir_path: /var/tmp
+# Recompile the EJBCA ear when restoring EJBCA from the backup. This is needed if the new host has a newer version of Java.
+restore_recompile_ejbca_ear: false

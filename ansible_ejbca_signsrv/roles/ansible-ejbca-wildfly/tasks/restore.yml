@@ -8,7 +8,7 @@
 - name: Restore {{ ejbca_user }} user .bash_profile
   ansible.builtin.copy:
     src: "{{ restore_dir_path }}/wildfly/bash_profile"
-    dest: "{{ ejbca_user_profile }}/.bash_profile"
+    dest: "{{ ejbca_user_home_path }}/.bash_profile"
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"    
     remote_src: yes
@@ -104,9 +104,22 @@
     src: "{{ restore_dir_path }}/wildfly/{{ wildfly_elytron_pass_file| basename }}"
     dest: "{{ wildfly_elytron_pass_file }}"
     owner: "{{ ejbca_user }}"
-    group: "{{ ejbca_group }}"    
+    group: "{{ ejbca_group }}"
+    mode: 0700
     remote_src: yes
   tags: backup_restore    
+
+- name: Update Wildfly standalone.conf file
+  ansible.builtin.template:
+    src: standalone.conf.j2 
+    dest: "{{ wildfly_home }}/bin/standalone.conf"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}" 
+    mode: 0750
+  tags: backup_restore   
+  when:
+    - wildfly_update_standalone_conf_file is defined
+    - wildfly_update_standalone_conf_file | bool 
 
 - name: Restore Wildfly systemd service
   block:
