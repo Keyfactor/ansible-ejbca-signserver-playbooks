@@ -1,12 +1,12 @@
 ---
 # tasks file for ansible-hostname
 
-- name: Set a hostname
-  hostname:
+- name: Set the server hostname to {{ hostname }}
+  ansible.builtin.hostname:
     name: '{{ hostname }}'
 
 - name: Add hosts file entry
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/hosts"
     regexp: ".*\t{{ hostname }}"
     line: "{{ ipaddress }}\t{{ hostname }}"

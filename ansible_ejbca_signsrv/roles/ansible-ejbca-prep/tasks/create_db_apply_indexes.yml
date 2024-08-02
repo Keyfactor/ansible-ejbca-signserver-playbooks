@@ -1,13 +1,17 @@
 ---
 
 - name: Check if EJBCA database exists
-  command: >
-    {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh jdbc 
-    --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].host }}:{{ appsrv_datasources[0].port }}{% if appsrv_datasources[0].database_connection_type == "mariadb" %}/{{ appsrv_datasources[0].database }}{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %};DatabaseName={{ appsrv_datasources[0].database }}{{ appsrv_datasources[0].connection_parameters }}{% endif %} 
-    --username {{ appsrv_datasources[0].user }} 
+  ansible.builtin.command: >
+    {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh jdbc
+    {% if appsrv_datasources[0].loadbalancing is sameas false %}
+    --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].host }}:{{ appsrv_datasources[0].port }}{% if appsrv_datasources[0].database_connection_type == "mariadb" %}/{{ appsrv_datasources[0].database }}{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %};DatabaseName={{ appsrv_datasources[0].database }}{{ appsrv_datasources[0].connection_parameters }}{% endif %}
+    {% else %}
+    --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].loadbalanced_hosts[0].host }}:{{ appsrv_datasources[0].loadbalanced_hosts[0].port }}{% if appsrv_datasources[0].database_connection_type == "mariadb" %}/{{ appsrv_datasources[0].database }}{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %};DatabaseName={{ appsrv_datasources[0].database }}{{ appsrv_datasources[0].connection_parameters }}{% endif %}
+    {% endif %}
+    --username {{ appsrv_datasources[0].user }}
     --password {{ appsrv_datasources[0].password }}
     --execute "SELECT rowVersion FROM GlobalConfigurationData WHERE configurationId='UPGRADE';"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become_user: "{{ ejbca_user }}"
   become: true
   register: check_ejbca_database_exists
@@ -15,46 +19,53 @@
   changed_when: false
 
 - name: Debug check_ejbca_database_exists
-  debug:
+  ansible.builtin.debug:
     var: check_ejbca_database_exists
+  when:
+    - check_ejbca_database_exists.rc >= 5
 
 - name: Create the EJBCA database tables and apply indexes
   block:
 
     - name: Create EJBCA database tables
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh jdbc 
         --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].host }}:{{ appsrv_datasources[0].port }}{% if appsrv_datasources[0].database_connection_type == "mariadb" %}/{{ appsrv_datasources[0].database }}{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %};DatabaseName={{ appsrv_datasources[0].database }}{{ appsrv_datasources[0].connection_parameters }}{% endif %} 
         --username {{ appsrv_datasources[0].user }} 
         --password {{ appsrv_datasources[0].password }}
         --file {{ ejbca_home }}/doc/sql-scripts/create-tables-ejbca-{% if appsrv_datasources[0].database_connection_type == "mariadb" %}mysql{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %}mssql{% endif %}.sql
-      no_log: true
+      no_log: "{{ no_log_value }}"
       become_user: "{{ ejbca_user }}"
       become: true
       register: create_ejbca_database
       ignore_errors: yes
 
     - name: Debug create_ejbca_database
-      debug:
+      ansible.builtin.debug:
         var: create_ejbca_database
+      when:
+        - create_ejbca_database.failed
 
     - name: Add EJBCA database indexes
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh jdbc 
         --url jdbc:{{ appsrv_datasources[0].database_connection_type }}://{{ appsrv_datasources[0].host }}:{{ appsrv_datasources[0].port }}{% if appsrv_datasources[0].database_connection_type == "mariadb" %}/{{ appsrv_datasources[0].database }}{% elif appsrv_datasources[0].database_connection_type == "sqlserver" %};DatabaseName={{ appsrv_datasources[0].database }}{{ appsrv_datasources[0].connection_parameters }}{% endif %} 
         --username {{ appsrv_datasources[0].user }} 
         --password {{ appsrv_datasources[0].password }}
         {{ item.index }}
       loop: "{{ ejbca_database_indexes }}" 
-      no_log: true
+      loop_control:
+        label: "{{ item }}"
+      no_log: "{{ no_log_value }}"
       become_user: "{{ ejbca_user }}"
       become: true
       register: applying_database_indexes
       ignore_errors: yes
 
     - name: Log the Index errors 
-      debug:
+      ansible.builtin.debug:
         #msg: "Some part of applying database indexes failed with message: {{ applying_database_indexes.stderr }}"
         var: applying_database_indexes
         verbosity: 4
-  when: check_ejbca_database_exists.rc == 3
+  when: 
+    - check_ejbca_database_exists.rc == 3

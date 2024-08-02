@@ -1,0 +1,148 @@
+---
+# tasks file for roles/ansible-stage-backup-restore
+
+- name: Upload backup and pack from controller
+  block:
+
+    - name: Upload and unpack backup archive from Ansible controller
+      ansible.builtin.unarchive:
+        src: "{{ backup_dir_output }}/{{ restore_server_file_path| basename }}"
+        dest: "{{ backup_dir_path }}"
+      register: upload_backup_target_host
+      tags: restore_backup
+
+  when:
+    - copy_restore_from_controller is defined
+    - copy_restore_from_controller | bool
+
+- name: Unpack archive when it is already on the host and not copied from the controller
+  block:
+
+    - name: Create directory to unpack local backup archive
+      ansible.builtin.file:
+        path: "{{ backup_dir_path }}/{{ restore_archive_file | splitext | first }}"
+        state: directory
+      tags: restore_backup
+      
+    - name: Unpack local backup archive 
+      ansible.builtin.unarchive:
+        src: "{{ backup_dir_path }}/{{ restore_archive_file }}"
+        dest: "{{ backup_dir_path }}/{{ restore_archive_file | splitext | first }}"
+        remote_src: true
+      register: local_backup_archive_unpack
+      tags: restore_backup
+
+  when:
+    - restore_archive_file is defined
+
+    - name: Locate the backup archive name
+      ansible.builtin.find:
+        path: "{{ backup_dir_path }}"
+        file_type: directory
+        recurse: no
+        use_regex: yes
+        patterns: ".*-\\d{2}-\\d{2}-\\d{4}"
+      register: find_local_pki_backups
+      tags: restore_backup
+      when:
+        - upload_backup_target_host.changed or local_backup_archive_unpack.changed
+
+- name: debug find_local_pki_backups
+  ansible.builtin.debug:
+    var: find_local_pki_backups.files[0].path
+  when:
+    - find_local_pki_backups is defined
+    - find_local_pki_backups.failed
+
+- name: Record the local backup archive name
+  ansible.builtin.set_fact:
+    local_pki_backup: "{{ find_local_pki_backups.files[0].path }}"
+
+- name: debug local_pki_backup
+  ansible.builtin.debug:
+    var: local_pki_backup
+
+- name: Install MariaDB and restore from backup
+  ansible.builtin.include_role:
+    name: ansible-role-mariadb
+  vars:
+    - mariadb_restore_cnf_files: true
+    - restore_dir_path: "{{ local_pki_backup }}"
+    - mariadb_srv_config_network: /etc/my.cnf.d/network.cnf
+    - mariadb_srv_config_server: /etc/my.cnf.d/server.cnf
+    - mariadb_srv_config_custom: /etc/my.cnf.d/custom.cnf    
+  tags: restore_backup
+  when: 
+    - inventory_hostname in groups['mariadbServers']
+    - restore_mariadb is defined
+    - restore_mariadb| bool
+
+- name: Restore Wildfly from backup
+  ansible.builtin.include_role:
+    name: ansible-ejbca-wildfly
+    tasks_from: restore
+  vars:
+    - restore_dir_path: "{{ local_pki_backup }}"
+    - wildfly_manage_java_pkg: true
+  tags: restore_backup  
+  when: 
+    - inventory_hostname in groups['applicationServers']
+    - restore_wildfly_conf is defined
+    - restore_wildfly_conf|bool
+
+- name: Install and restore HSM client
+  # Note this will require contributions to handle all the different HSM setups...
+  ansible.builtin.include_role:
+    name: ansible-ejbca-pkc11-client
+    tasks_from: restore
+  vars:
+    - restore_dir_path: "{{ local_pki_backup }}"
+    - create_softhsm_slots: false
+  tags: restore_backup  
+  when: 
+    - restore_pkcs11_client is defined
+    - restore_pkcs11_client| bool
+
+- name: Restore EJBCA archive from backup
+  ansible.builtin.include_role:
+    name: ansible-ejbca-prep
+    tasks_from: restore
+  vars:
+    - restore_dir_path: "{{ local_pki_backup }}"
+  tags: restore_backup
+  when:
+    - restore_ejbca_conf is defined
+    - restore_ejbca_conf|bool
+
+- name: Install and restore Apache HTTPD
+  ansible.builtin.include_role:
+    name: ansible-pki-ss-httpd
+    tasks_from: restore
+  vars:
+    - httpd_restore_cnf_files: true
+    - restore_dir_path: "{{ local_pki_backup }}"
+  tags: restore_backup
+  when:
+    - inventory_hostname in groups['httpdServers']
+    - restore_httpd_conf is defined
+    - restore_httpd_conf|bool
+
+- name: Remove backup local backup archive
+  ansible.builtin.file:
+    path: "{{ local_pki_backup }}"
+    state: absent
+  tags: restore_backup
+  when:
+    - upload_backup_target_host.changed
+
+- name: Remove backup file from the Ansible controller
+  ansible.builtin.file:
+    path: "{{ backup_dir_output }}/{{ restore_server_file_path| basename }}"
+    state: absent
+  become: false
+  delegate_to: localhost  
+  tags: restore_backup
+  when:
+    - copy_restore_from_controller is defined
+    - copy_restore_from_controller | bool
+

@@ -25,14 +25,12 @@ wildfly_jboss_client_file: jboss-client.jar
 wildfly_elytron_tool_download_url: "https://repo1.maven.org/maven2/org/wildfly/security/wildfly-elytron-tool/1.17.2.Final/wildfly-elytron-tool-1.17.2.Final.jar"
 wildfly_elytron_tool_checksum: sha256:07b62bc174f6e8e132690d748681621b93b91468ecb9dcef2c1080549ae9e939
 wildfly_galleon_download_file: "galleon-{{ wildfly_galleon_version }}.Final"
-#wildfly_galleon_download_url: "https://github.com/wildfly/galleon/releases/download/galleon-parent-{{ wildfly_galleon_version }}.Final/{{ wildfly_galleon_download_file }}.zip"
 wildfly_galleon_download_url: "https://github.com/wildfly/galleon/releases/download/{{ wildfly_galleon_version }}.Final/{{ wildfly_galleon_download_file }}.zip"
 wildfly_base_download_url: https://download.jboss.org/wildfly
 wildfly_name: wildfly-{{ wildfly_version }}
 wildfly_download_validate_certs: "yes"
 wildfly_download_file: "{{ wildfly_name }}.tar.gz"
-wildfly_download_url: "{{ wildfly_base_download_url }}/{{ wildfly_version }}/\
-                       {{ wildfly_download_file }}"
+wildfly_download_url: "{{ wildfly_base_download_url }}/{{ wildfly_version }}/{{ wildfly_download_file }}"
 wildfly_download_dir: /tmp
 
 wildfly_galleon_install_dir: /opt
@@ -44,25 +42,12 @@ wildfly_dir_mode: '0750'
 wildfly_create_symlink: true
 wildfly_symlink_dir: "{{ wildfly_install_dir }}/wildfly"
 
-wildfly_init_src_path: "{{ 'docs/contrib/scripts' if wildfly_major_v | version_compare('10', '>=') else 'bin' }}"
-
 wildfly_java_xms: 2048m
 wildfly_java_xmx: 2048m
 
-wildfly_console_log_dir: "/var/log/wildfly"
-wildfly_console_log_file: "console.log"
-wildfly_console_log: "{{ wildfly_console_log_dir }}/\
-                      {{ wildfly_console_log_file }}"
-
+# Location of the conf dir for variables the service sources during startup
 wildfly_conf_dir: /etc/wildfly
 wildfly_standalone_config_file: standalone.xml
-wildfly_standalone_config_path: "{{ wildfly_dir }}/standalone/configuration/\
-                                 {{ wildfly_standalone_config_file }}"
-wildfly_startup_wait: ''
-wildfly_shutdown_wait: ''
-
-wildfly_node_name: ''
-wildfly_init_dir: /etc/init.d
 wildfly_systemd_dir: /usr/lib/systemd/system
 
 wildfly_file_perms:
@@ -77,30 +62,6 @@ wildfly_http_port: 8080
 wildfly_https_port: 8443
 wildfly_bind_address_unsecure: ''
 wildfly_messaging_group_address: ''
-
-wildfly_management_users: []
-wildfly_app_users: []
-
-wildfly_enable_ssl: false
-wildfly_keystore_name: my.jks
-wildfly_keystore_path: "{{ wildfly_dir }}/standalone/configuration/\
-                        {{ wildfly_keystore_name }}"
-wildfly_keystore_alias: my
-wildfly_keystore_password: "secret"
-wildfly_key_password: "secret"
-wildfly_application_ssl_identity: '
-    <server-identities>
-        <ssl>
-            <keystore path="{{ wildfly_keystore_name }}"
-             relative-to="jboss.server.config.dir"
-             alias="{{ wildfly_keystore_alias }}"
-             keystore-password="{{ wildfly_keystore_password }}"
-             key-password="{{ wildfly_key_password }}"/>
-        </ssl>
-    </server-identities>'
-wildfly_https_listener: '
-    <https-listener name="https-server" socket-binding="https"
-     security-realm="ManagementRealm"/>'
      
 wildfly_remove_dirs:
   - "{{ wildfly_symlink_dir }}/docs"

@@ -7,7 +7,7 @@
     owner: "{{ ejbca_user }}"
     group: "{{ ejbca_group }}"
     mode: 0664
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Stage CA configdump to update with Publishers
   copy:

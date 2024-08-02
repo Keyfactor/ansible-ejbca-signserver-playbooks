@@ -6,7 +6,7 @@
     name: ansible-ejbca-import-ext-ca
     tasks_from: add_external_signed_ca
   loop: "{{ add_certification_authorities }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when:
     - add_certification_authorities[0] is defined
 
@@ -15,4 +15,4 @@
     name: ansible-ejbca-conf-ca-exts
     tasks_from: config_ca_extensions
   loop: "{{ add_certification_authorities }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"

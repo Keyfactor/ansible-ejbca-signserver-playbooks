@@ -1,5 +1,9 @@
 ---
 
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true
+
 # EJBCA Cloud Wizard Answer file settings:
 # Hostname used in the TLS cert and the subject alt name
 ecloud_hostname: ecloudca1.keyfactor.demo

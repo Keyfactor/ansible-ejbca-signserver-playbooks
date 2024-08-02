@@ -1,0 +1,28 @@
+---
+
+- name: Task - Install Apache HTTPD web server
+  ansible.builtin.include_tasks: install.yml
+
+- name: Restore TLS certificate, key, & chain.crt files
+  ansible.builtin.copy:
+    src: "{{ restore_dir_path }}/apache/{{ item.dest| basename }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    remote_src: yes
+  loop: "{{ httpd_cert_files }}"
+  loop_control: 
+    label: "{{ item.dest }}"
+  tags: restore_backup
+
+- name: Restore trusted-ca.crt file
+  ansible.builtin.copy:
+    src: "{{ restore_dir_path }}/apache/trusted-ca.crt"
+    dest: /etc/pki/tls/certs/trusted-ca.crt
+    owner: root
+    group: root
+    remote_src: yes
+  tags: restore_backup
+
+- name: Task - Configure Apache HTTPD web server 
+  ansible.builtin.include_tasks: configure.yml

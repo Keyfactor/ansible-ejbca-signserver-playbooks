@@ -56,7 +56,7 @@
      file:
        path: "/var/tmp/{{ item.0.name }}"
        state: absent
-     no_log: true
+     no_log: "{{ no_log_value }}"
      when: 
       - item.1.dn is defined
 

@@ -6,5 +6,5 @@
   loop: "{{ add_certification_authorities }}"
   loop_control:
     label: "{{ item.caname }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   tags: create_cas

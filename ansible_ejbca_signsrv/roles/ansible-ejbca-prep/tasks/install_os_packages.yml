@@ -1,0 +1,38 @@
+---
+
+- name: Install EPEL on CentOS/RedHat 7/8
+  ansible.builtin.package:
+    name: epel-release
+    state: present
+  when: 
+    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+#TODO
+# Add install for Oracle EPEL repo
+
+- name: Install OpenJDK Development, unzip on Alma/CentOS/Oracle/RedHat/Rocky 8
+  ansible.builtin.package:
+    name: "{{ ejbca_packages_8 }}"
+    state: present
+  when: 
+    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
+      (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
+      (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
+
+- name: Install OpenJDK Development, unzip, & Ant on CentOS/RedHat 7
+  ansible.builtin.package:
+    name: "{{ ejbca_packages_7 }}"
+    state: present
+  when: 
+    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
+
+- name: Install kerberos workstation for Wildfly Kerberos auth
+  ansible.builtin.package:
+    name: krb5-workstation
+    state: present
+  when: 
+    - wildfly_enable_kerberos|bool

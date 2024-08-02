@@ -18,7 +18,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: hsm_test, client_toolbox_key_generation
       when:
         - clienttoolbox_key_generation is defined
@@ -33,7 +33,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       when:
         - (clienttoolbox_key_generation is not defined) or (clienttoolbox_key_generation is defined and not clienttoolbox_key_generation|bool)
 
@@ -45,7 +45,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
       when:
         - (clienttoolbox_key_generation is not defined) or (clienttoolbox_key_generation is defined and not clienttoolbox_key_generation|bool)
@@ -79,14 +79,14 @@
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       loop: "{{ add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Import External CA's
       include_role: 
         name: ansible-ejbca-import-ext-ca
         tasks_from: add_external_root_ca
       loop: "{{ add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       when:
         - item.rootDn == "External"
       
@@ -116,7 +116,7 @@
       loop: "{{ add_certification_authorities }}"
       loop_control:
         label: "{{ item.caname }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: create_cas
 
     - name: Configure Suborindated CA's settings
@@ -124,7 +124,7 @@
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       when: 
         - item.rootDn != "External"
   

@@ -56,6 +56,11 @@ else
    echo "JAVA_OPTS already set in environment; overriding default settings with values: $JAVA_OPTS"
 fi
 
+{% if wildfly_java_disable_sytem_props_file is defined and wildfly_java_disable_sytem_props_file is sameas true %}
+# Enable this Java flag when the server has FIPS mode enabled which breaks peering & credential stores
+JAVA_OPTS="$JAVA_OPTS -Djava.security.disableSystemPropertiesFile=true"
+{% endif %}
+
 # Sample JPDA settings for remote socket debugging
 #JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 

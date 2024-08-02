@@ -15,7 +15,7 @@
   environment:
     VAULT_ADDR: "{{ vault_local_addr }}"
   register: vault_login_status
-  no_log: true
+  no_log: "{{ no_log_value }}"
   #when: vault_policies.changed
 
 #- debug:

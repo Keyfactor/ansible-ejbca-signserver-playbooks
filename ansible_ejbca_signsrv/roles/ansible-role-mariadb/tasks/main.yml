@@ -1,15 +1,47 @@
 # roles/mariadb/tasks/main.yml
 ---
 
-- name: Include distribution dependent variables
-  include_vars: "{{ item }}"
+- name: Task - Include distribution dependent variables
+  ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
     - "{{ ansible_distribution }}.yml"
     - "{{ ansible_os_family }}.yml"
   tags: mariadb
 
-- include_tasks: install.yml
-- include_tasks: config.yml
-- include_tasks: root-password.yml
-- include_tasks: databases.yml
-- include_tasks: users.yml
+- name: Task - Install MariaDB client only
+  ansible.builtin.include_tasks: install_client.yml
+  tags: mariadb
+  when: 
+    - mariadb_install_client| bool
+
+- name: Block - Install MariaDB
+  block:
+
+    - name: Task - Install MariaDB Server
+      ansible.builtin.include_tasks: install.yml
+
+    - name: Task - Configure MariaDB Server
+      ansible.builtin.include_tasks: config.yml
+
+    - name: Task - Configure the root password for MariaDB
+      ansible.builtin.include_tasks: root-password.yml
+
+    - name: Task - Create databases in MariaDB 
+      ansible.builtin.include_tasks: databases.yml
+      when:
+        - mariadb_restore_cnf_files is not defined
+
+    - name: Task - Create users in MariaDB 
+      ansible.builtin.include_tasks: users.yml
+      when:
+        - mariadb_restore_cnf_files is not defined
+
+    - name: Task - Restore DB from SQL
+      ansible.builtin.include_tasks: restore.yml
+      when:
+        - mariadb_restore_cnf_files is defined
+        - mariadb_restore_cnf_files| bool
+  
+  tags: mariadb
+  when: 
+    - mariadb_install_server| bool

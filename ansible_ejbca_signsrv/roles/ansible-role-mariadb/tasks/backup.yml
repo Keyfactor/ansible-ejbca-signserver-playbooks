@@ -1,0 +1,79 @@
+---
+
+- name: Check if mariadb-dump utility is installed
+  ansible.builtin.stat:
+    path: "{{ mariadb_backup_cmd }}"
+  register: mariadb_dump_cmd_check
+  changed_when: false
+  tags: backup 
+
+- name: Backup the DB when the mariadb-dump is found
+  block:
+
+    - name: Create MariaDB backup directory
+      ansible.builtin.file:
+        path: "{{ backup_dir_path_timestamp }}/mariadb"
+        state: directory
+        mode: 0755
+      tags: backup 
+
+    - name: Backup MariaDB all databases to a sql file
+      #ansible.builtin.shell: |
+      #  {{ mariadb_backup_cmd }} -u {{ mariadb_backup_user}} -p"{{ mariadb_backup_user_password }}" {{ item.name }} --quick --lock-tables=false --system=users --insert-ignore > "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql" --no-tablespaces
+      ansible.builtin.shell: |
+        {{ mariadb_backup_cmd }} -u {{ mariadb_backup_user}} -p"{{ mariadb_backup_user_password }}" --all-databases --quick --lock-tables=false --system=users --insert-ignore > "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
+      no_log: "{{ no_log_value }}"
+      #loop: "{{ mariadb_databases }}"
+      #loop_control:
+        #label: "{{ item.name }}"
+      tags: backup 
+
+    - name: Wait until the database backup is completed
+      ansible.builtin.wait_for:
+        #path: "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql"
+        path: "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
+        state: present
+        msg: "Timeout to find file {{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
+      #loop: "{{ mariadb_databases }}"
+      #loop_control:
+        #label: "{{ item.name }}"
+      tags: backup
+
+    - name: Compress database sql file and remove the uncompressed file
+      community.general.archive:
+        #path: "{{ backup_dir_path_timestamp }}/mariadb/{{ item.name }}.sql"
+        path: "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql"
+        dest: "{{ backup_dir_path_timestamp }}/mariadb/ejbca.sql.tar.gz"
+        format: gz
+        force_archive: true
+        remove: true
+      #loop: "{{ mariadb_databases }}"
+      #loop_control:
+        #label: "{{ item.name }}"
+      tags: backup
+
+  when:
+    - mariadb_dump_cmd_check.stat.exists
+
+- name: Backup MariaDB Configuration files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ backup_dir_path_timestamp }}/mariadb/{{ item| basename }}"
+    remote_src: yes
+  loop:
+    - "{{ mariadb_srv_config_server }}"
+    - "{{ mariadb_srv_config_network }}"
+  register: mariadb_config_backup_copy
+  tags: backup
+  #when:
+    #- item is defined
+
+- name: Backup MariaDB Custom Configuration files
+  ansible.builtin.copy:
+    src: "{{ mariadb_srv_config_custom }}"
+    dest: "{{ backup_dir_path_timestamp }}/mariadb/{{ mariadb_srv_config_custom| basename }}"
+    remote_src: yes
+  register: mariadb_config_backup_copy
+  tags: backup
+  when:
+    - mariadb_custom_cnf|length != 0
