@@ -56,17 +56,44 @@
   when: 
     - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
-- name: Install packages on RedHat 8
+- name: Fix for RHEL 8 with Sat Server to allow proper MariaDB install
+  block:
+
+    - name: Disable Appstream Module for MariaDB # noqa command-instead-of-module
+      command: >
+        yum module disable mariadb -y
+      register: appstream_module_disabled_mariadb
+
+    - name: Disable Appstream Module for mysql # noqa command-instead-of-module
+      command: >
+        yum module disable mysql -y
+      register: appstream_module_disabled_mysql
+
+    - name: Install packages on RedHat 8 using Satellite Server
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: installed
+      loop: "{{ rhel8_mariadb_packages }}"
+      tags: mariadb
+
+  when: 
+    - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
+    - use_rhel_sat is defined
+    - use_rhel_sat | bool
+
+- name: Install packages on RedHat 8 Non-Satellite Server
   ansible.builtin.package:
     name: "{{ item }}"
     state: installed
-  loop: "{{ rhel8_mariadb_packages }}"
+  loop: "{{ mariadb_packages_8 }}"
   tags: mariadb
   when: 
-    - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") 
+    - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
+    - use_rhel_sat is defined
+    - use_rhel_sat not | bool
+      
 
-
-- name: Install packages on Alma/CentOS/Oracle/RedHat/Rocky 8
+- name: Install packages on Alma/CentOS/Oracle/RedHat/Rocky 8/9
   ansible.builtin.package:
     name: "{{ item }}"
     state: installed
@@ -74,7 +101,6 @@
   tags: mariadb
   when: 
     - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
       (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or 
       (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or

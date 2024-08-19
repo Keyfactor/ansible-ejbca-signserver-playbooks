@@ -1,21 +1,21 @@
 ---
 
 # EJBCA version and deployment info
-ejbca_version: 8.2.0
+ejbca_version: 8.3.2
 # If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_8_2_0.zip
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_8_3_2.zip
 # EJBCA URL to download the zip release file
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_2_0.zip
-ejbca_src_dir_name: ejbca_ee_8_2_0
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_3_2.zip
+ejbca_src_dir_name: ejbca_ee_8_3_2
 ejbca_type: RA
 
 # EJBCA Upgrade version
-ejbca_upgrade_version: 8.3.0
+ejbca_upgrade_version: 9.0.0
 # EJBCA Upgrade version URL to download the zip release file
 ejbca_upgrade_software_url:
 # Directory name of EJBCA Upgrade version
-ejbca_upgrade_src_dir: ejbca_ee_8_3_0
+ejbca_upgrade_src_dir: ejbca_ee_9_0_0
 
 # HSM Configuration
 # Use softhsm for PKCS11
