@@ -1,0 +1,33 @@
+---
+
+- name: Stage Apache HTTPD certificate files
+  block:
+
+    - name: Copy certificate files from the Ansible controller
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+      loop: "{{ httpd_cert_files }}"
+      loop_control: 
+        label: "{{ item.src }}"
+      register: file_copy
+
+    - name: Copy the CA chain files from the Ansible Controller
+      ansible.builtin.copy:
+        src: "{{ ejbca_cacrt_dir_output }}/{{ item.caname }}-fullchain.crt"
+        dest: "/etc/pki/tls/certs/{{ item.caname }}-fullchain.crt"
+        owner: root
+        group: root
+      loop: "{{ httpd_trusted_cas }}"
+      loop_control:
+        label: "{{ item.caname }}"
+      register: file_copy_ca_chain
+      
+    - name: Add CA certificates to the trusted-ca.crt file
+      ansible.builtin.shell: >
+        cat /etc/pki/tls/certs/{{ item.caname }}-fullchain.crt >> /etc/pki/tls/certs/trusted-ca.crt
+      loop: "{{ httpd_trusted_cas }}"
+      loop_control:
+        label: "{{ item.caname }}"

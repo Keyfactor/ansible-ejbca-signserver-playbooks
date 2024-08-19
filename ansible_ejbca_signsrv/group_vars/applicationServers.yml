@@ -18,3 +18,16 @@ wildfly_manage_service: true
 # Elytron password file location used in the EJBCA and SS prep roles
 wildfly_elytron_pass_dir: /opt/elytron
 wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
+
+# Set to true when Java has FIPS mode enabled to work around OS limitations of Elytron credential stores and prevent EJBCA peering from breaking
+wildfly_java_disable_sytem_props_file: false
+
+# Wildfly configuration files to backup
+wildfly_files_backup:
+  - "{{ wildfly_conf_dir }}/wildfly.conf"
+  - "{{ wildfly_elytron_pass_file }}"
+
+# Wildfly Kerberos configuration files to backup
+wildfly_kerb_files_backup:
+  - "{{ wildfly_kerberos_file_path }}"
+  - "{{ wildfly_kerberos_keytab_file }}"

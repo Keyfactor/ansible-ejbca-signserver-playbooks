@@ -4,7 +4,7 @@
 - name: Create crypto token in EJBCA
   include_tasks: add_crypto_token.yml
   loop: "{{ crypto_tokens }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Create keys on crypto token
   include_tasks: generate_keys.yml
@@ -12,6 +12,6 @@
   loop_control:
     label: "{{ key_item.0.caname }}"
     loop_var: key_item
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: 
     - ( "SoftCryptoToken" in key_item.0.tokentype ) 

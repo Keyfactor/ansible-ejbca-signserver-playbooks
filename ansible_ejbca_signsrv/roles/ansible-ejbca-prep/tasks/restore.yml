@@ -1,0 +1,60 @@
+---
+
+- name: Task - Install OS packages required for EJBJCA
+  ansible.builtin.include_tasks: install_os_packages.yml
+
+- name: Restore ejbca-custom directory
+  ansible.builtin.copy:
+    src: "{{ restore_dir_path }}/ejbca/ejbca-custom"
+    dest: "{{ ejbca_root_dir }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"    
+    remote_src: yes
+  tags: restore_backup
+
+- name: Restore {{ ejbca_home }} directory
+  ansible.builtin.unarchive:
+    src: "{{ restore_dir_path }}/ejbca/ejbca.tgz"
+    dest: "{{ ejbca_root_dir }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"    
+    remote_src: true
+  tags: restore_backup
+
+- name: Create symlink to installed version of EJBCA
+  ansible.builtin.file:
+    state: link
+    src: "{{ ejbca_root_dir }}/{{ ejbca_src_dir_name }}"
+    dest: "{{ ejbca_home }}"
+
+- name: Restore the ClientToolBox directory
+  ansible.builtin.copy: 
+    src:  "{{ restore_dir_path }}/ejbca/clientToolBox"
+    dest: "{{ ejbca_root_dir }}"
+    remote_src: yes
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  tags: restore_backup  
+
+- name: Restore Apache ant
+  ansible.builtin.copy:
+    src: "{{ restore_dir_path }}/ejbca/apache-ant" 
+    dest: "{{ ejbca_root_dir }}"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"    
+    remote_src: yes
+  tags: restore_backup
+
+- name: Build EJBCA Ear
+  command: ant -q clean deployear
+  become_user: "{{ ejbca_user }}"
+  environment:
+    EJBCA_HOME: "{{ ejbca_home }}"
+    APPSRV_HOME: "{{ wildfly_home }}"
+  changed_when: false
+  args:
+    chdir: "{{ ejbca_home }}"
+  register: compile_ejbca_ear
+  when:
+    - restore_recompile_ejbca_ear is defined
+    - restore_recompile_ejbca_ear | bool

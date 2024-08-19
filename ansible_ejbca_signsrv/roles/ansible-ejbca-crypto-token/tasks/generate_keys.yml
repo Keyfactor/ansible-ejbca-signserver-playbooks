@@ -4,12 +4,16 @@
 - name: Query keys on {% if key_item.0.crypto_token_name is defined %}"{{ key_item.0.crypto_token_name }}"{% else %}"{{ key_item.0.caname }}"{% endif %}
   command: >
     {{ ejbca_sh }} cryptotoken listkeys --token {% if key_item.0.crypto_token_name is defined %}"{{ key_item.0.crypto_token_name }}"{% else %}"{{ key_item.0.caname }}"{% endif %}
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: check_cryptoToken_keys
   changed_when: 'key_item.1.key_label not in check_cryptoToken_keys.stdout'
   failed_when: check_cryptoToken_keys.rc >= 2
+
+- name: Debug check_cryptoToken_keys
+  debug:
+    var: check_cryptoToken_keys
 
 - name: Generate key if it does not exist for {% if key_item.0.crypto_token_name is defined %}{{ key_item.0.crypto_token_name }}{% else %}{{ key_item.0.caname }}{% endif %} - {{ key_item.1.key_label }}:{{ key_item.1.key_size }}
   command: >

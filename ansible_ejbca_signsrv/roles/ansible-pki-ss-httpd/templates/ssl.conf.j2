@@ -7,7 +7,7 @@
   SSLSessionCacheTimeout  300
   SSLCryptoDevice builtin
 
-{% if ansible_facts['distribution_major_version'] == "8" %}
+{% if ansible_facts['distribution_major_version'] >= "8" %}
   SSLUseStapling On
   SSLStaplingCache "shmcb:logs/ssl_stapling(32768)"
 {% endif %}
@@ -38,11 +38,13 @@
   DocumentRoot /var/www/html
   ServerName {{ httpd_identity_info.id_name }}:443
   #ServerAlias *.domain.com
-  ErrorLog logs/443_error_log
+  ErrorLog "{{ httpd_tls_error_log_location| default('logs/443_error_log') }}"
   TransferLog logs/443_access_log
   LogLevel warn
   LogFormat "%a A %h %H %l %m %s %t %u %U \"{Referer}I\" " combined
-  CustomLog "logs/443_request_log" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+  LogFormat "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b" default_access
+  {% raw %}LogFormat "time=%{%FT%T}t.%{usec_frac}t%{%z}t client=%h SSL_PROTOCOL=\"%{SSL_PROTOCOL}x\" SSL_CIPHER=\"%{SSL_CIPHER}x\" http_method=\"%m\" uri_path=\"%U\" first_line_of_request=\"%r\", bytes=%b" splunksslrequest_kv
+  {% endraw %}CustomLog "{{ httpd_tls_log_location| default('logs/443_request_log') }}" {{ httpd_tls_log_format| default('default_access') }}
 
   KeepAlive on
   TraceEnable off
@@ -51,7 +53,7 @@
   LimitRequestBody 8190
   LimitRequestLine 8190
 
-{% if ansible_facts['distribution_major_version'] == "8" %}
+{% if ansible_facts['distribution_major_version'] >= "8" %}
   # enable HTTP/2, if available
   Protocols h2 http/1.1
 {% endif %}
@@ -157,9 +159,9 @@
   ProxyPassReverse balancer://EJBCACluster/ejbca
   </Location>
 
-  # Redirect /, /ejbca and non-proxied URLs to /ejbca/
-  RewriteCond %{THE_REQUEST} !(/ejbca/.*|/.well-known/.*)
-  RewriteRule (.*) https://%{HTTP_HOST}/ejbca/ [R]
+  # Redirect /, /ejbca and non-proxied URLs to /ejbca/ra, with public web deprecated
+  RewriteCond %{THE_REQUEST} !(/ejbca|/ejbca/.*|/.well-known/.*)
+  RewriteRule (.*) https://%{HTTP_HOST}/ejbca/ra/ [R]
 {% endif %}
 {% if inventory_hostname in groups['eeSignServers'] or inventory_hostname in groups['ceSignServers'] %}
 # Redirecting traffic to EJBCA Admin

@@ -1,12 +1,12 @@
 - name: Database Protection Keys
   block:
 
-    - name: Generate Keys for Database Protection
-      include_role:
+    - name: Role - Generate Keys for Database Protection
+      ansible.builtin.include_role:
         name: ansible-ejbca-ctb-keygen
       loop: "{{ ejbca_databaseprotection |subelements('crypto_token') if ejbca_databaseprotection is iterable else [] }}"
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: hsm_test, clienttoolbox_key_generation

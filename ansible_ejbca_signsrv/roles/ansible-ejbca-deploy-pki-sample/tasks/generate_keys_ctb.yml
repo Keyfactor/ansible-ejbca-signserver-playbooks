@@ -11,7 +11,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: hsm_test, clienttoolbox_key_generation
       when:
         - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype)
@@ -29,7 +29,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: hsm_test, clienttoolbox_key_generation
       when:
         - ("org.cesecore.keys.token.PKCS11CryptoToken" in key_item.0.tokentype)
@@ -47,7 +47,7 @@
       loop_control:
         label: "{{ key_item.0.slot_identifier_value }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: hsm_test, clienttoolbox_key_generation
       when:
         - ("PKCS11CryptoToken" in key_item.0.tokentype)

@@ -1,21 +1,21 @@
 ---
 
 # EJBCA version and deployment info
-ejbca_version: 8.2.0
+ejbca_version: 8.3.2
 # If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_7_10_0_1_VA.zip
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_8_3_2.zip
 # EJBCA URL to download the zip release file
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_2_0.zip
-ejbca_src_dir_name: ejbca_ee_8_2_0
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_3_2.zip
+ejbca_src_dir_name: ejbca_ee_8_3_2
 ejbca_type: VA
 
 # EJBCA Upgrade version
-ejbca_upgrade_version: 8.3.0
+ejbca_upgrade_version: 9.0.0
 # EJBCA Upgrade version URL to download the zip release file
-ejbca_upgrade_software_url:
+ejbca_upgrade_software_url: http://172.16.170.133:8080/ejbca_ee_9_0_0.zip
 # Directory name of EJBCA Upgrade version
-ejbca_upgrade_src_dir: ejbca_ee_8_3_0
+ejbca_upgrade_src_dir: ejbca_ee_9_0_0
 
 # EJBCA VA property files
 ejbca_templated_properties_files:
@@ -44,6 +44,14 @@ appsrv_datasources:
     database_driver_class: org.mariadb.jdbc.Driver
     #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
     database_jar_filename: mariadb-java-client.jar
+    loadbalancing: false
+    loadbalanced_hosts:
+      - host: dbhost01.solitude.skyrim
+        port: 3306
+      - host: dbhost02.solitude.skyrim
+        port: 3306
+      - host: dbhost03.solitude.skyrim
+        port: 3306
     host: 127.0.0.1
     backup_host: 
     port: 3306
@@ -127,3 +135,10 @@ configdump_dir_structure_va:
 configdump_va_files_dump1:
   - src: 'role-vaPeeringRole.yaml.j2'
     dest: '{{ ejbca_home }}/dump/dump1/admin-roles/role-vaPeeringRole.yaml.j2'
+
+# Install MariaDB server and client for a standalone instance typically used on the RA/VA or a single instance of the CA.  
+mariadb_install_server: true
+
+# Install only the Python MariaDB client for Ansible to connect to the DB. Use this option when the DB is not installed on the EJBCA node.
+# This is used when there is a cluster of EJBCA nodes pointing to an external DB instance.
+mariadb_install_client: false

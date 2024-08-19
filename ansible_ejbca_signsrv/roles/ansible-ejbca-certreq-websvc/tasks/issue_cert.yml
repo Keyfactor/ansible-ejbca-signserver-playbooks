@@ -28,7 +28,7 @@
       become: true
       become_user: "{{ ejbca_user }}"
       register: create_endentity
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     #- debug:
     #    var: create_endentity
@@ -40,7 +40,7 @@
       become: true
       become_user: "{{ ejbca_user }}"
       register: submit_pkcs10
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     #- debug:
     #    var: submit_pkcs10

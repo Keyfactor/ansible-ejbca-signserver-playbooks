@@ -20,7 +20,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Root CA's on crypto token
       include_role:
@@ -30,7 +30,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
 
     - name: Stage Management & Root CA to create with configdump
@@ -42,7 +42,7 @@
       loop: "{{ management_add_certification_authorities }}"
       loop_control:
         label: "{{ item.caname }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Intialize Root CA's with configdump
       command: >
@@ -68,7 +68,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ sub_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Suborindated CA's on crypto token
       include_role:
@@ -78,7 +78,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
       #when:
       #  - ("soft" in key_item.0.tokentype)
@@ -90,7 +90,7 @@
       vars:
         dump_dest: "{{ ejbca_home }}/dump/dump2/certification-authorities/{{ item.caname }}.yaml"
       loop: "{{ sub_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Intialize Sub CA's with configdump
       command: >

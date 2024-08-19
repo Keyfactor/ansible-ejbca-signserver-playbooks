@@ -7,6 +7,9 @@ mariadb_packages:
   - MariaDB-server
   - python3-PyMySQL
 
+mariadb_client_packages:
+  - python3-PyMySQL
+
 mariadb_srv_socket: "{{ mariadb_socket | default('/var/lib/mysql/mysql.sock') }}"
 
 mariadb_srv_config_network: "{{ mariadb_config_network | default('/etc/my.cnf.d/network.cnf') }}"

@@ -1,9 +1,10 @@
 ---
 
-hostname: ejbcava01.solitude.skyrim
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true
 
-# Dirty hack to tell the type of instance till something better is used
-#ejbca_type: VA
+hostname: ejbcava01.solitude.skyrim
 
 # Dirty mapping of httpd cert file name till something better is used 
 httpd_identity_info:

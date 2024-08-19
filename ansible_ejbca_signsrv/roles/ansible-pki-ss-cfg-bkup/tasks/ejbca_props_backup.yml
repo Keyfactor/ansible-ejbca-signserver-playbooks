@@ -1,0 +1,62 @@
+---
+
+- name: Create the EJBCA backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir_path_timestamp }}/ejbca"
+    state: directory
+    mode: 0755
+  tags: backup    
+
+- name: Backup the ejbca-custom directory
+  ansible.builtin.copy:
+    src: "{{ ejbca_home }}/../ejbca-custom"
+    dest: "{{ backup_dir_path_timestamp }}/ejbca"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"    
+    remote_src: yes
+  tags: backup
+
+- name: Create a compressed archive of the {{ ejbca_home }} directory
+  community.general.archive:
+    path: "{{ ejbca_root_dir }}/{{ ejbca_src_dir_name }}"
+    dest: "{{ backup_dir_path_timestamp }}/ejbca/ejbca.tgz"
+  register: compress_ejbca_backup_result  
+  tags: backup
+
+- name: Backukp the ClientToolBox directory
+  ansible.builtin.copy: 
+    src: "{{ ejbca_root_dir }}/clientToolBox"
+    dest: "{{ backup_dir_path_timestamp }}/ejbca/clientToolBox"
+    remote_src: yes
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"
+  tags: backup
+
+- name: Backup the Apache ant directory
+  ansible.builtin.copy:
+    src: "{{ ejbca_root_dir }}/apache-ant"
+    dest: "{{ backup_dir_path_timestamp }}/ejbca"
+    owner: "{{ ejbca_user }}"
+    group: "{{ ejbca_group }}"    
+    remote_src: yes
+  tags: backup
+
+#- name: Register properties files in ejbca-custom/conf
+#  ansible.builtin.find:
+#    paths: "{{ ejbca_home }}/../ejbca-custom/conf/"
+#    patterns: "*.properties"
+#  register: found_properties_files
+#  tags: backup
+
+#- name: Backup EJBCA property files
+#  ansible.builtin.copy:
+#    src: "{{ item.path }}"
+#    dest: "{{ backup_dir_path_timestamp }}/ejbca/{{ item.path| basename }}"
+#    remote_src: yes
+#  loop: "{{ found_properties_files.files }}"
+#  loop_control:
+#    label: "{{ item.path }}"
+#  register: ejbca_properties_backup_copy
+#  tags: backup
+#  when:
+#    - found_properties_files is defined

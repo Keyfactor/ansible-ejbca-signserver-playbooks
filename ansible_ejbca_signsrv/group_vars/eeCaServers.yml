@@ -23,21 +23,21 @@ configdump_import_files: "{{ configdump_files }}"
 add_publshers_to_cas: true
 
 # EJBCA version and deployment info
-ejbca_version: 8.2.0
+ejbca_version: 8.3.2
 # If enabled Ansible controller is used as software repository for Apache Ant, EJBCA, and JDBC driver
 use_local_repository: false
-ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_8_2_0.zip
+ejbca_remote_dir: ~/Downloads/PK-Software/ejbca_ee_8_3_2.zip
 # EJBCA URL to download the zip release file
-ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_2_0.zip
-ejbca_src_dir_name: ejbca_ee_8_2_0
+ejbca_software_url: http://172.16.170.133:8080/ejbca/ejbca_ee_8_3_2.zip
+ejbca_src_dir_name: ejbca_ee_8_3_2
 ejbca_type: CA
 
 # EJBCA Upgrade version
-ejbca_upgrade_version: 8.3.0
+ejbca_upgrade_version: 9.0.0
 # EJBCA Upgrade version URL to download the zip release file
-ejbca_upgrade_software_url: http://172.16.170.133:8080/ejbca_ee_8_13_0.zip
+ejbca_upgrade_software_url: http://172.16.170.133:8080/ejbca_ee_9_0_0.zip
 # Directory name of EJBCA Upgrade version
-ejbca_upgrade_src_dir: ejbca_ee_8_3_0
+ejbca_upgrade_src_dir: ejbca_ee_9_0_0
 
 # Variables to confgure the Widfly datasource for connecting to the applicable DB
 appsrv_datasources:
@@ -49,6 +49,14 @@ appsrv_datasources:
     database_driver_class: org.mariadb.jdbc.Driver
     #database_jar_filename is mariadb-java-client.jar or mssql-java-client.jar
     database_jar_filename: mariadb-java-client.jar
+    loadbalancing: false
+    loadbalanced_hosts:
+      - host: dbhost01.solitude.skyrim
+        port: 3306
+      - host: dbhost02.solitude.skyrim
+        port: 3306
+      - host: dbhost03.solitude.skyrim
+        port: 3306
     # For DB installed on the same instance as EJBCA
     host: 127.0.0.1
     # Connecting to an external DB
@@ -207,3 +215,10 @@ ra_peer_min_parallel_reqs: 2
 
 # Map the identity_info to create the TLS certs for the EJBCA CA instances
 identity_info: "{{ tls_identity_info }}"
+
+# Install MariaDB server and client for a standalone instance typically used on the RA/VA or a single instance of the CA.  
+mariadb_install_server: true
+
+# Install only the Python MariaDB client for Ansible to connect to the DB. Use this option when the DB is not installed on the EJBCA node.
+# This is used when there is a cluster of EJBCA nodes pointing to an external DB instance.
+mariadb_install_client: false

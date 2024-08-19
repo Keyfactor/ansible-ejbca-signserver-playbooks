@@ -3,7 +3,7 @@
 
 - name: Query crypto tokens
   command: "{{ ejbca_sh }} cryptotoken list"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: cryptoToken_list
@@ -28,7 +28,7 @@
     {% endif %}
     {% if item.force_used_slots is defined and item.force_used_slots is sameas true %}
     --forceusedslots{% endif %}
-  no_log: true
+  no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: add_cryptotoken

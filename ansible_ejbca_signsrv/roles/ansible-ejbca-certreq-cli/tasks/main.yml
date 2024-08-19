@@ -21,7 +21,7 @@
   loop: "{{ identity_info }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: 
     - identity_info[0] is defined
 
@@ -30,7 +30,7 @@
   loop: "{{ identity_csr_info }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
+  no_log: "{{ no_log_value }}"
   when: 
     - identity_csr_info[0] is defined
 

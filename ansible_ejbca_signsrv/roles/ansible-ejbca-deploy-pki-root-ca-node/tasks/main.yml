@@ -21,7 +21,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ root_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Generate keys for the Root CA's on crypto token
       include_role:
@@ -31,7 +31,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
 
     - name: Stage Root CA's to create with configdump
@@ -43,7 +43,7 @@
       loop: "{{ root_add_certification_authorities }}"
       loop_control:
         label: "{{ item.caname }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Intialize Root CA's with configdump
       command: >
@@ -81,7 +81,7 @@
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ root_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Root CA's on crypto token
       include_role:
@@ -91,7 +91,7 @@
       loop_control:
         label: "{{ key_item.0.caname }}"
         loop_var: key_item
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: key_generation
 
     - name: Initialize Root CA's with CLI commands
@@ -99,7 +99,7 @@
         name: ansible-ejbca-init-ca
         tasks_from: init_ca
       loop: "{{ root_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
       tags: create_cas
 
     - name: Configure Root CA's settings
@@ -107,7 +107,7 @@
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ root_add_certification_authorities }}"
-      no_log: true
+      no_log: "{{ no_log_value }}"
 
   when: 
     - root_add_certification_authorities[0] is defined and not deploy_with_configdump|bool

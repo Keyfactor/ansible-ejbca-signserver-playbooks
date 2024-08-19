@@ -1,0 +1,6 @@
+---
+
+- name: Create archive of all SoftHsm keys
+  community.general.archive:
+    path: /var/lib/softhsm
+    dest: "{{ backup_dir_path_timestamp }}/pkcs11-client/softhsmBackup.tgz"

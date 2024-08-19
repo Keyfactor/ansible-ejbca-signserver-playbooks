@@ -11,7 +11,7 @@
   environment:
     VAULT_ADDR: "{{ vault_local_addr }}"
   register: vault_login_status
-  no_log: true
+  no_log: "{{ no_log_value }}"
 
 - name: Import Sub CA certificates into vault
   command:  "{{ vault_cli_dir }}/vault write {{ vault_int_pki_name }}/intermediate/set-signed certificate=@{{ vault_int_pki_name }}.pem -format=json"
