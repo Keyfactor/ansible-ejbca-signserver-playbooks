@@ -1,7 +1,7 @@
 ---
 
 - name: Check if {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} end entity exists
-  command: "{{ ejbca_sh }} ra findendentity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}"
+  ansible.builtin.command: "{{ ejbca_sh }} ra findendentity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}"
   args:
     chdir: "{{ ejbca_home }}"
   become: true
@@ -11,10 +11,17 @@
   register: endentity_exists
   tags: certreq-cli-batch
 
-- block:
+#- ansible.builtin.debug:
+#    var: endentity_exists
+
+#- ansible.builtin.debug:
+#    var: item.endentity_renewal
+
+- name: Upload CSR and create password fact
+  block:
 
     - name: Copy CSR file from Controller
-      copy:
+      ansible.builtin.copy:
         src: "{{ ejbca_csr_dir_output }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}"
         dest: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}"
         owner: "{{ ejbca_user }}"
@@ -23,12 +30,19 @@
       tags: certreq-cli-csr
 
     - name: Create fact
-      set_fact:
+      ansible.builtin.set_fact:
         entity_pass: "{{ pass_15 }}"
-      no_log: "{{ no_log_value }}"
+      no_log: "{{ no_log_value }}"    
 
+  when: 
+    - endentity_exists.rc == 1 or
+      item.endentity_renewal is defined and item.endentity_renewal | bool
+
+- name: First time enrollment
+  block:
+  
     - name: Add end entity {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_sh }} ra addendentity
         --username "{% if item.name is not defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}"
         --dn "{{ item.dn }}"
@@ -46,7 +60,7 @@
       changed_when: adding_csr_end_entity.rc == 0
       tags: certreq-cli-csr
 
-    - debug:
+    - ansible.builtin.debug:
         msg: "Adding end entity failed with message: {{ adding_csr_end_entity.stdout }}"
       when: adding_csr_end_entity.rc == 1
 
@@ -65,24 +79,85 @@
       changed_when: ejbca_sign_csr.rc == 0
       tags: certreq-cli-csr
 
+  when: 
+    - endentity_exists.rc == 1
+
+- name: Renew the certificate
+  block:
+
+    - name: Set {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} status to 10
+      ansible.builtin.command: >
+        {{ ejbca_sh }} ra setendentitystatus 
+        --username {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} 
+        -S 10
+      args:
+        chdir: "{{ ejbca_home }}"
+      become_user: "{{ ejbca_user }}"
+      become: yes
+      register: ra_setpwd_result
+      tags: certreq-cli-batch
+      no_log: 
+      failed_when: ra_setpwd_result.rc >= 2
+      changed_when: ra_setpwd_result.rc == 0    
+
+    - name: Set password for {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %}
+      ansible.builtin.command: >
+        {{ ejbca_sh }} ra setclearpwd 
+        --username {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} 
+        --password {{ entity_pass }}
+      args:
+        chdir: "{{ ejbca_home }}"
+      become_user: "{{ ejbca_user }}"
+      become: yes
+      register: ra_setpwd_result
+      tags: certreq-cli-batch
+      no_log: 
+      failed_when: ra_setpwd_result.rc >= 2
+      changed_when: ra_setpwd_result.rc == 0
+
+    - name: Sign CSR for {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} 
+      command: >
+        {{ ejbca_sh }} createcert 
+        --username {% if item.external_caname is defined %}{{ item.caname }}{% else %}{{ item.name }}{% endif %} 
+        --password {{ entity_pass }} 
+        -c {{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}  
+        -f /var/tmp/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}
+      no_log: "{{ no_log_value }}"
+      become: yes
+      become_user: "{{ ejbca_user }}"
+      register: ejbca_sign_csr
+      failed_when: ejbca_sign_csr.rc >= 2
+      changed_when: ejbca_sign_csr.rc == 0
+      tags: certreq-cli-csr
+
+  when: 
+    - item.endentity_renewal is defined
+    - item.endentity_renewal | bool
+    - endentity_exists.rc == 0
+
+- name: Copy the cert back down
+  block:
+
     - name: Copy certificate files to localhost
       become: no
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}"
         dest: "{{ ejbca_csr_dir_output }}/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}"
         flat: yes
       tags: certreq-cli-csr
 
     - name: Cleanup the cert file in /var/tmp
-      file:
+      ansible.builtin.file:
         path: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.crt{% else %}{{ item.name }}.crt{% endif %}"
         state: absent
       tags: certreq-cli-csr
 
     - name: Cleanup the csr file in /var/tmp
-      file:
+      ansible.builtin.file:
         path: "{{ identity_batch_output_dir }}/{% if item.name is not defined %}{{ item.caname }}.csr{% else %}{{ item.name }}.csr{% endif %}"
         state: absent
       tags: certreq-cli-csr
 
-  when: endentity_exists.rc == 1
+  when: 
+    - endentity_exists.rc == 1 or
+      item.endentity_renewal is defined and item.endentity_renewal | bool

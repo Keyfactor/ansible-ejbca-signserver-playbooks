@@ -1,21 +1,21 @@
 ---
 
 - name: Check if local directory {{ ejbca_cacrt_dir_output }} exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ejbca_cacrt_dir_output }}"
   register: ejbca_cacrt_dir_output_exists
   changed_when: false
 
 - name: Create local directory for {{ ejbca_cacrt_dir_output }}
   become: no
-  file:
+  ansible.builtin.file:
     path: "{{ ejbca_cacrt_dir_output }}"
     state: directory
   delegate_to: localhost
   when: not ejbca_cacrt_dir_output_exists.stat.exists
 
 - name: Find what cert files are already downloaded
-  find:
+  ansible.builtin.find:
     path: "{{ ejbca_cacrt_dir_output }}"
     file_type: file
     recurse: yes
@@ -23,7 +23,7 @@
   register: find_local_ca_certs
 
 - name: Combine files into a list
-  set_fact:
+  ansible.builtin.set_fact:
     local_ca_cert_files: "{{ local_ca_cert_files + [item.path | basename] }}"
   loop: "{{ find_local_ca_certs.files if find_local_ca_certs is iterable else [] }}"
   loop_control:
@@ -39,7 +39,7 @@
   block:
 
     - name: Get the {{ item.caname }} chain file
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_sh }} ca getcacert 
         --caname {{ item.caname }}
         {% if item.fullchain is defined and item.fullchain is sameas true %}
@@ -59,14 +59,14 @@
 
     - name: Copy {{ item.caname }} Chain file to Ansible controller
       become: no
-      fetch:
+      ansible.builtin.fetch:
         src: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt{% else %}{{ identity_batch_output_dir }}/{{ item.caname }}.crt{% endif %}'
         dest: '{% if item.fullchain is defined and item.fullchain is sameas true %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}-fullchain.crt{% else %}{{ ejbca_cacrt_dir_output }}/{{ item.caname }}.crt{% endif %}'
         flat: yes
       tags: ejbca-cli-cacert
 
     - name: Cleanup the {{ item.caname }} Chain files on remote host
-      file:
+      ansible.builtin.file:
         path: '{% if item.fullchain is defined and item.fullchain is sameas true %}"{{ identity_batch_output_dir }}/{{ item.caname }}-fullchain.crt"{% else %}"{{ identity_batch_output_dir }}/{{ item.caname }}.crt"{% endif %}'
         state: absent
       tags: ejbca-cli-cacert

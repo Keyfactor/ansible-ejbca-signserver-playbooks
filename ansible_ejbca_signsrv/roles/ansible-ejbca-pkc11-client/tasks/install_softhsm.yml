@@ -22,15 +22,15 @@
         #disable_gpg_check: yes
 
   when: 
-    - (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
+    - (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
+      (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
-      (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
       (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8")
 
-- name: Install SoftHSM on Alma or Rocky Linux
+- name: Install SoftHSM on Alma or Rocky Linux 8
   block:
 
-    - name: Upload SoftHSM RPM from Ansible controller to Alma/Rocky 8 Linux
+    - name: Upload SoftHSM RPM from Ansible controller to Alma/Rocky Linux 8
       unarchive:
         src: "{{ softhsm_remote_dir }}"
         dest: /var/tmp
@@ -39,7 +39,7 @@
         - use_local_repository is defined
         - use_local_repository|bool
 
-    - name: Download SoftHSM RPM and check (sha256) on Alma/Rocky 8 Linux
+    - name: Download SoftHSM RPM and check (sha256) on Alma/Rocky Linux 8
       get_url:
         url: "{{ download_softhsm_url }}"
         dest: /var/tmp/softhsm.rpm
@@ -51,12 +51,12 @@
         - not use_local_repository|bool
 
     # Dirty way to do this since the package doesn't show up in AppStream when searching from the server :-(
-    - name: Install SoftHSM on Alma/Rocky 8 Linux
+    - name: Install SoftHSM on Alma/Rocky Linux 8
       command: >
         dnf install -y /var/tmp/softhsm.rpm
       register: install_softhsm_rpm
 
-    - name: Remove installed SoftHSM RPM on Alma/Rocky 8 Linux
+    - name: Remove installed SoftHSM RPM on Alma/Rocky Linux 8
       file:
         path: /var/tmp/softhsm.rpm
         state: absent
@@ -64,6 +64,14 @@
   when:
     - (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
       (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
+
+- name: Install SoftHSM on Alma/Rocky Linux 9
+  command: >
+    dnf install -y softhsm
+  register: install_softhsm_9
+  when:
+    - (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "9") or
+      (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "9")
 
 - name: Install SoftHSM on CentOS/RHEL 7
   package:

@@ -4,7 +4,7 @@
     - name: Add environment variables to {{ ejbca_user }} user profile
       ansible.builtin.template:
         src: user_profile.j2
-        dest: "{{ ejbca_user_profile }}/.bash_profile"
+        dest: "{{ ejbca_user_home_path }}/.bash_profile"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_user }}"
 

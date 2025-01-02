@@ -20,7 +20,7 @@
 #ejbca_manage_user: true
 #ejbca_group: wildfly
 #ejbca_user: wildfly
-#ejbca_user_profile: "/home/{{ ejbca_user }}"
+#ejbca_user_home_path: "/home/{{ ejbca_user }}"
 
 # apply_indexes: If default EJBCA database indexes should be applied. Will always report change if true
 # database_name: Name of EJBCA database
