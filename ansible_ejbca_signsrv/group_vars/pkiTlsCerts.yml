@@ -1,5 +1,9 @@
 ---
 
+# Modules that have no_log option defined can be set with this variable to false when logging is required.
+# This value should not be changed to false unless you are debugging or troubleshooting!
+no_log_value: true    
+
 # Info to create HTTPD end entity in EJBCA for the TLS certificate.
 # The group_vars for pkiTlsCerts needs to be updated with the TLS cert info needed to create the TLS cert.
 # This is not dynamically created. 

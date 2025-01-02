@@ -1,7 +1,7 @@
 ---
 
 - name: Check if {{ item.username }} end entity exists
-  command: "{{ ejbca_sh }} ra findendentity {{ item.username }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ra findendentity {{ item.username }}"
   args:
     chdir: "{{ ejbca_home }}"
   become: yes
@@ -14,7 +14,7 @@
 #- debug:
 #    var: endentity_exists
 
-- debug:
+- ansible.builtin.debug:
     msg: "Failed to query username: {{ endentity_exists.stdout }}"
   when: 
     - "'FAILED' in endentity_exists.stderr"
@@ -24,7 +24,7 @@
   block:
 
   - name: Add {{ item.username }} Entity to CA
-    command: >
+    ansible.builtin.command: >
       {{ ejbca_sh }} ra addendentity 
       --username '{{ item.username }}' 
       --password '{{  item.password }}' 
@@ -46,7 +46,7 @@
     changed_when: ra_addIdent_result.rc == 0
 
   - name: Set password for {{ item.username }}
-    command: >
+    ansible.builtin.command: >
       {{ ejbca_sh }} ra setclearpwd 
       --username '{{ item.username }}' 
       --password '{{ item.password }}'
@@ -61,7 +61,7 @@
     changed_when: ra_setpwd_result.rc == 0
 
   - name: Create certs for {{ item.username }}
-    command: >
+    ansible.builtin.command: >
       {{ ejbca_sh }} batch 
       --username {{ item.username }} 
       {% if item.token is defined and 'PEM' == item.token and item.useType is defined %}
@@ -94,7 +94,7 @@
   tags: certreq-cli-batch
 
 - name: Determine {{ item.username }} certificate serial number
-  command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
+  ansible.builtin.command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
   no_log: false
   register: cert_serialNumber
   tags: certreq-cli-batch
@@ -112,7 +112,7 @@
     # that is used to create the RA peering role when configuring peering at a later time.
 
     - name: Create fact for RA {{ item.username }} certificate serial number
-      set_fact: 
+      ansible.builtin.set_fact: 
         cacheable: yes
         ra_peer_cert_serial_numbers: |
           [
@@ -121,7 +121,7 @@
       tags: certreq-cli-batch
 
     - name: Add serial number to the RA Peering Role
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-ca-add-sn-to-admin-role
         tasks_from: peer_add_sn_to_role
       vars:
@@ -131,7 +131,7 @@
 
     - name: Write RA cert serial numbers to file for use with EJBCA VA or RA playbooks 
       become: no
-      copy:
+      ansible.builtin.copy:
         dest: "{{ ejbca_csr_dir_output }}/ra_peer_cert_serial_numbers.yml"
         content: "{{ ra_peer_cert_serial_numbers| to_nice_yaml }}"
       delegate_to: localhost
@@ -153,7 +153,7 @@
   block:
 
     - name: Create fact for VA {{ item.username }} certificate serial number
-      set_fact: 
+      ansible.builtin.set_fact: 
         cacheable: yes
         va_peer_cert_serial_numbers: |
           [
@@ -163,7 +163,7 @@
 
     - name: Write VA cert serial numbers to file for use with EJBCA VA or RA playbooks 
       become: no
-      copy:
+      ansible.builtin.copy:
         dest: "{{ ejbca_csr_dir_output }}/va_peer_cert_serial_numbers.yml"
         content: "{{ va_peer_cert_serial_numbers| to_nice_yaml }}"
       delegate_to: localhost
@@ -182,7 +182,7 @@
       ra_force_batch_again is defined and ra_force_batch_again|bool
 
 - name: Create peer_cert_serial_numbers variable if it is empty
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-key-binding
     tasks_from: get_akb_serial_numbers
   when:
@@ -193,7 +193,7 @@
 
     - name: Copy {{ item.username }} certificate file {{ identity_batch_output_dir }}/pem/{{ item.name }}.pem to localhost
       become: no
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}.pem"
         dest: "{{ ejbca_csr_dir_output }}/{{ item.name }}.crt"
         flat: yes
@@ -201,7 +201,7 @@
 
     - name: Copy {{ item.username }} key file {{ identity_batch_output_dir }}/pem/{{ item.name }}-Key.pem to localhost
       become: no
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}-Key.pem"
         dest: "{{ ejbca_csr_dir_output }}/{{ item.name }}.key"
         flat: yes
@@ -209,7 +209,7 @@
 
     - name: Copy {{ item.username }} CA chain file to localhost
       become: no
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ identity_batch_output_dir }}/pem/{{ item.name }}-CA.pem"
         dest: "{{ ejbca_csr_dir_output }}/{{ item.caname }}.crt"
         flat: yes
@@ -224,7 +224,7 @@
       ra_force_batch_again is defined and ra_force_batch_again|bool
 
 - name: Cleanup the cert files in /var/tmp
-  file:
+  ansible.builtin.file:
     path: "{{ identity_batch_output_dir }}/pem/"
     state: absent
   tags: certreq-cli-batch

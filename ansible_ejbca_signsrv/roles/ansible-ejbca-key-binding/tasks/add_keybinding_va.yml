@@ -31,6 +31,9 @@
     --sigalg {{ item.0.signature_algorithm }} 
     --cert null 
     -untilNextUpdate {{ item.0.until_next_update| default('60') }}
+    -nonexistingisgood={{ item.0.non_existing_is_good| default('false')}} 
+# TODO Add the rest of these options for creating a OCSP signer
+#nonexistingisrevoked=false;added:nonexistingisunauthorized=false;added:includecertchain=true;added:includesigncert=true;added:responderidtype=KEYHASH;added:requireTrustedSignature=false;added:untilNextUpdate=60;added:maxAge=0;added:enableNonce=true;added:omitreasoncodewhenrevocationreasonunspecified=true
   no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -40,6 +43,9 @@
     label: "{{ item.0.name }}"
   when: item.0.name not in keybinding_exists.stdout
   failed_when: keybinding_create.rc >= 2
+
+#- debug:
+#    var: keybinding_create
 
 - name: Create CSR for OCSP key binding 
   command: >
@@ -55,6 +61,9 @@
     label: "{{ item.name }}"
   when: item.name not in keybinding_exists.stdout
   failed_when: keybinding_create_csr.rc >= 2
+
+#- debug:
+#    var: keybinding_create_csr
 
 - name: Copy CSR to localhost
   become: no

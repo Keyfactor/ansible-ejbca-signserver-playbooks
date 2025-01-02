@@ -100,10 +100,11 @@
         state: stopped
         enabled: true
       tags: mariadb
-      when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+      when: (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
+            (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "9") or
+            (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
             (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
             (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
-            (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
             (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
             (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
             (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
@@ -199,10 +200,11 @@
     state: started
     enabled: true
   tags: mariadb
-  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+  when: (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
+        (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "9") or
+        (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
         (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "8") or
-        (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "9") or
         (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "Rocky" and ansible_facts['distribution_major_version'] == "8") or
         (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")

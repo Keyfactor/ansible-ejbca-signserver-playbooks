@@ -29,7 +29,7 @@ mariadb_owner: mysql
 mariadb_group: mysql
 
 mariadb_mirror: yum.mariadb.org
-mariadb_version: '11.3'
+mariadb_version: '11.6'
 
 mariadb_configure_swappiness: true
 mariadb_swappiness: '10'

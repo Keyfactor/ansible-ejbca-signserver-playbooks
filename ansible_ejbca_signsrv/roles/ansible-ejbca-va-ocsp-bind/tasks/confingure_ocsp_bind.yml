@@ -60,7 +60,7 @@
   loop_control:
     label: "{{ item }}.crt"
   register: file_copy
-  #no_log: "{{ no_log_value }}"
+  no_log: "{{ no_log_value }}"
 
 # TODO Add when to upload if cert is on the controller then check serial number of the cert
 - name: Determine OCSP Signer certificate serial number
@@ -98,7 +98,7 @@
   loop: "{{ ocsp_signer_cert_files }}"
   loop_control:
     label: "{{ item | splitext | first }}"
-  #no_log: "{{ no_log_value }}"
+  no_log: "{{ no_log_value }}"
 
 # TODO If imported then activate, or check if activated and activate if not activated
 
@@ -115,7 +115,7 @@
   loop: "{{ ocsp_signer_cert_files }}"
   loop_control:
     label: "{{ item | splitext | first }}"
-  #no_log: "{{ no_log_value }}"
+  no_log: "{{ no_log_value }}"
 
 
 

@@ -43,7 +43,7 @@
 
 - name: Backup {{ ejbca_user }} user .bash_profile
   ansible.builtin.copy:
-    src: "{{ ejbca_user_profile }}/.bash_profile"
+    src: "{{ ejbca_user_home_path }}/.bash_profile"
     dest: "{{ backup_dir_path_timestamp }}/wildfly/bash_profile"
     remote_src: yes
   tags: backup

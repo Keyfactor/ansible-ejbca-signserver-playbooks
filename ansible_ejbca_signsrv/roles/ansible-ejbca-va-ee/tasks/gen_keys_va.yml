@@ -1,6 +1,5 @@
 ---
 
-
 - name: Generate keys for OCSP Signers on crypto token
   include_role:
     name: ansible-ejbca-crypto-token
@@ -9,7 +8,7 @@
   loop_control:
     label: "{{ key_item.0.caname }}"
     loop_var: key_item
-  #no_log: "{{ no_log_value }}"
+  no_log: "{{ no_log_value }}"
   tags: key_generation
   when:
     - ejbca_va_keybinding[0] is defined
@@ -34,7 +33,8 @@
       'caname': '{{ line.caname }}', 
       'token': '{{ line.token }}', 
       'certprofile': '{{ line.certprofile }}', 
-      'eeprofile': '{{ line.eeprofile }}' {{ '}' }},
+      'eeprofile': '{{ line.eeprofile }}', 
+      'endentity_renewal': '{{ line.endentity_renewal|default('false') }}' {{ '}' }},
       {% endfor %}
       ]
   when: ejbca_va_keybinding[0] is defined
