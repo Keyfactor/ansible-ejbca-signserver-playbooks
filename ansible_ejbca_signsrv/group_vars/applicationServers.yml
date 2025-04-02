@@ -2,20 +2,25 @@
 
 # Wildfly version to deploy, SHA256 hash of the Wildfly archive, whether to disable infinispan, & the datasource 
 # configured in Wildfly for EJBCA to access the DB. Can also deploy Wildfly with Galleon.
-wildfly_version: 26.1.3.Final
-wildfly_checksum: sha256:aadd317c62616f6b5735ae92151d06c1f03c46eba448958d982c61f02528ae59 # 26.1.3
-wildfly_standalone_file: standalone-26.xml.datasource.j2
+#wildfly_version: 26.1.3.Final
+#wildfly_checksum: sha256:aadd317c62616f6b5735ae92151d06c1f03c46eba448958d982c61f02528ae59 # 26.1.3
+wildfly_version: 35.0.1.Final
+wildfly_checksum: sha256:45444ac28f33ee17101cf80b9eff7994f6fd0f2c8fbb4749627d9cec1cbdbc2e
+wildfly_standalone_file: standalone-35.xml.datasource.j2
 wildfly_use_galleon: true
-wildfly_galleon_version: 5.2.0
-wildfly_galleon_checksum: sha256:c42420f977ad8f02b173b64698d1151b55696178afe2a25bc36de60b481a147d # 5.2.0
-wildfly_jboss_client_checksum: sha256:354f95d0bd5111b5e086ee4a08e8f081d619da715d9c3776e94d73fda2e6dcda # WF 26.1.3
+wildfly_galleon_version: 6.0.5
+#wildfly_galleon_checksum: sha256:c42420f977ad8f02b173b64698d1151b55696178afe2a25bc36de60b481a147d # 5.2.0
+#wildfly_galleon_checksum: sha256:39a5e64fbcf45e6a00d68e255806eb67ec4446ccb852c9b045057028072427a0 # 6.4.0
+wildfly_galleon_checksum: sha256:379dde080764d0e54fa96cee5b0ac2a5f2e3abe0823ca9dd9ab5ef36caf21188 # 6.0.5
+#wildfly_jboss_client_checksum: sha256:354f95d0bd5111b5e086ee4a08e8f081d619da715d9c3776e94d73fda2e6dcda # WF 26.1.3
+wildfly_jboss_client_checksum: sha256:bd724bcea8a3d0c89a027fb10c1be3e01eff5070b358583c6d19e491d3ebd43a # WF 35.0.1
 # Disabling only works on Wildfly 20 or earlier, Wildfly 21 and later changed, remoting now requires infinispan cache
 wildfly_disable_infinispan: false
 
 # Manage the Wildfly service with Ansible
 wildfly_manage_service: true
 
-# Elytron password file location used in the EJBCA and SS prep roles
+# Elytron password file lo5in the EJBCA and SS prep roles
 wildfly_elytron_pass_dir: /opt/elytron
 wildfly_elytron_pass_file: "{{ wildfly_elytron_pass_dir }}/wildfly_pass"
 

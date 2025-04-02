@@ -2,7 +2,7 @@
 
 - name: Install OpenJDK Headless
   ansible.builtin.package:
-    name: java-11-openjdk-headless
+    name: java-17-openjdk-headless
     state: present
   when: 
     - wildfly_manage_java_pkg or wildfly_use_galleon|bool

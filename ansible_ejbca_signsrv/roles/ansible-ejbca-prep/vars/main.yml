@@ -4,7 +4,7 @@
 # List of repository packages that will be installed by this role
 ejbca_packages_8:
   - unzip
-  - java-11-openjdk-devel
+  - java-17-openjdk-devel
   - nss-tools
   - wget
   - python3-libsemanage
@@ -12,7 +12,7 @@ ejbca_packages_8:
 
 ejbca_packages_7:
   - unzip
-  - java-11-openjdk-devel
+  - java-17-openjdk-devel
   #- ant.noarch # Not using because we want Java 11
   - nss-tools
   - wget

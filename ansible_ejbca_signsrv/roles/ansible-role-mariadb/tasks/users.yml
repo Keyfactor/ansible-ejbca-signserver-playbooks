@@ -8,6 +8,7 @@
     login_user: root
     login_password: "{{ mariadb_root_password }}"
     login_unix_socket: "{{ mariadb_srv_socket }}"
+    column_case_sensitive: false
     state: absent
   tags: mariadb
   no_log: "{{ no_log_value }}"
@@ -22,6 +23,7 @@
     login_user: root
     login_password: "{{ mariadb_root_password }}"
     login_unix_socket: "{{ mariadb_srv_socket }}"
+    column_case_sensitive: false
     state: present
   loop: "{{ mariadb_users }}"
   tags: mariadb

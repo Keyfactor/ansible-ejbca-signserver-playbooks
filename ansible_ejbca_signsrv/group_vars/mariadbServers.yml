@@ -29,7 +29,7 @@ mariadb_owner: mysql
 mariadb_group: mysql
 
 mariadb_mirror: yum.mariadb.org
-mariadb_version: '11.6'
+mariadb_version: '11.8'
 
 mariadb_configure_swappiness: true
 mariadb_swappiness: '10'
@@ -48,13 +48,13 @@ mariadb_server_cnf:
 mariadb_custom_cnf: {}
 
 # Maria DB JDBC driver download URL for EjBCA
-ejbca_jdbc_driver: https://dlm.mariadb.com/2912798/Connectors/java/connector-java-3.1.4/mariadb-java-client-3.1.4.jar
+ejbca_jdbc_driver: https://dlm.mariadb.com/4174416/Connectors/java/connector-java-3.5.2/mariadb-java-client-3.5.2.jar
 # Maria DB JDBC driver SHA256 hash
-ejbca_jdbc_driver_checksum: sha256:eb88b5d727d82e25117e2b6fabcec1daf734633b0a576456c73215884c189ad4
+ejbca_jdbc_driver_checksum: sha256:f2f3c3c1a3bdaca69dd1d4e1cd8aed075242fc72ae41463ddb82e367b388f6ad
 
 # Maria DB JDBC driver download URL for SignServer
-signsrv_jdbc_driver: https://dlm.mariadb.com/2912798/Connectors/java/connector-java-3.1.4/mariadb-java-client-3.1.4.jar
+signsrv_jdbc_driver: https://dlm.mariadb.com/4174416/Connectors/java/connector-java-3.5.2/mariadb-java-client-3.5.2.jar
 # Maria DB JDBC driver SHA256 hash
-signsrv_jdbc_driver_checksum: sha256:eb88b5d727d82e25117e2b6fabcec1daf734633b0a576456c73215884c189ad4
+signsrv_jdbc_driver_checksum: sha256:f2f3c3c1a3bdaca69dd1d4e1cd8aed075242fc72ae41463ddb82e367b388f6ad
 # Generic file name for JDBC file
 signsrv_jdbc_gen_name: mariadb-java-client.jar
