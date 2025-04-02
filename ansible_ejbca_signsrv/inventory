@@ -19,11 +19,11 @@ all:
     eeCaServers:
       hosts:
         ca01:
-          ansible_host: 172.16.170.170
+          ansible_host: 172.16.170.202
     ejbcaCaAddNodes:
       hosts:
         ca02:
-          ansible_host: 172.16.170.202
+          ansible_host: 172.16.170.170
     extSignMgmtCaServers:
       hosts:
         extsignmgmt01:
@@ -51,11 +51,11 @@ all:
     eeRaServers:
       hosts:
         ra01:
-          ansible_host: 172.16.170.172
+          ansible_host: 172.16.170.200
     eeVaServers:
       hosts:
         va01:
-          ansible_host: 172.16.170.173
+          ansible_host: 172.16.170.204
     eeSignServers:
       hosts:
         ss01:
@@ -71,7 +71,7 @@ all:
     vaSigners:
       hosts:
         va01:
-          ansible_host: 172.16.170.173
+          ansible_host: 172.16.170.204
     ceServers:
       hosts:
         ce01:
@@ -83,19 +83,19 @@ all:
     pkiTlsCerts:
       hosts:
         pkiTlsEnrollmentCA:
-          ansible_host: 172.16.170.170
+          ansible_host: 172.16.170.202
     pkiCsrCerts:
       hosts:
         pkiCsrEnrollmentCa:
-          ansible_host: 172.16.170.170
+          ansible_host: 172.16.170.202
     ssTlsCerts:
       hosts:
         ssTlsEnrollmentCa:
-          ansible_host: 172.16.170.170 
+          ansible_host: 172.16.170.202
     ssCsrCerts:
       hosts:
         ssCsrEnrollmentCa:
-          ansible_host: 172.16.170.170   
+          ansible_host: 172.16.170.202
     httpdServers:
       children:
         eeCaServers:

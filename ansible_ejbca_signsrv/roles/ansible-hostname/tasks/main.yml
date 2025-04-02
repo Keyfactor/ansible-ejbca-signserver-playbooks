@@ -5,11 +5,12 @@
   ansible.builtin.hostname:
     name: '{{ hostname }}'
 
+# TODO add httpd server hostname to the line:
 - name: Add hosts file entry
   ansible.builtin.lineinfile:
     path: "/etc/hosts"
     regexp: ".*\t{{ hostname }}"
-    line: "{{ ipaddress }}\t{{ hostname }}"
+    line: "{{ ipaddress }}\t{{ hostname }} {% if httpd_identity_info.id_name is defined %}{{ httpd_identity_info.id_name }}{% endif %}"
     state: present
     backup: yes
   register: etchostsupdate
