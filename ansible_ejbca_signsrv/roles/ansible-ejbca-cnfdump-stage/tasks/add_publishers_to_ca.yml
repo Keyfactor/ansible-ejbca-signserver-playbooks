@@ -1,7 +1,7 @@
 ---
 
 - name: Update CA's to use Publishers using configdump
-  command: >
+  ansible.builtin.ommand: >
     ./configdump.sh import 
     --ignore-errors 
     --overwrite update 

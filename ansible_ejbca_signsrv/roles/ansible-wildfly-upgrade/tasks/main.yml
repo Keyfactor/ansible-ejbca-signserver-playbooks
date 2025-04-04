@@ -1,0 +1,51 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/ansible-wildfly-upgrade
+
+- name: Install new version of wildfly
+  ansible.builtin.include_role: 
+    name: ansible-ejbca-wildfly
+    tasks_from: main
+
+- name: Install EJBCA pre-requisites for new version of wildfly
+  ansible.builtin.include_role: 
+    name: ansible-ejbca-prep
+    tasks_from: install
+
+- name: Remove clientToolBox
+  ansible.builtin.file:
+    path: "{{ ejbca_root_dir }}/clientToolBox"
+    state: absent
+    owner: "{{ ejbca_user }}"
+
+- name: Move Elytron Credential store directory
+  ansible.builtin.copy:
+    src: "{{ wildfly_elytron_pass_dir }}"
+    dest: "{{ wildfly_elytron_pass_dir }}-old"
+  register: elytron_pass_file_moved
+
+- name: Configure EJBCA for new version of wildfly
+  ansible.builtin.include_role: 
+    name: ansible-ejbca-prep
+    tasks_from: configure
+  vars:
+    ejbca_force_build_ear: true
+
+- name: Build new clientToolBox
+  ansible.builtin.include_role: 
+    name: ansible-ejbca-prep
+    tasks_from: buildclienttoolbox
+
+- name: Check deployment
+  ansible.builtin.include_role: 
+    name: ansible-ejbca-restart-wildfly
+  vars:
+    restart_wildfly: true
+  tags: check_deployment
+
+- name: Display post upgrade message
+  ansible.builtin.debug:
+    msg:
+      - 'Things left to do:'
+      - '- remove the {{ wildfly_elytron_pass_dir }}-old directory'
+      - '- remove the old wildfly-x.x.x.Final directory'

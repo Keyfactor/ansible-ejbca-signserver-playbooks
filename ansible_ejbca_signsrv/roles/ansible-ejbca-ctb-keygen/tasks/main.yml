@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-ctb-keygen
 
 - name: Test that HSM slots are available/accessible by EJBCA
-  include_tasks: hsm_test.yml
+  ansible.builtin.include_tasks: hsm_test.yml
 
 - name: Generate key on HSM using ClientToolBox
-  include_tasks: clienttoolbox_key_generation.yml
+  ansible.builtin.include_tasks: clienttoolbox_key_generation.yml

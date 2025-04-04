@@ -1,7 +1,7 @@
 ---
 
 - name: Create External VA Publisher template files to import with configdump
-  template:
+  ansible.builtin.template:
     src: 'publisher-ocsp.yaml.j2'
     dest: '{{ ejbca_home }}/dump/va/publishers/ocspPublisher-{{ item.name }}.yaml'
     owner: "{{ ejbca_user }}"

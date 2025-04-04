@@ -1,7 +1,7 @@
 ---
 
 - name: Find what certificate files are on the Ansible Controller
-  find:
+  ansible.builtin.find:
     path: "{{ ejbca_csr_dir_output }}"
     file_type: file
     recurse: yes
@@ -12,26 +12,26 @@
   run_once: true
   
 #- name: Debug find_local_cert_files_result
-#  debug:
+#  ansible.builtin.debug:
 #    var: find_local_cert_files_result
 
 #- name: Debug find_local_cert_files_result
-#  debug:
+#  ansible.builtin.debug:
 #    msg: "{{ item.path }}"
 #  loop: "{{ find_local_cert_files_result.files }}"
 #  loop_control:
 #    label: "{{ item.path | basename | splitext | first }}"
 
 #- name: Debug ejbca_va_keybinding
-#  debug:
+#  ansible.builtin.debug:
 #    var: ejbca_va_keybinding
 
 - name: Initialize empty fact for ocsp_signer_cert_files
-  set_fact:
+  ansible.builtin.set_fact:
     ocsp_signer_cert_files: []
 
 - name: Create a fact of all the Cert files on the controller
-  set_fact:
+  ansible.builtin.set_fact:
     ocsp_signer_cert_files: "{{ ocsp_signer_cert_files + [item.0.path | basename] }}"
   loop: "{{ find_local_cert_files_result.files | product(ejbca_va_keybinding) | list if find_local_cert_files_result is iterable else []}}"
   loop_control:
@@ -41,15 +41,15 @@
   register: ocsp_signer_cert_files_result
 
 #- name: Debug ocsp_signer_cert_files_result
-#  debug:
+#  ansible.builtin.debug:
 #    var: ocsp_signer_cert_files_result
 
 #- name: Debug ocsp_signer_cert_files
-#  debug:
+#  ansible.builtin.debug:
 #    var: ocsp_signer_cert_files
 
 - name: Copy certificate files from Controller
-  copy:
+  ansible.builtin.copy:
     src: "{{ ejbca_csr_dir_output }}/{{ item }}"
     dest: "{{ identity_batch_output_dir }}/{{ item }}"
     owner: "{{ ejbca_user }}"
@@ -64,7 +64,7 @@
 
 # TODO Add when to upload if cert is on the controller then check serial number of the cert
 - name: Determine OCSP Signer certificate serial number
-  command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/{{ item }}"
+  ansible.builtin.command: "openssl x509 -noout -serial -in {{ identity_batch_output_dir }}/{{ item }}"
   loop: "{{ ocsp_signer_cert_files }}"
   register: ocsp_cert_serialNumber
   tags: certreq-cli-batch
@@ -74,7 +74,7 @@
 # If no match Import the cert
 
 - name: Query the Internal Key Bindings
-  command: "{{ ejbca_sh }} keybind list"
+  ansible.builtin.command: "{{ ejbca_sh }} keybind list"
   become: yes
   become_user: "{{ ejbca_user }}"
   register: ocsp_keybinding_exists
@@ -86,7 +86,7 @@
 #    var: ocsp_keybinding_exists
 
 - name: Import certificate file to OCSP key binding
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} keybind import 
     --name {{ item | splitext | first }} 
     -f {{ identity_batch_output_dir }}/{{ item }}
@@ -103,7 +103,7 @@
 # TODO If imported then activate, or check if activated and activate if not activated
 
 - name: Activate OCSP key binding
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} keybind setstatus 
     --name {{ item | splitext | first }} 
     ACTIVE
@@ -121,7 +121,7 @@
 
 #TODO - Figure out why this can't be set via CLI, but works by setting in the UI
 #- name: Set Next Key Pair Alias 
-#  command: "{{ ejbca_sh }} keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
+#  ansible.builtin.command: "{{ ejbca_sh }} keybind modify --name {{ item.name }} --nextkeypair {{ item.key_label }}"
 #  no_log: "{{ no_log_value }}"
 #  become: yes
 #  become_user: "{{ ejbca_user }}"

@@ -1,7 +1,7 @@
 ---
 
 - name: Check if ejbca-custom directory exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ejbca_root_dir }}/ejbca-custom"
   register: ejbca_custom_dir
 
@@ -9,20 +9,20 @@
   block:
 
   - name: Create ejbca-custom/conf directory
-    file:
+    ansible.builtin.file:
       path: "{{ ejbca_root_dir }}/ejbca-custom/conf"
       state: directory
       owner: "{{ ejbca_user }}"
       group: "{{ ejbca_group }}"
 
   - name: Register properties files in ejbca/conf directory
-    find:
+    ansible.builtin.find:
       paths: "{{ ejbca_home }}/conf/"
       patterns: "*.properties"
     register: found_properties_files
 
   - name: Copy properties files from EJBCA conf to custom.conf
-    copy:
+    ansible.builtin.copy:
       src: "{{ item.path }}"
       dest: "{{ ejbca_root_dir }}/ejbca-custom/conf"
       owner: "{{ ejbca_user }}"

@@ -1,7 +1,7 @@
 ---
 
 - name: Check if {{ item.caname }} is already in EJBCA
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} ca listcas
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -13,14 +13,14 @@
   block:
 
     - name: Upload {{ item.caname }} CRL file to import
-      copy:
+      ansible.builtin.copy:
         src: "{{ ejbca_crl_dir_output }}/{{ item.caname }}.crl"
         dest: "/var/tmp/importcrl/{{ item.caname }}.crl"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
 
     - name: Import {{ item.caname }} CRL
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_sh }} ca importcrl
         --caname {{ item.caname }}
         -f /var/tmp/importcrl/{{ item.caname }}.crl 

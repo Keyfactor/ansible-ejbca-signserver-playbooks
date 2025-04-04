@@ -2,12 +2,12 @@
 # tasks file for roles/ansible-ejbca-deploy-pki-ca-node-mgmt-ca
 
 - name: Prepare configdump template files
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-cnfdump-stage
     tasks_from: config_configdump
 
 - name: Check deployment
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-restart-wildfly
   vars:
     restart_wildfly: true
@@ -17,14 +17,14 @@
   block:
 
     - name: Create crypto token for the ManagementCA
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
       no_log: "{{ no_log_value }}"
 
     - name: Generate keys for the ManagementCA on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
@@ -35,7 +35,7 @@
       tags: key_generation
 
     - name: Stage ManagementCA to create with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       vars:
@@ -46,7 +46,7 @@
       no_log: "{{ no_log_value }}"
 
     - name: Intialize ManagementCA with configdump
-      command: >
+      ansible.builtin.command: >
         ./configdump.sh import 
         --ignore-errors 
         --overwrite update 
@@ -65,7 +65,7 @@
   block:
 
     - name: Import configdump of CA templates and EKU's
-      command: >
+      ansible.builtin.command: >
         ./configdump.sh import 
         --ignore-errors 
         --overwrite update 
@@ -77,7 +77,7 @@
       become_user: "{{ ejbca_user }}"
       
     - name: Create crypto tokens for ManagementCA
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
@@ -86,7 +86,7 @@
       #  - ("soft" in item.tokentype)
 
     - name: Generate keys for ManagementCA on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
@@ -99,7 +99,7 @@
       #  - ("soft" in key_item.0.tokentype)
 
     - name: Initialize ManagementCA with CLI commands
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-init-ca
         tasks_from: init_ca
       loop: "{{ management_add_certification_authorities }}"
@@ -107,7 +107,7 @@
       tags: create_cas
 
     - name: Configure ManagmentCA settings
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ management_add_certification_authorities }}"
@@ -117,7 +117,7 @@
     - management_add_certification_authorities[0] is defined and not deploy_with_configdump|bool
 
 - name: Import configdump of profiles and services
-  command: >
+  ansible.builtin.command: >
     ./configdump.sh import 
     --ignore-errors 
     --overwrite update 
@@ -129,7 +129,7 @@
   become_user: "{{ ejbca_user }}"
 
 - name: Import configdump of EE profiles in dump3
-  command: >
+  ansible.builtin.command: >
     ./configdump.sh import 
     --ignore-errors 
     --overwrite update 
@@ -144,13 +144,13 @@
     - import_configdump_dump3|bool
 
 - name: Configure EJBCA Enrollment protocols
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-enroll-protocols
   when: 
     - disable_ejbca_protocols[0] is defined or enable_ejbca_protocols[0] is defined
 
 - name: Export Managmement CA certificate
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-certreq-cli
     tasks_from: get_ca_certs
   vars:
@@ -163,21 +163,21 @@
     label: "{{ item.caname }}"
 
 - name: Check if local directory {{ ejbca_csr_dir_output }} exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ejbca_csr_dir_output }}"
   register: ejbca_csr_dir_output_exists
   changed_when: false
 
 - name: Create local directory for {{ ejbca_csr_dir_output }}
   become: no
-  file:
+  ansible.builtin.file:
     path: "{{ ejbca_csr_dir_output }}"
     state: directory
   delegate_to: localhost
   when: not ejbca_csr_dir_output_exists.stat.exists
 
 - name: Add PKI Admin end entities
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-certreq-cli
     tasks_from: batch_cert_request
   loop: "{{ management_add_end_entities }}"
@@ -187,7 +187,7 @@
     - management_add_end_entities[0] is defined
 
 - name: Add PKI administrators to roles
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-roles
     tasks_from: add_to_role
   loop: "{{ management_add_administrators }}"
@@ -197,7 +197,7 @@
     - management_add_administrators[0] is defined
 
 - name: Copy superadmin.p12 to local server
-  fetch:
+  ansible.builtin.fetch:
     src: "{{ ejbca_home }}/p12/{{ item.username }}.p12"
     dest: "{{ superadmin_local_dir|default('~/Desktop') }}/"
     flat: yes
@@ -206,7 +206,7 @@
   register: copy_down_profile
 
 - name: Add Root Node TLS end entity
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-certreq-cli
     tasks_from: batch_cert_request
   loop: "{{ identity_info }}"

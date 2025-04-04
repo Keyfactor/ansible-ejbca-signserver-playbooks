@@ -1,7 +1,7 @@
 ---
 
 - name: Download external signed CA certificate file for creating {{ item.caname }}
-  uri:
+  ansible.builtin.uri:
     url: "{{ item.external_signed_ca_cert_file_url }}"
     validate_certs: no
     dest: "/var/tmp/{{ item.external_signed_ca_cert_file }}"
@@ -12,7 +12,7 @@
   when: not item.external_signed_ca_cert_file_local_repository|bool 
 
 - name: Upload external signed CA certificate file from Ansible controller for creating {{ item.caname }}
-  copy:
+  ansible.builtin.copy:
     src: "{{ ejbca_csr_dir_output }}/{{ item.caname }}.crt"
     dest: "/var/tmp/{{ item.external_signed_ca_cert_file }}"
     owner: "{{ ejbca_user }}"
@@ -21,7 +21,7 @@
   when: item.external_signed_ca_cert_file_local_repository|bool
 
 - name: Import External CA - {{ item.caname }}
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} ca importcacert
     --caname {{ item.caname }}
     -f /var/tmp/{{ item.external_signed_ca_cert_file }}
@@ -35,5 +35,5 @@
 # Note: The cert file should only contain the certificate and not the chain
 
 #- name: Debug import_external_ca
-#  debug:
+#  ansible.builtin.debug:
 #    var: import_external_ca

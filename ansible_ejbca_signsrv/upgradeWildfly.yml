@@ -1,0 +1,12 @@
+---
+
+# ansible-playbook -i inventory -l ca01 upgradeWildfly.yml
+# ansible-playbook -i inventory -l ra01 upgradeWildfly.yml
+# ansible-playbook -i inventory -l va01 upgradeWildfly.yml
+
+- hosts: pkiServers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - ansible-wildfly-upgrade

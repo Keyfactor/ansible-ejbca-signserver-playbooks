@@ -1,7 +1,7 @@
 ---
 
 - name: Ensure directories used to store CRLs on localhost exists
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     owner: "{{ item.owner }}"

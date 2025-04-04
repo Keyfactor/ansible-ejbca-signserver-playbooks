@@ -1,7 +1,7 @@
 ---
 
 - name: Query Peer Connectors
-  command: "{{ ejbca_sh }} peer list"
+  ansible.builtin.command: "{{ ejbca_sh }} peer list"
   no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -10,7 +10,7 @@
   changed_when: list_peer_connectors.rc == 0
 
 - name: Create Peer Connectors
-  shell: >
+  ansible.builtin.shell: >
     {{ ejbca_sh }} peer create 
     --name '{{ item.name }}' 
     --state {{ item.state| default('ENABLED') }} 
@@ -31,7 +31,7 @@
 #    var: create_peer_connectors
 
 - name: Create a fact for peer_connection_info
-  set_fact:
+  ansible.builtin.set_fact:
     cacheable: yes
     peer_connection_info: |
       [
@@ -59,7 +59,7 @@
 
 - name: Write Peer Info to file for use with EJBCA playbooks
   become: no
-  copy:
+  ansible.builtin.copy:
     dest: "{{ ejbca_csr_dir_output }}/ca_peer_info.yml"
     content: "{{ peer_connection_info| to_nice_yaml }}"
   delegate_to: localhost
@@ -67,7 +67,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Query Peer Connection with SQL hack EJBCA <= 7.3.1.4
-  command: >
+  ansible.builtin.command: >
     /usr/bin/mysql 
     -u root 
     --password="{{ mariadb_root_password }}" 
@@ -83,7 +83,7 @@
   no_log: "{{ no_log_value }}"
 
 #- name: debug the output for getting the ID
-#  debug:
+#  ansible.builtin.debug:
 #    msg: "{{ item.stdout.split('<int>')[1].split('</int>')[0]  }}"
 #  loop: "{{ peer_sql_hack_check.results }}"
 #  loop_control:
@@ -91,7 +91,7 @@
 #  when: item.stdout is defined
 
 - name: Enable Process incoming requests in Peer Connection with SQL hack EJBCA <= 7.3.1.4
-  command: >
+  ansible.builtin.command: >
     /usr/bin/mysql 
     -u root 
     --password="{{ mariadb_root_password }}" 
@@ -106,11 +106,11 @@
   no_log: "{{ no_log_value }}"
 
 #- name: debug peer_connection_info
-#  debug:
+#  ansible.builtin.debug:
 #    var: peer_connection_info
 
 - name: Enable Process incoming requests in Peer Connection EJBCA >= 7.4.0
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} peer edit 
     --id {{ item.id }} 
     --process-incoming-requests true 
@@ -126,5 +126,5 @@
     label: "{{ item.id }}"
 
 #- name: debug peer_con_ra_res
-#  debug:
+#  ansible.builtin.debug:
 #    var: peer_con_ra_res

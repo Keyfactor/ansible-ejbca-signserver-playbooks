@@ -2,13 +2,13 @@
 # tasks file for roles/ansible-ejbca-import-ext-ca
 
 - name: Import External CA
-  include_tasks: add_external_root_ca.yml
+  ansible.builtin.include_tasks: add_external_root_ca.yml
   loop: "{{ import_certification_authorities }}"
   no_log: "{{ no_log_value }}"
   when: item.rootDn == "External"
 
 - name: Import signed CA certificate
-  include_tasks: add_external_signed_ca.yml
+  ansible.builtin.include_tasks: add_external_signed_ca.yml
   loop: "{{ import_certification_authorities }}"
   when:  import_certification_authorities[0] is defined
   no_log: "{{ no_log_value }}"

@@ -2,7 +2,7 @@
 # tasks file for ansible-ejbca-va-ocsp-bind
 
 - name: Import Signed OCSP Signer Certificates
-  include_tasks: confingure_ocsp_bind.yml
+  ansible.builtin.include_tasks: confingure_ocsp_bind.yml
   when:
     - ejbca_va_keybinding[0] is defined
     - inventory_hostname in groups['eeVaServers']

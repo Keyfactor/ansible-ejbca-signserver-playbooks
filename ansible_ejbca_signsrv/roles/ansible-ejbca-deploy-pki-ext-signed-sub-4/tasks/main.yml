@@ -5,7 +5,7 @@
   block:
 
     - name: Generate Keys for Key Bindings
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-ctb-keygen
       loop: "{{ ejbca_keybinding |subelements('crypto_token') if ejbca_keybinding is iterable else [] }}"
       loop_control:
@@ -23,7 +23,7 @@
   block:
 
     - name: Create Key Binding for Peering
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-key-binding
       vars:
         key_bindings: "{{ ejbca_keybinding }}"
@@ -33,7 +33,7 @@
         - ejbca_keybinding[0] is defined
 
     - name: Create Peer Connector
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-peer-connector
       when: 
         - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
@@ -44,7 +44,7 @@
       (use_external_ss is defined)
 
 - name: Prepare configdump template files
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-cnfdump-stage
     tasks_from: config_configdump
   when:
@@ -55,7 +55,7 @@
   block:
 
     - name: Create External VA Publisher template files to import with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_external_va_publisher
       loop: "{{ ejbca_peerConnector }}"
@@ -63,7 +63,7 @@
         - ("ocsp" in item.type)
 
     - name: Create External VA OCSP key update service template files to import with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_external_va_key_update
       loop: "{{ ejbca_peerConnector }}"
@@ -74,7 +74,7 @@
         - item.remote_key_update|bool
 
     - name: Create external VA services and publisher with configdump
-      command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
+      ansible.builtin.command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/va"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -88,7 +88,7 @@
   block:
 
     - name: Create AWS S3 Publisher template files to import with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_aws_s3_publisher
       loop: "{{ aws_s3_publishers }}"
@@ -96,7 +96,7 @@
         label: "{{ item.s3_publisher_name }}"
 
     - name: Create AWS S3 publishers with configdump
-      command: >
+      ansible.builtin.command: >
         ./configdump.sh import 
         --ignore-errors 
         --overwrite update 
@@ -112,14 +112,14 @@
     - use_aws_s3_publisher|bool
 
 - name: Import configdump of profiles, services, & publishers
-  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump3"
+  ansible.builtin.command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump3"
   args:
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes 
   become_user: "{{ ejbca_user }}"
 
 - name: Create external RA role with configdump
-  command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/ra"
+  ansible.builtin.command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/ra"
   args:
     chdir: "{{ ejbca_home }}/dist/configdump"
   become: yes 

@@ -1,7 +1,7 @@
 ---
 
 - name: Check if {{ item.caname }} exists in EJBCA
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} ca listcas
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -14,7 +14,7 @@
   block:
 
     - name: Export {{ item.caname }} CRL file
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_sh }} ca getcrl
         --caname {{ item.caname }}
         -pem 
@@ -28,7 +28,7 @@
 
     - name: Copy {{ item.caname }} CRL file to Ansible controller
       become: no
-      fetch:
+      ansible.builtin.fetch:
         src: "/var/tmp/exportcrl/{{ item.caname }}.crl"
         dest: "{{ ejbca_crl_dir_output }}/{{ item.caname }}.crl"
         flat: yes

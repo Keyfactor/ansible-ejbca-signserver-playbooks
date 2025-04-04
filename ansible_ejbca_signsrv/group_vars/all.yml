@@ -101,7 +101,7 @@ ejbca_ca_import:
 #  Added system properties to configuration source (java -Dfoo.prop=bar).
 #  External configuration override is allowed, but no configuration sources were detected in '/opt/ejbca_ee_8_1_0/dump/ra/admin-roles/conf'.
 #  External configuration override is allowed, but no configuration sources were detected in '/etc/ejbca/conf'.
-ejbca_cli_log_fix: true
+ejbca_cli_log_fix: false
 
 # Directory on the controller where the backup is stored. The backup file is removed from the controller when pushed to the remote backup server.
 backup_dir_output: "{{ playbook_dir }}/serverBackups"

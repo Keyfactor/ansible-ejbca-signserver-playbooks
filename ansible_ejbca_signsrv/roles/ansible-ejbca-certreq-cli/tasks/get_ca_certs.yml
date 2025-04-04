@@ -32,7 +32,7 @@
     - find_local_ca_certs is defined
 
 #- name: Debug find_local_ca_certs
-#  debug:
+#  ansible.builtin.debug:
 #    var: find_local_ca_certs
 
 - name: Export CA file

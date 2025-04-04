@@ -1,7 +1,7 @@
 ---
 
 - name: Import profiles into EJBCA using CLI
-  command: "{{ ejbca_sh }} ca importprofiles {{ import_profile_dir }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca importprofiles {{ import_profile_dir }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -13,5 +13,5 @@
   when: prepare_import_files.changed
 
 #- name: Debug cli_importprofiles_result
-#  debug:
+#  ansible.builtin.debug:
 #    var: cli_importprofiles_result

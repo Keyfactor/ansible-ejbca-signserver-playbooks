@@ -1,7 +1,7 @@
 ---
 
 - name: Stage CA to create with configdump
-  template:
+  ansible.builtin.template:
     src: ca-template.yml.j2
     dest: "{{ dump_dest|default( ejbca_home + '/dump/subs/certification-authorities/' + item.caname + '.yaml') }}"
     owner: "{{ ejbca_user }}"
@@ -10,7 +10,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Stage CA configdump to update with Publishers
-  copy:
+  ansible.builtin.copy:
     src: "{{ dump_dest|default( ejbca_home + '/dump/subs/certification-authorities/' + item.caname + '.yaml') }}"
     dest: "{{ ejbca_home }}/dump/addPubToCA/certification-authorities/{{ item.caname }}.yaml"
     owner: "{{ ejbca_user }}"
