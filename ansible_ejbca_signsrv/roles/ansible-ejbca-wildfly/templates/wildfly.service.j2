@@ -9,7 +9,7 @@ EnvironmentFile=-{{ wildfly_conf_dir }}/wildfly.conf
 User={{ ejbca_user }}
 Group={{ ejbca_group }}
 LimitNOFILE=102642
-PIDFile=/var/run/wildfly/wildfly.pid
+PIDFile=/run/wildfly/wildfly.pid
 ExecStart={{ wildfly_home }}/bin/launch.sh $WILDFLY_MODE $WILDFLY_CONFIG $WILDFLY_BIND
 StandardOutput=null
 

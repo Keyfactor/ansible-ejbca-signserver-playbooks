@@ -1,7 +1,7 @@
 ---
 
 - name: Add role member {{ item.match_value }} to {{ item.role }}
-  command: >
+  ansible.builtin.command: >
     "{{ ejbca_sh }}" roles addrolemember
     --role "{{ item.role }}"
     --caname "{{ item.caname }}"
@@ -13,6 +13,6 @@
   failed_when: (adding_rolemember.rc >= 2) or ("No such CA '" + item.caname + "'." in adding_rolemember.stdout)
   changed_when: adding_rolemember.rc == 0
 
-- debug:
+- ansible.builtin.debug:
     msg: "Adding role member failed with message: {{ adding_rolemember.stdout }}"
   when: adding_rolemember.rc == 1

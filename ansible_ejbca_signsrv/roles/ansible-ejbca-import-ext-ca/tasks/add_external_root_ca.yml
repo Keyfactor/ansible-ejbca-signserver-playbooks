@@ -1,7 +1,7 @@
 ---
 
 - name: Check if {{ item.external_caname }} is already in EJBCA
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} ca listcas 
   no_log: "{{ no_log_value }}"
   become: yes
@@ -14,7 +14,7 @@
   block:
 
     - name: Download external CA chain for creating an External CA {{ item.caname }}
-      uri:
+      ansible.builtin.uri:
         url: "{{ item.external_root_cachain_url }}"
         validate_certs: no
         dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
@@ -25,7 +25,7 @@
       when: not item.external_root_cachain_local_repository|bool
 
     - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.external_root_cachain_local_file }}"
         dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
@@ -34,7 +34,7 @@
       when: item.external_root_cachain_local_repository|bool
  
     - name: Import External CA - {{ item.external_caname }}
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_sh }} ca importcacert
         --caname {{ item.external_caname }}
         -f /var/tmp/{{ item.external_root_cachain_file | basename }}

@@ -1,7 +1,7 @@
 ---
 
 - name: Create import file structure
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0755
@@ -10,7 +10,7 @@
   loop: "{{ profile_dir_structure }}"
 
 - name: Prepare import template files for importing
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ ejbca_user }}"

@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-database-config
 
 - name: Remove current Wildfly datasource
-  command: >
+  ansible.builtin.command: >
     {{ wildfly_home }}/bin/jboss-cli.sh --connect 'data-source remove --name={{ item.pool_name }}'
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -14,7 +14,7 @@
   failed_when: false
 
 - name: Display the error if encountered
-  debug:
+  ansible.builtin.debug:
     msg: "Failed to remove the datasource {{ item.stdout }}"
   when: item.rc != 0
   failed_when: item.rc != 0
@@ -23,7 +23,7 @@
     label: "{{ item.item.pool_name }}"
 
 - name: Add failback Wildfly datasource
-  command: >
+  ansible.builtin.command: >
     {{ wildfly_home }}/bin/jboss-cli.sh --connect 'data-source add 
     --name={{ item.pool_name }} 
     --driver-name="{{ item.database_jar_filename| default('mariadb-java-client.jar') }}" 
@@ -60,7 +60,7 @@
   failed_when: false
 
 - name: Display the error if encountered
-  debug:
+  ansible.builtin.debug:
     msg: "Failed to add the datasource {{ item.stdout }}"
   when: item.rc != 0
   failed_when: item.rc != 0
@@ -69,7 +69,7 @@
     label: "{{ item.item.pool_name }}"
 
 - name: Reload Wildfly after adding the failover datasource
-  command: >
+  ansible.builtin.command: >
     {{ wildfly_home }}/bin/jboss-cli.sh --connect ':reload'
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -77,13 +77,13 @@
   failed_when: false
 
 - name: Display the error if encountered
-  debug:
+  ansible.builtin.debug:
     msg: "Failed to reload Wildfly {{ reload_wildfly_ds.stdout }}"
   when: reload_wildfly_ds.rc != 0
   failed_when: reload_wildfly_ds.rc != 0
 
 - name: Verify Wildfly is reloaded
-  wait_for:
+  ansible.builtin.wait_for:
     delay: 15
     timeout: 60
     path: "{{ wildfly_home }}/standalone/deployments/ejbca.ear.deployed"

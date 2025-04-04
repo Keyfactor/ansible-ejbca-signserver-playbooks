@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-crl-import-export
 
 - name: Check if local directory {{ ejbca_crl_dir_output }} exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ejbca_crl_dir_output }}"
   register: ejbca_crl_dir_output_exists
   changed_when: false
@@ -10,7 +10,7 @@
 
 - name: Create local directory for {{ ejbca_crl_dir_output }}
   become: no
-  file:
+  ansible.builtin.file:
     path: "{{ ejbca_crl_dir_output }}"
     state: directory
   delegate_to: localhost
@@ -21,7 +21,7 @@
   block:
 
     - name: Create temp CRL directory
-      file:
+      ansible.builtin.file:
         path: /var/tmp/exportcrl
         state: directory
         owner: "{{ ejbca_user }}"
@@ -29,7 +29,7 @@
       tags: ejbca-cli-cacrl
 
     - name: Export CRL files 
-      include_tasks: export_crl_ejbca.yml
+      ansible.builtin.include_tasks: export_crl_ejbca.yml
       loop: "{{ ejbca_ca_import }}"
       loop_control:
         label: "{{ item.caname }}"
@@ -39,7 +39,7 @@
       tags: ejbca-cli-cacrl
 
     - name: Cleanup the CA CRL files on remote EJBCA
-      file:
+      ansible.builtin.file:
         path: /var/tmp/exportcrl
         state: absent
       tags: ejbca-cli-cacrl
@@ -52,7 +52,7 @@
   block:
 
     - name: Create CRL import directory
-      file:
+      ansible.builtin.file:
         path: /var/tmp/importcrl
         state: directory
         owner: "{{ ejbca_user }}"
@@ -60,14 +60,14 @@
       tags: ejbca-cli-cacrl
 
     - name: Import CRL files 
-      include_tasks: import_crl.yml
+      ansible.builtin.include_tasks: import_crl.yml
       loop: "{{ ejbca_ca_import }}"
       loop_control:
         label: "{{ item.caname }}"
       tags: ejbca-cli-cacrl
 
     - name: Cleanup the CA CRL files on remote EJBCA
-      file:
+      ansible.builtin.file:
         path: /var/tmp/importcrl
         state: absent
       tags: ejbca-cli-cacrl

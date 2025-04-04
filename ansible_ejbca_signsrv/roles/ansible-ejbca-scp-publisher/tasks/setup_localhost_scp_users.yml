@@ -1,18 +1,18 @@
 ---
 
 - name: Ensure all localhost SCP publishing receiving users exist
-  user:
+  ansible.builtin.user:
     name: "{{ item }}"
     system: true
   loop: "{{ management_scp_localhost_receiving_users }}"
 
 - name: Register app_user ssh public key
-  command: cat /home/{{ ejbca_user }}/.ssh/id_rsa.pub
+  ansible.builtin.command: cat /home/{{ ejbca_user }}/.ssh/id_rsa.pub
   register: app_user_publickey
   changed_when: false
 
 - name: Ensure ejbca_user ssh public key is added to localhost SCP receiving users authorized keys
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /home/{{ item }}/.ssh/authorized_keys
     line: "{{ app_user_publickey.stdout }} # Ansible managed"
     state: present

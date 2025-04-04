@@ -3,7 +3,7 @@
 # tasks file for importcacrt
 
 - name: Check if {{ item.caname }} is already in EJBCA
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} ca listcas
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -15,21 +15,21 @@
   block:
 
     - name: Create import directory
-      file:
+      ansible.builtin.file:
         path: /var/tmp/importca
         state: directory
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
 
     - name: Upload {{ item.caname }} file to import
-      copy:
+      ansible.builtin.copy:
         src: "{{ ejbca_cacrt_dir_output }}/{{ item.caname }}.crt"
         dest: "/var/tmp/importca/{{ item.caname }}.crt"
         owner: "{{ ejbca_user }}"
         group: "{{ ejbca_group }}"
 
     - name: Import {{ item.caname }}
-      command: >
+      ansible.builtin.command: >
         {{ ejbca_sh }} ca importcacert
         --caname {{ item.caname }}
         -f /var/tmp/importca/{{ item.caname }}.crt 

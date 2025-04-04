@@ -4,7 +4,7 @@
 # Add /opt/ejbca-custom/conf directory if it doesn't exist
 
 - name: Copy {{ item.caname }} Token properties file is copied over
-  template:
+  ansible.builtin.template:
     src: "catoken_template.properties.j2"
     dest: "{{ ejbca_home }}/../ejbca-custom/conf/{{ item.caname }}.catoken.properties"
     owner: "{{ ejbca_user }}"
@@ -16,7 +16,7 @@
   block:
 
     - name: Create {{ item.caname }}
-      command: >
+      ansible.builtin.command: >
        "{{ ejbca_sh }}" ca init
        --caname "{{ item.caname }}"
        --dn "{{ item.dn }}"
@@ -39,7 +39,7 @@
       changed_when: initializing_management_ca.rc == 0
 
     #- name: Debug initializing_management_ca
-    #  debug:
+    #  ansible.builtin.debug:
     #    var: initializing_management_ca
 
   when:
@@ -49,7 +49,7 @@
   block:
 
     - name: Query CA ID of Root CA for {{ item.caname }}
-      command: "{{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh CaIdGenerator '{{ item.rootDn }}'"
+      ansible.builtin.command: "{{ ejbca_home }}/../clientToolBox/ejbcaClientToolBox.sh CaIdGenerator '{{ item.rootDn }}'"
       args:
         chdir: "{{ ejbca_home }}/../clientToolBox"
       register: root_ca_id
@@ -57,12 +57,12 @@
       become: yes
       become_user: "{{ ejbca_user }}"
 
-    #- debug:
+    #- ansible.builtin.debug:
     #    var: root_ca_id.results
     # --signedby "{{ item.stdout_lines[2].split(' ')[2] }}"
 
     - name: Create {{ item.caname }}
-      command: >
+      ansible.builtin.command: >
        "{{ ejbca_sh }}" ca init
        --caname "{{ item.caname }}"
        --dn "{{ item.dn }}"
@@ -93,7 +93,7 @@
   block:
 
     - name: Download external CA chain for creating an External CA {{ item.caname }}
-      uri:
+      ansible.builtin.uri:
         url: "{{ item.external_root_cachain_url }}"
         validate_certs: no
         dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
@@ -104,7 +104,7 @@
       when: not item.external_root_cachain_local_repository|bool
 
     - name: Upload external CA chain from Ansible controller for creating an External CA {{ item.caname }}
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.external_root_cachain_local_file }}"
         dest: "/var/tmp/{{ item.external_root_cachain_file | basename }}"
         owner: "{{ ejbca_user }}"
@@ -113,7 +113,7 @@
       when: item.external_root_cachain_local_repository|bool
 
     - name: Create a CA CSR to be signed by an external CA for {{ item.caname }}
-      command: >
+      ansible.builtin.command: >
        "{{ ejbca_sh }}" ca init
        --caname "{{ item.caname }}"
        --dn "{{ item.dn }}"
@@ -140,13 +140,13 @@
       
     - name: Create local directories
       become: no
-      file:
+      ansible.builtin.file:
         path: "{{ ejbca_csr_dir_output }}"
         state: directory
       delegate_to: localhost
 
     - name: Copy the {{ item.caname }}_csr.der CSR locally 
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ ejbca_home }}/{{ item.caname }}_csr.der"
         dest: "{{ ejbca_csr_dir_output }}/{{ item.caname }}_csr.der"
         flat: yes

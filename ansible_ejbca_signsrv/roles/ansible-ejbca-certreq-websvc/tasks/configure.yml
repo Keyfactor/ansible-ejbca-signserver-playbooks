@@ -1,7 +1,7 @@
 ---
 
 - name: Stage the webservice properties file
-  template:
+  ansible.builtin.template:
     src: ejbcawsracli.properties.j2
     dest: "{{ ejbca_toolbox }}/ejbcawsracli.properties"
     owner: "{{ ejbca_user }}"
@@ -9,7 +9,7 @@
     backup: yes
 
 - name: Obtain truststore for WebService TLS
-  uri:
+  ansible.builtin.uri:
     url: "{{ ejbcawsracli_truststore_url }}"
     validate_certs: no
     dest: "{{ ejbcawsracli_truststore_path }}"
@@ -18,7 +18,7 @@
     group: "{{ ejbca_group }}"
 
 - name: Obtain Root CA cert that will sign vault csr
-  uri:
+  ansible.builtin.uri:
     url: "{{ vault_int_root_ca_cert_url }}"
     validate_certs: no
     dest: "/var/tmp/{{ vault_int_ca_ejbca_rootca_sign }}.crt"

@@ -11,7 +11,7 @@
   register: endentity_exists
   tags: certreq-cli-batch
 
-#- debug:
+#- ansible.builtin.debug:
 #    var: endentity_exists
 
 - ansible.builtin.debug:

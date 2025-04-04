@@ -1,7 +1,7 @@
 ---
 
 - name: Check the CRLPeriod for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLPeriod"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLPeriod"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -13,7 +13,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Check the CRLOverlapTime for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLOverlapTime"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLOverlapTime"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -25,7 +25,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Check the CRLIssueInterval for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLIssueInterval"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} CRLIssueInterval"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -37,7 +37,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Check the defaultCRLDistPoint for {{ item.caname }} 
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultCRLDistPoint"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultCRLDistPoint"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -49,7 +49,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Check the defaultOCSPServiceLocator for {{ item.caname }} 
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultOCSPServiceLocator"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} defaultOCSPServiceLocator"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -61,7 +61,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Check the authorityInformationAccess for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} authorityInformationAccess"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} authorityInformationAccess"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -73,7 +73,7 @@
     - item.authorityInformationAccess is defined
 
 - name: Check the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} certificateAiaDefaultCaIssuerUri"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} certificateAiaDefaultCaIssuerUri"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -85,7 +85,7 @@
     - item.certificateAiaDefaultCaIssuerUri is defined
 
 - name: Check the useLdapDnOrder for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} useLdapDnOrder"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} useLdapDnOrder"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -97,7 +97,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Check the Enforce Unique Distinguished Name for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} doEnforceUniqueDistinguishedName"
+  ansible.builtin.command: "{{ ejbca_sh }} ca getcafield {{ item.caname }} doEnforceUniqueDistinguishedName"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -109,7 +109,7 @@
     - item.enforce_unique_dn is defined
 
 - name: Configure the CRLPeriod for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLPeriod {{ item.crlPeriod }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLPeriod {{ item.crlPeriod }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -120,7 +120,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Configure the CRLOverlapTime for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLOverlapTime {{ item.crl_overlap_time }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLOverlapTime {{ item.crl_overlap_time }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -131,7 +131,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Configure the CRLIssueInterval for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLIssueInterval {{ item.crlIssueInterval }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} CRLIssueInterval {{ item.crlIssueInterval }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -142,7 +142,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Configure the defaultCRLDistPoint for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultCRLDistPoint {{ item.defaultCRLDP }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultCRLDistPoint {{ item.defaultCRLDP }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -153,7 +153,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Configure the defaultOCSPServiceLocator for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultOCSPServiceLocator {{ item.defaultOCSPServiceLocator }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} defaultOCSPServiceLocator {{ item.defaultOCSPServiceLocator }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -164,7 +164,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Configure the authorityInformationAccess for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} authorityInformationAccess {{ item.authorityInformationAccess }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} authorityInformationAccess {{ item.authorityInformationAccess }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -175,7 +175,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Configure the certificateAiaDefaultCaIssuerUri for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} certificateAiaDefaultCaIssuerUri {{ item.certificateAiaDefaultCaIssuerUri }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} certificateAiaDefaultCaIssuerUri {{ item.certificateAiaDefaultCaIssuerUri }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -186,7 +186,7 @@
   no_log: "{{ no_log_value }}"
 
 - name: Configure the useLdapDnOrder for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} useLdapDnOrder {{ item.useLdapDnOrder| default('false') }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} useLdapDnOrder {{ item.useLdapDnOrder| default('false') }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -196,7 +196,7 @@
   no_log: "{{ no_log_value }}"
   
 - name: Configure the Enforce Unique Distinguished Name for {{ item.caname }}
-  command: "{{ ejbca_sh }} ca editca {{ item.caname }} doEnforceUniqueDistinguishedName {{ item.enforce_unique_dn| default('true') }}"
+  ansible.builtin.command: "{{ ejbca_sh }} ca editca {{ item.caname }} doEnforceUniqueDistinguishedName {{ item.enforce_unique_dn| default('true') }}"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"

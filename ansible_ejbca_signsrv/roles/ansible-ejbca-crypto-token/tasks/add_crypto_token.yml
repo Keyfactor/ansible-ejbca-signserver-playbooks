@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-crypto-token
 
 - name: Query crypto tokens
-  command: "{{ ejbca_sh }} cryptotoken list"
+  ansible.builtin.command: "{{ ejbca_sh }} cryptotoken list"
   no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -11,7 +11,7 @@
   failed_when: cryptoToken_list.rc >= 1
 
 - name: Create cryptotoken for {% if item.crypto_token_name is defined %}{{ item.crypto_token_name }}{% else %}{{ item.caname }}{% endif %}
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} cryptotoken create 
     --token {% if item.crypto_token_name is defined %}"{{ item.crypto_token_name }}"{% else %}"{{ item.caname }}"{% endif %} 
     --pin {{ item.tokenpass }} 
@@ -38,5 +38,5 @@
       (item.caname is defined and item.caname not in cryptoToken_list.stdout and item.crypto_token_name is not defined)
 
 #- name: debug add_cryptotoken
-#  debug:
+#  ansible.builtin.debug:
 #    var: add_cryptotoken

@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-key-binding
 
 - name: check if OCSP Key Binding exists
-  command: "{{ ejbca_sh }} keybind list"
+  ansible.builtin.command: "{{ ejbca_sh }} keybind list"
   no_log: "{{ no_log_value }}"
   become: yes
   become_user: "{{ ejbca_user }}"
@@ -10,10 +10,10 @@
   failed_when: keybinding_exists.rc >= 2
   changed_when: false
 
-#- debug:
+#- ansible.builtin.debug:
 #    var: keybinding_exists
 
-#- debug:
+#- ansible.builtin.debug:
 #    msg: "Key is not created for {{item.item.name}}"
 #  loop: "{{ keybinding_exists.results }}"
 #  loop_control:
@@ -21,7 +21,7 @@
 #  when: item.item.name not in item.stdout
 
 - name: Create OCSP Key Binding 
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} keybind create 
     --name {{ item.0.name }} 
     --type OcspKeyBinding 
@@ -48,7 +48,7 @@
 #    var: keybinding_create
 
 - name: Create CSR for OCSP key binding 
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} keybind gencsr 
     --name {{ item.name }} 
     -f /var/tmp/{{ item.name }}.csr
@@ -67,7 +67,7 @@
 
 - name: Copy CSR to localhost
   become: no
-  fetch:
+  ansible.builtin.fetch:
     src: "/var/tmp/{{ item.name }}.csr"
     dest: "{{ ejbca_csr_dir_output }}/"
     flat: yes
@@ -78,7 +78,7 @@
   #when: item.name not in keybinding_exists.stdout
 
 - name: Cleanup the cert files in /var/tmp
-  file:
+  ansible.builtin.file:
     path: "/var/tmp/{{ item.name }}.csr"
     state: absent
   loop: "{{ key_bindings }}"

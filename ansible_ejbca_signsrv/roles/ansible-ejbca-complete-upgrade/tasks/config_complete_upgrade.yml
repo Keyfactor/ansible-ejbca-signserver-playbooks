@@ -1,7 +1,7 @@
 ---
 
 - name: Complete EJBCA upgrade
-  command: ant upgrade
+  ansible.builtin.command: ant upgrade
   become: yes
   become_user: "{{ ejbca_user }}"
   environment:

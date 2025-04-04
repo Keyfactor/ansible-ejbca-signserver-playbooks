@@ -1,7 +1,7 @@
 ---
 
 - name: Enable Only Inbound Peer Connections to this node
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} peer config 
     --enable-in TRUE 
     --enable-out FALSE

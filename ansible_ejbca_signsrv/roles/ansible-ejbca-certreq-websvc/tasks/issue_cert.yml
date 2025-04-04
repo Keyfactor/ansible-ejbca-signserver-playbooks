@@ -1,7 +1,7 @@
 ---
 
 - name: Copy CSR for signing
-  copy:
+  ansible.builtin.copy:
     src: "{{ vault_csr_dir_output }}/{{ vault_int_pki_name }}.csr"
     dest: "/var/tmp/{{ vault_int_pki_name }}.csr"
     owner: "{{ ejbca_user }}"
@@ -9,7 +9,7 @@
   register: file_copy
 
 - name: Check if end entity exists
-  command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli finduser USERNAME EQUALS {{ vault_int_pki_name }}"
+  ansible.builtin.command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli finduser USERNAME EQUALS {{ vault_int_pki_name }}"
   args:
     chdir: "{{ ejbca_toolbox }}"
   become: true
@@ -17,12 +17,12 @@
   changed_when: False
   register: endentity_exists
 
-#- debug:
+#- ansible.builtin.debug:
 #    var: endentity_exists
 
 - block:
     - name: Create entity in EJBCA
-      command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli edituser {{ vault_int_pki_name }} {{ vault_int_pki_passwd }} false '{{ vault_int_ca_ejbca_dn }}' NULL NULL {{ vault_int_ca_ejbca_rootca_sign }} 1 USERGENERATED {{ vault_int_ca_ejbca_status }} {{ vault_int_ca_ejbca_endentityprofile }} {{ vault_int_ca_ejbca_certprofile }}"
+      ansible.builtin.command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli edituser {{ vault_int_pki_name }} {{ vault_int_pki_passwd }} false '{{ vault_int_ca_ejbca_dn }}' NULL NULL {{ vault_int_ca_ejbca_rootca_sign }} 1 USERGENERATED {{ vault_int_ca_ejbca_status }} {{ vault_int_ca_ejbca_endentityprofile }} {{ vault_int_ca_ejbca_certprofile }}"
       args:
         chdir: "{{ ejbca_toolbox }}"
       become: true
@@ -34,7 +34,7 @@
     #    var: create_endentity
 
     - name: Submit PKCS10 to EJBCA
-      command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli pkcs10req {{ vault_int_pki_name }} {{ vault_int_pki_passwd }} /var/tmp/{{ vault_int_pki_name }}.csr PEM NONE /var/tmp/"
+      ansible.builtin.command: "{{ ejbca_toolbox }}/ejbcaClientToolBox.sh EjbcaWsRaCli pkcs10req {{ vault_int_pki_name }} {{ vault_int_pki_passwd }} /var/tmp/{{ vault_int_pki_name }}.csr PEM NONE /var/tmp/"
       args:
         chdir: "{{ ejbca_toolbox }}"
       become: true
@@ -42,21 +42,21 @@
       register: submit_pkcs10
       no_log: "{{ no_log_value }}"
 
-    #- debug:
+    #- ansible.builtin.debug:
     #    var: submit_pkcs10
 
     - name: Add Root CA to Sub CA cert file
-      shell: "cat /var/tmp/{{ vault_int_ca_ejbca_rootca_sign }}.crt >> /var/tmp/{{ vault_int_pki_name }}.pem"
+      ansible.builtin.shell: "cat /var/tmp/{{ vault_int_ca_ejbca_rootca_sign }}.crt >> /var/tmp/{{ vault_int_pki_name }}.pem"
 
     - name: Copy certificate to localhost
       become: no
-      fetch:
+      ansible.builtin.fetch:
         src: "/var/tmp/{{ vault_int_pki_name }}.pem"
         dest: "{{ vault_csr_dir_output }}/{{ vault_int_pki_name }}.pem"
         flat: yes
 
     - name: Housekeeping
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:

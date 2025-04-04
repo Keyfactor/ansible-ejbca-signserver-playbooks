@@ -1,7 +1,7 @@
 ---
 
 - name: Configdump prepare the RA peering role for import into the external RA
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-cnfdump-stage
     tasks_from: config_configdump
   vars:
@@ -11,7 +11,7 @@
     - ejbca_type == "RA"
 
 - name: Configdump prepare the VA peering role for import into the external RA
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-cnfdump-stage
     tasks_from: config_configdump
   vars:
@@ -21,7 +21,7 @@
     - ejbca_type == "VA"
 
 - name: Import Dump files for Dump1
-  command: >
+  ansible.builtin.command: >
     ./configdump.sh import 
     --ignore-errors 
     -l {{ ejbca_home }}/dump/dump1 

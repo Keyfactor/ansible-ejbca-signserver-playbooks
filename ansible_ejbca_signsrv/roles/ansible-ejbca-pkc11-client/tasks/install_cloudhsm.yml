@@ -1,7 +1,7 @@
 ---
 
 - name: Check if CloudHSM directory exists
-  stat:
+  ansible.builtin.stat:
     path: '{{ cloudhsm_home }}'
   register: cloudhsm_home_check
   
@@ -9,21 +9,21 @@
   block:
 
   - name: Download CloudHSM client package
-    get_url:
+    ansible.builtin.get_url:
       url: '{{ cloudhsm_client_url }}/{{ cloudhsm_client_file }}'
       dest: '{{ cloudhsm_dest }}/{{ cloudhsm_client_file }}'
     register: cloudhsm_client_download
 
   - name: Install CloudHSM client package
-    shell: rpm -i {{ cloudhsm_dest }}/{{ cloudhsm_client_file }}
+    ansible.builtin.shell: rpm -i {{ cloudhsm_dest }}/{{ cloudhsm_client_file }}
 
   - name: Enable CloudHSM client service
-    service:
+    ansible.builtin.service:
       name: cloudhsm-client
       enabled: yes
 
   - name: Remove CloudHSM client package
-    file:
+    ansible.builtin.file:
       path: '{{ cloudhsm_dest }}/{{ cloudhsm_client_file }}'
       state: absent
 
@@ -33,7 +33,7 @@
 # P11NG driver install
 
 - name: Check if PKCS P11NG driver exists
-  stat:
+  ansible.builtin.stat:
     path: /opt/cloudhsm/lib/libcloudhsm_pkcs11.so
   register: p11ng_driver_check
   when: use_p11ng | bool
@@ -42,7 +42,7 @@
   block:
 
   - name: Download CloudHSM PKCS11 package
-    get_url:
+    ansible.builtin.get_url:
        url: '{{ cloudhsm_pkcs11_url }}/{{ cloudhsm_pkcs11_file }}'
        dest: '{{ cloudhsm_dest }}/{{ cloudhsm_pkcs11_file }}'
     register: cloudhsm_pcks11_download
@@ -51,7 +51,7 @@
     command: rpm -i {{ cloudhsm_dest }}/{{ cloudhsm_pkcs11_file }}
 
   - name: Remove CloudHSM PKCS11 package
-    file:
+    ansible.builtin.file:
       path: '{{ cloudhsm_dest }}/{{ cloudhsm_pkcs11_file }}'
       state: absent
   
@@ -61,7 +61,7 @@
     - not p11ng_driver_check.stat.exists
 
 - name: Check if PrimeKey CloudHSM directory exists
-  stat:
+  ansible.builtin.stat:
     path: /opt/PrimeKey
   register: organization_home_check
 
@@ -70,7 +70,7 @@
   block:
 
   - name: Unpack PrimeKey zip
-    unarchive:
+    ansible.builtin.unarchive:
       src: '{{ hsm_config_files }}/PrimeKey.zip'      
       dest: "/var/tmp"
       remote_src: true
@@ -88,12 +88,12 @@
 
 
 - name: Check for HSM cluster certificate
-  stat: 
+  ansible.builtin.stat: 
     path: '{{ cloudhsm_home}}/etc/{{ customerCA_cert }}'
   register: customerCA_cert_check
 
 - name: Copy HSM cluster certificate issuer to virtual instance
-  copy:
+  ansible.builtin.copy:
     src: '{{ hsm_config_files }}/{{ customerCA_cert }}'
     dest: '{{ cloudhsm_home }}/etc/'
     remote_src: no
@@ -104,7 +104,7 @@
     - not customerCA_cert_check.stat.exists
 
 - name: Check for Liquidsec directory
-  stat:
+  ansible.builtin.stat:
     path: /home/wildfly/.liquidsec
   register: liquidsec_dir_check
   when: 
@@ -114,14 +114,14 @@
 - name: Configure Liquidesec
   block:
   - name: Create Liquidesec directory
-    file:
+    ansible.builtin.file:
       path: /home/wildfly/.liquidsec
       state: directory
       owner: '{{ ejbca_user }}'
       group: '{{ ejbca_group }}'
 
   - name: Copy public keys
-    copy:
+    ansible.builtin.copy:
       src: '{{ item.name }}'
       dest: /home/wildfly/.liquidsec
       owner: '{{ ejbca_user }}'
@@ -137,16 +137,16 @@
     - not liquidsec_dir_check.stat.exists
 
 - name: Stop CloudHSM client
-  service:
+  ansible.builtin.service:
     name: '{{ cloudhsm_service }}'
     state: stopped
 
 - name: Specify the IP address of the HSM in the cluster
-  command: >
+  ansible.builtin.command: >
     {{ cloudhsm_home }}/bin/configure -a {{ cloudhsm_ip }}
 
 - name: Start CloudHSM client
-  service:
+  ansible.builtin.service:
     name: '{{ cloudhsm_service }}'
     state: started
 
@@ -162,8 +162,8 @@
 # Only used with multiple HSMs in a cluster
 
 - name: Ensure the cloudhsm_mgmt_util configuration file is up to date
- command: >
-  {{ cloudhsm_home }}/bin/configure -m
- become: yes
- register: cloudhsm_mgmt_verify
- failed_when: cloudhsm_mgmt_verify.rc >= 2
+  ansible.builtin.command: >
+    {{ cloudhsm_home }}/bin/configure -m
+  become: yes
+  register: cloudhsm_mgmt_verify
+  failed_when: cloudhsm_mgmt_verify.rc >= 2

@@ -1,7 +1,7 @@
 ---
 
 - name: Create confifdump file structure for the imports to use Approvals
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0750
@@ -10,7 +10,7 @@
   loop: "{{ configdump_approval_dir_structure }}"
 
 - name: Prepare configdump template files for Approvals importing
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ ejbca_user }}"
@@ -21,7 +21,7 @@
     label: "{{ item.dest }}"
 
 - name: Import Approval Profiles with configdump
-  command: >
+  ansible.builtin.command: >
     ./configdump.sh import 
     --ignore-errors 
     --overwrite update 

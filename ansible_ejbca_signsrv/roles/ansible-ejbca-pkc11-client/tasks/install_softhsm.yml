@@ -3,7 +3,7 @@
 - name: Install SoftHSM on CentOS, RedHat, Oracle
   block:
     - name: Stage Okay Repo GPG Key on CentOS, RedHat, Oracle
-      copy:
+      ansible.builtin.copy:
         src: RPM-GPG-KEY-okayinc
         dest: /etc/pki/rpm-gpg/
         owner: root
@@ -11,12 +11,12 @@
         mode: 0644
 
     - name: Import Okay Repo key from a file on CentOS, RedHat, Oracle
-      rpm_key:
+      ansible.builtin.rpm_key:
         state: present
         key: /etc/pki/rpm-gpg/RPM-GPG-KEY-okayinc
 
     - name: Install SoftHSM on CentOS, RedHat, Oracle 8
-      dnf:
+      ansible.builtin.dnf:
         name: "{{ softhsm_8 }}"
         state: present
         #disable_gpg_check: yes
@@ -31,7 +31,7 @@
   block:
 
     - name: Upload SoftHSM RPM from Ansible controller to Alma/Rocky Linux 8
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ softhsm_remote_dir }}"
         dest: /var/tmp
       register: unpacked_local_softhsm_rpm
@@ -40,7 +40,7 @@
         - use_local_repository|bool
 
     - name: Download SoftHSM RPM and check (sha256) on Alma/Rocky Linux 8
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ download_softhsm_url }}"
         dest: /var/tmp/softhsm.rpm
         checksum: "{{ download_softhsm_url_checksum }}"
@@ -52,12 +52,12 @@
 
     # Dirty way to do this since the package doesn't show up in AppStream when searching from the server :-(
     - name: Install SoftHSM on Alma/Rocky Linux 8
-      command: >
+      ansible.builtin.command: >
         dnf install -y /var/tmp/softhsm.rpm
       register: install_softhsm_rpm
 
     - name: Remove installed SoftHSM RPM on Alma/Rocky Linux 8
-      file:
+      ansible.builtin.file:
         path: /var/tmp/softhsm.rpm
         state: absent
 
@@ -66,7 +66,7 @@
       (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "8")
 
 - name: Install SoftHSM on Alma/Rocky Linux 9
-  command: >
+  ansible.builtin.command: >
     dnf install -y softhsm
   register: install_softhsm_9
   when:
@@ -74,7 +74,7 @@
       (ansible_facts['distribution'] == "AlmaLinux" and ansible_facts['distribution_major_version'] == "9")
 
 - name: Install SoftHSM on CentOS/RHEL 7
-  package:
+  ansible.builtin.package:
     name: "{{ softhsm_7 }}"
     state: present
   when: 
@@ -82,14 +82,14 @@
       (ansible_facts['distribution'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") 
 
 - name: Install SoftHSM Amazon Linux 2
-  package:
+  ansible.builtin.package:
     name: softhsm
     state: present
   when: 
     - (ansible_facts['distribution'] == "Amazon" and ansible_facts['distribution_major_version'] == "2") 
 
 - name: Set permissions on softhsm lib directory
-  file:
+  ansible.builtin.file:
     path: /var/lib/softhsm
     state: directory
     recurse: yes
@@ -101,7 +101,7 @@
   block:
 
     - name: Check SoftHSM Slots
-      shell: >
+      ansible.builtin.shell: >
         softhsm2-util --show-slots | grep {{ item.slot_name }}
       register: show_hsm_slots
       loop: "{{ softhsm_gen_hsm_slots }}"
@@ -110,7 +110,7 @@
       no_log: "{{ no_log_value }}"
 
     - name: Create SoftHSM slots
-      command: >
+      ansible.builtin.command: >
         softhsm2-util 
         --init-token 
         --free 

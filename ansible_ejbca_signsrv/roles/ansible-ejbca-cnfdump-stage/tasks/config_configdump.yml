@@ -1,12 +1,12 @@
 ---
 
 - name: Check if Configdump already exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ejbca_home }}/dist/configdump/configdump.jar"
   register: cfgdump_exists
 
 - name: Build Configdump
-  command: "/usr/bin/ant -q configdump"
+  ansible.builtin.command: "/usr/bin/ant -q configdump"
   args:
     chdir: "{{ ejbca_home }}"
     creates: "{{ ejbca_home }}/dist/configdump/configdump.jar"
@@ -15,7 +15,7 @@
   when: not cfgdump_exists.stat.exists
 
 - name: Create configdump file structure for all the imports
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0750
@@ -24,7 +24,7 @@
   loop: "{{ configdump_directory_structure }}"
 
 - name: Prepare configdump template files for importing
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ ejbca_user }}"
@@ -35,7 +35,7 @@
     label: "{{ item.dest }}"
 
 - name: Create CA publisher directory structure
-  file:
+  ansible.builtin.file:
     path: "{{ ejbca_home }}/dump/addPubToCA/certification-authorities"
     state: directory
     mode: 0750

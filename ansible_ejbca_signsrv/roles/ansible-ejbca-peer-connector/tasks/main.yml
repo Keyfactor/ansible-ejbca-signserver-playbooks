@@ -2,4 +2,4 @@
 # tasks file for ansible-ejbca-peer-connector
 
 - name: Create Peer Connector
-  include_tasks: add_peer_conn.yml
+  ansible.builtin.include_tasks: add_peer_conn.yml

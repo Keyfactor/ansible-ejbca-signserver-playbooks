@@ -1,7 +1,7 @@
 ---
 
 - name: Generate keys for OCSP Signers on crypto token
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-crypto-token
     tasks_from: generate_keys
   loop: "{{ ejbca_va_keybinding |subelements('crypto_token') }}"
@@ -14,7 +14,7 @@
     - ejbca_va_keybinding[0] is defined
 
 - name: Create OCSP Key Binding
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-key-binding
   vars:
     key_bindings: "{{ ejbca_va_keybinding }}"
@@ -23,7 +23,7 @@
     - ejbca_va_keybinding[0] is defined
 
 - name: Create a fact for identity_csr_info
-  set_fact:
+  ansible.builtin.set_fact:
     cacheable: yes
     identity_csr_info: |
       [
@@ -42,7 +42,7 @@
 
 - name: Write CSR info to shared vars directory {{ sharedVarsLocation }}/va_delegated_signers.yml for use with signing VA delegated signers
   become: no
-  copy:
+  ansible.builtin.copy:
     dest: "{{ sharedVarsLocation }}/va_delegated_signers.yml"
     content: "{{ identity_csr_info| to_nice_yaml }}"
   delegate_to: localhost

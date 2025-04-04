@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-deploy-pki-add-ca
 
 - name: Prepare configdump template files
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-cnfdump-stage
     tasks_from: config_configdump
 
@@ -13,14 +13,14 @@
 # Add Configdump to import crypto tokens with >= 7.6.0
 
     - name: Create crypto tokens for Management & Root CA's
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ root_add_certification_authorities }}"
       no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Management & Root CA's on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ root_add_certification_authorities |subelements('crypto_token') }}"
@@ -31,7 +31,7 @@
       tags: key_generation
 
     - name: Stage Management & Root CA to create with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       vars:
@@ -42,7 +42,7 @@
       no_log: "{{ no_log_value }}"
 
     - name: Intialize Management & Root CA's with configdump
-      command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1 --initialize"
+      ansible.builtin.command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1 --initialize"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -55,7 +55,7 @@
   block:
 
     - name: Import configdump of Root CA templates and EKU's
-      command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1"
+      ansible.builtin.command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump1"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -63,14 +63,14 @@
 #TODO
 # Add Configdump to import crypto tokens with >= 7.6.0      
     - name: Create crypto tokens for Management & Root CA's
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ root_add_certification_authorities }}"
       no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Management & Root CA's on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ root_add_certification_authorities |subelements('crypto_token') }}"
@@ -81,7 +81,7 @@
       tags: key_generation
 
     - name: Initialize Management & Root CAs with CLI commands
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-init-ca
         tasks_from: init_ca
       loop: "{{ root_add_certification_authorities }}"
@@ -89,7 +89,7 @@
       tags: create_cas
 
     - name: Configure ManagmentCA and Root CA settings
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ root_add_certification_authorities }}"
@@ -105,14 +105,14 @@
 # Add Configdump to import crypto tokens with >= 7.6.0
 
     - name: Create crypto tokens for Sub CA's
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ sub_add_certification_authorities }}"
       no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Suborindated CA's on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
@@ -126,7 +126,7 @@
 # Stage individual CA cert profiles to be imported before initialization with configdump - Dynamic time!
 
     - name: Stage Sub CA's to create with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       vars:
@@ -135,7 +135,7 @@
       no_log: "{{ no_log_value }}"
 
     - name: Intialize Sub CA's with configdump
-      command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2 --initialize"
+      ansible.builtin.command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2 --initialize"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -152,7 +152,7 @@
 # Stage individual CA cert profiles to be imported before initialization with configdump - Dynamic time!
 
     - name: Import configdump of profiles and services
-      command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
+      ansible.builtin.command: "./configdump.sh import --ignore-errors --overwrite update --non-interactive continue -l {{ ejbca_home }}/dump/dump2"
       args:
         chdir: "{{ ejbca_home }}/dist/configdump"
       become: yes 
@@ -162,14 +162,14 @@
 # Add Configdump to import crypto tokens with >= 7.6.0
 
     - name: Create crypto token and keys for Suborindated CA's not using PKCS11
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ sub_add_certification_authorities }}"
       no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Suborindated CA's on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
@@ -180,7 +180,7 @@
       tags: key_generation
       
     - name: Initialize Sub CA's with CLI commands
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-init-ca
         tasks_from: init_ca
       loop: "{{ sub_add_certification_authorities }}"
@@ -190,7 +190,7 @@
       tags: create_cas
 
     - name: Configure Sub CA's settings
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-conf-ca-exts
         tasks_from: config_ca_extensions
       loop: "{{ sub_add_certification_authorities }}"

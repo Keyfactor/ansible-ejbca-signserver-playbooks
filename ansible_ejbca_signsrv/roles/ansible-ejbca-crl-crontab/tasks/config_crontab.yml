@@ -2,7 +2,7 @@
 # Create crontab for CRL's to get downloaded from CA and hosted by httpd
 
 - name: Configure the wget script
-  template:
+  ansible.builtin.template:
     src: getcrl.sh.j2
     dest: "/home/{{ ejbca_user }}/getcrl.sh"
     mode: 0750
@@ -10,7 +10,7 @@
     group: "{{ ejbca_group }}"
 
 - name: Create crontab
-  cron:
+  ansible.builtin.cron:
     name: CRL-Retrieval
     state: present
     job: "/home/{{ ejbca_user }}/getcrl.sh"

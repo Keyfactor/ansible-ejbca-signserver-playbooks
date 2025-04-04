@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-enroll-protocols
 
 - name: Disable Protocols Services 
-  command: "{{ ejbca_sh }} config protocols disable '{{ item.name }}'"
+  ansible.builtin.command: "{{ ejbca_sh }} config protocols disable '{{ item.name }}'"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -15,7 +15,7 @@
   ignore_errors: yes
 
 - name: Enable Protocol Services 
-  command: "{{ ejbca_sh }} config protocols enable '{{ item.name }}'"
+  ansible.builtin.command: "{{ ejbca_sh }} config protocols enable '{{ item.name }}'"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"

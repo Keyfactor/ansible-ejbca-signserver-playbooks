@@ -2,13 +2,13 @@
 # tasks file for roles/ansible-ejbca-key-binding
 
 - name: Create Authentication Key Binding 
-  include_tasks: add_keybinding_ca.yml
+  ansible.builtin.include_tasks: add_keybinding_ca.yml
   when: 
     - auth_key_bind is defined
     - auth_key_bind|bool
 
 - name: Create OCSP Key Binding 
-  include_tasks: add_keybinding_va.yml
+  ansible.builtin.include_tasks: add_keybinding_va.yml
   when:
     - ocsp_key_bind is defined 
     - ocsp_key_bind|bool

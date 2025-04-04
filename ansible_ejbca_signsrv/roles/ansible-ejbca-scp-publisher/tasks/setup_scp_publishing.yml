@@ -1,20 +1,20 @@
 ---
 
 - name: Ensure application user exists and has an ssh key
-  user:
+  ansible.builtin.user:
     name: "{{ ejbca_user }}"
     system: true
     generate_ssh_key: true
     ssh_key_passphrase: "{{ management_ssh_key_passphrase }}"
 
 - name: Register public keys of known hosts
-  command: ssh-keyscan "{{ item }}"
+  ansible.builtin.command: ssh-keyscan "{{ item }}"
   loop: "{{ management_known_hosts }}"
   register: ssh_keyscan_results
   changed_when: false
 
 - name: Ensure public keys of known hosts are added to application user list of known host keys
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /home/{{ ejbca_user }}/.ssh/known_hosts
     block: |
       {% for item in ssh_keyscan_results.results %}

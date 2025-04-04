@@ -1,7 +1,7 @@
 ---
 
 - name: Check serial number in Admin Role
-  command: "{{ ejbca_sh }} roles listadmins --role '{{ ejbca_ra_admin_role_name }}'"
+  ansible.builtin.command: "{{ ejbca_sh }} roles listadmins --role '{{ ejbca_ra_admin_role_name }}'"
   args:
     chdir: "{{ ejbca_home }}"
   become_user: "{{ ejbca_user }}"
@@ -12,7 +12,7 @@
   changed_when: False
 
 #- name: Show the result of sn_in_role_result
-#  debug:
+#  ansible.builtin.debug:
 #    var: sn_in_role_result
 
 - name: Create fact for serial numbers in hex
@@ -21,15 +21,15 @@
   loop: "{{ sn_in_role_result.stdout_lines }}"  
 
 #- name: Show the results from ra_serial_numbers_hex
-#  debug:
+#  ansible.builtin.debug:
 #    var: ra_serial_numbers_hex
 
 #- name: Show the values from connector_ra_cert_serial_numbers
-#  debug:
+#  ansible.builtin.debug:
 #    var: connector_ra_cert_serial_numbers
 
 - name: Add serial number to Admin Role
-  command: >
+  ansible.builtin.command: >
     {{ ejbca_sh }} roles addrolemember 
     --role '{{ ejbca_ra_admin_role_name }}' 
     --caname '{{ item.caname }}' 
@@ -51,5 +51,5 @@
   failed_when: add_sn_to_role_result.rc >= 2
 
 #- name: Show results
-#  debug:
+#  ansible.builtin.debug:
 #    var: add_sn_to_role_result

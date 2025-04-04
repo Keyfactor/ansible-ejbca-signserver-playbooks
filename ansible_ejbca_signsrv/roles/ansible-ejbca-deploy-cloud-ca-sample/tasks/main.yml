@@ -3,12 +3,12 @@
 # tasks file for roles/ansible-ejbca-deploy-cloud-ca-sample
 
 - name: Install acl package
-  package:
+  ansible.builtin.package:
     name: acl
     state: present
 
 - name: Prepare configdump template files
-  include_role: 
+  ansible.builtin.include_role: 
     name: ansible-ejbca-cnfdump-stage
     tasks_from: config_configdump
 
@@ -16,14 +16,14 @@
   block:
 
     - name: Create crypto token for the Root CA's
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ management_add_certification_authorities }}"
       no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Root CA's on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ management_add_certification_authorities |subelements('crypto_token') }}"
@@ -34,7 +34,7 @@
       tags: key_generation
 
     - name: Stage Management & Root CA to create with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       vars:
@@ -45,7 +45,7 @@
       no_log: "{{ no_log_value }}"
 
     - name: Intialize Root CA's with configdump
-      command: >
+      ansible.builtin.command: >
         ./configdump.sh import 
         --ignore-errors 
         --overwrite update 
@@ -64,14 +64,14 @@
   block:
 
     - name: Create crypto tokens for Sub CA's
-      include_role: 
+      ansible.builtin.include_role: 
         name: ansible-ejbca-crypto-token
         tasks_from: add_crypto_token
       loop: "{{ sub_add_certification_authorities }}"
       no_log: "{{ no_log_value }}"
 
     - name: Generate keys for Suborindated CA's on crypto token
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-crypto-token
         tasks_from: generate_keys
       loop: "{{ sub_add_certification_authorities |subelements('crypto_token') }}"
@@ -84,7 +84,7 @@
       #  - ("soft" in key_item.0.tokentype)
 
     - name: Stage Sub CA's to create with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_ca
       vars:
@@ -93,7 +93,7 @@
       no_log: "{{ no_log_value }}"
 
     - name: Intialize Sub CA's with configdump
-      command: >
+      ansible.builtin.command: >
         ./configdump.sh import 
         --ignore-errors 
         --overwrite update 
@@ -110,7 +110,7 @@
     - sub_add_certification_authorities[0] is defined
 
 - name: Create Key Binding for Peering
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-key-binding
   vars:
     key_bindings: "{{ ejbca_keybinding }}"
@@ -119,7 +119,7 @@
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
 
 - name: Create Peer Connector
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-peer-connector
   when: 
     - use_external_va|bool or use_external_ra|bool or use_external_ss|bool
@@ -128,7 +128,7 @@
   block:
 
     - name: Create External VA Publisher template files to import with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_external_va_publisher
       loop: "{{ ejbca_peerConnector }}"
@@ -138,7 +138,7 @@
         - ("ocsp" in item.type)
 
     - name: Create External VA OCSP key update service template files to import with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_external_va_key_update
       loop: "{{ ejbca_peerConnector }}"
@@ -149,7 +149,7 @@
         - item.remote_key_update|bool
 
     - name: Create external VA services and publisher with configdump
-      command: >
+      ansible.builtin.command: >
         ./configdump.sh import 
         --ignore-errors 
         --overwrite update 
@@ -165,7 +165,7 @@
     - use_external_va|bool
 
 - name: Configure SCP Publisher
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-scp-publisher
   when: 
     - management_known_hosts[0] is defined or management_scp_localhost_receiving_users[0] is defined or management_scp_localhost_archive_dirs[0] is defined
@@ -174,13 +174,13 @@
   block:
 
     - name: Import Approval Profiles for EJBCA <= 7.8.0
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-legacy-app-profs
       when: 
         - ( ejbca_version is version('7.8.0', '<='))
 
     - name: Import Approval Profiles for EJBCA >= 7.7.0
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_app_profile
       when: 
@@ -194,7 +194,7 @@
   block:
 
     - name: Create AWS S3 Publisher template files to import with configdump
-      include_role:
+      ansible.builtin.include_role:
         name: ansible-ejbca-cnfdump-stage
         tasks_from: stage_aws_s3_publisher
       loop: "{{ aws_s3_publishers }}"
@@ -202,7 +202,7 @@
         label: "{{ item.s3_publisher_name }}"
 
     - name: Create AWS S3 publishers with configdump
-      command: >
+      ansible.builtin.command: >
         ./configdump.sh import 
         --ignore-errors 
         --overwrite update 
@@ -218,7 +218,7 @@
     - use_aws_s3_publisher|bool
 
 - name: Import configdump of profiles, services, & publishers
-  command: >
+  ansible.builtin.command: >
     ./configdump.sh import 
     --ignore-errors 
     --overwrite update 
@@ -230,7 +230,7 @@
   become_user: "{{ ejbca_user }}"
 
 - name: Update CA's to use Publishers using configdump
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-cnfdump-stage
     tasks_from: add_publishers_to_ca
   when: 
@@ -238,7 +238,7 @@
     - add_publshers_to_cas|bool
 
 - name: Create external RA role with configdump
-  command: >
+  ansible.builtin.command: >
     ./configdump.sh import 
     --ignore-errors 
     --overwrite update 
@@ -252,7 +252,7 @@
     - use_external_ra|bool
 
 - name: Configure EJBCA Enrollment protocols
-  include_role:
+  ansible.builtin.include_role:
     name: ansible-ejbca-enroll-protocols
   when: 
     - disable_ejbca_protocols[0] is defined or enable_ejbca_protocols[0] is defined

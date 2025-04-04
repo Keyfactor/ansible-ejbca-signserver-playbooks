@@ -2,7 +2,7 @@
 # tasks file for roles/ansible-ejbca-init-ca
 
 - name: Initialize Sub CA's with CLI commands
-  include_tasks: init_ca.yml
+  ansible.builtin.include_tasks: init_ca.yml
   loop: "{{ add_certification_authorities }}"
   loop_control:
     label: "{{ item.caname }}"
