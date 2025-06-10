@@ -7,7 +7,7 @@ use_external_va: false
 # If enabled this will configure a Peer connection, and add the RA Peer role to EJBCA 
 use_external_ra: false
 
-# If enabled configures a Peer connectiona nd key binding for Sign Server
+# If enabled configures a Peer connection and key binding for Sign Server
 use_external_ss: false
 
 # Initialize a CA using configdump instead of the CLI. This works for CA's that are not being signed by
